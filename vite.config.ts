@@ -4,6 +4,11 @@ import { sveltekit } from '@sveltejs/kit/vite';
 import { defineConfig } from 'vite';
 
 export default defineConfig({
+	// Tauri expects the dev server on a fixed port (see src-tauri/tauri.conf.json devUrl)
+	server: {
+		port: 5173,
+		strictPort: true
+	},
 	plugins: [
 		tailwindcss(),
 		sveltekit({
