@@ -1,0 +1,1562 @@
+{
+ "00063348-e7eb-492c-bad7-e4a89b18a2ae": {
+  "category": "Module",
+  "assetName": "Module Embedded Soldier",
+  "displayName": "",
+  "level": 1
+ },
+ "0081b7d8-cd9a-409b-abcb-fee408247d9b": {
+  "category": "Zipper",
+  "assetName": "Zipper Module",
+  "displayName": "",
+  "level": 1
+ },
+ "035350a1-11f2-411b-b16e-d38f5f80155a": {
+  "category": "Module",
+  "assetName": "Module Aug Burst",
+  "displayName": "+1 BURST",
+  "level": 1
+ },
+ "04e1c99f-6b61-4008-9b0b-e4ab7c6aa4c0": {
+  "category": "Module",
+  "assetName": "Module Passive Shield Tech",
+  "displayName": "TECH SHIELD",
+  "description": "Forms a shield around the ship that absorbs incoming\ndamage but you lose <color=#5F46A7>TECH</color> every time this happens.\nthe greater the damage the more you loose.",
+  "level": 1
+ },
+ "050f8469-3cdd-4b25-8cd0-f699e6f7331e": {
+  "category": "Larva",
+  "assetName": "Larva Module",
+  "displayName": "",
+  "level": 1
+ },
+ "10b13ed7-aacd-4774-9bf0-5362223b7c7b": {
+  "category": "Module",
+  "assetName": "Module Weapon Caps Flame",
+  "displayName": "FLAME",
+  "description": "it's a flamethrower, yes",
+  "level": 2
+ },
+ "10c5f8e4-55ec-4b91-b2fc-6ebacf3cfb6f": {
+  "category": "Module",
+  "assetName": "Module Embedded CrossRedElectron",
+  "displayName": "",
+  "level": 1
+ },
+ "123b8db0-b3db-4d14-91ad-ab46a34341c4": {
+  "category": "Module",
+  "assetName": "Module Aug Tech AddExplosion",
+  "displayName": "ADD TECH EXPLOSION",
+  "description": "Projectiles explode on impact\nas long as you have enough TECH",
+  "level": 1
+ },
+ "1294da98-b85b-4bc4-af5d-e512170a6545": {
+  "category": "Module",
+  "assetName": "Module Embedded DroneElectron",
+  "displayName": "",
+  "level": 1
+ },
+ "12fd6892-c826-412e-a894-ed8404a7be5f": {
+  "category": "Module",
+  "assetName": "Module Weapon Purple Can",
+  "displayName": "CAN",
+  "description": "Launches small crystals affected by gravity.\nCrystals exlode on impact.",
+  "level": 2
+ },
+ "14ef55b4-2260-4a73-b0f1-8a081f841b31": {
+  "category": "Module",
+  "assetName": "Module Active Purple Surge",
+  "displayName": "MISSILE SURGE",
+  "description": "Launches a number of explosive missiles in every direcion",
+  "level": 1
+ },
+ "1731e6e4-c087-477f-b292-4b9199dce7ef": {
+  "category": "Module",
+  "assetName": "Module Embedded DronePurple",
+  "displayName": "",
+  "level": 1
+ },
+ "199b8db0-b3db-4d84-91ad-ab46a32341c4": {
+  "category": "Module",
+  "assetName": "Module Aug Purple AddExplosion",
+  "displayName": "ADD GEL EXPLOSION",
+  "description": "Projectiles explode on impact\nas long as you have enough GEL",
+  "level": 1
+ },
+ "1a00aa71-b1e5-4a5c-806c-5d8d30a1353a": {
+  "category": "Module",
+  "assetName": "Module Passive Regen Purple",
+  "displayName": "GEL REGEN",
+  "description": "slowly regenerates <color=#B32AAC>GEL</color>",
+  "level": 1
+ },
+ "1a8a22e0-f893-4acd-b247-b547d9034cc5": {
+  "category": "Weapon",
+  "assetName": "Weapon Rocket Rookie Module",
+  "displayName": "Weapon Rocket Rookie",
+  "level": 1
+ },
+ "1b2a128e-d45b-476a-bc42-bc31f0c83375": {
+  "category": "Module",
+  "assetName": "Module Embedded DroneCaps",
+  "displayName": "",
+  "level": 1
+ },
+ "1e76dca3-2972-4d83-95ec-81519216c698": {
+  "category": "Module",
+  "assetName": "Module Aug White AddExplosion",
+  "displayName": "ADD EXPLOSION",
+  "description": "Projectiles explode on impact\nas long as you have enough STAMINA",
+  "level": 1
+ },
+ "1fb76d64-e477-4e86-8954-6d5cfb262ca1": {
+  "category": "Module",
+  "assetName": "Module Weapon White Worm",
+  "displayName": "WORM",
+  "description": "Shoots lines of tiny projectiles short range",
+  "level": 2
+ },
+ "1fc77425-8190-43d6-ac92-1e3a71008cae": {
+  "category": "PlayerDefault",
+  "assetName": "PlayerDefault",
+  "displayName": "SHIP",
+  "level": 1
+ },
+ "206512c3-2157-45c1-b8f5-d552348ee4b0": {
+  "category": "Module",
+  "assetName": "Module Embedded Rookie",
+  "displayName": "",
+  "level": 1
+ },
+ "269b634c-3091-4298-838f-af525562dc6b": {
+  "category": "Turret",
+  "assetName": "Turret Laser Module",
+  "displayName": "",
+  "level": 1
+ },
+ "28228fa7-5770-4380-b454-f75cd2bbca53": {
+  "category": "Module",
+  "assetName": "Module Aug Add Burn",
+  "displayName": "ADD BURN",
+  "description": "Adds burn to every projectile\nas long as you have enough CAPS",
+  "level": 1
+ },
+ "2b2dbb4d-69e8-40ff-a212-a52efdf9c587": {
+  "category": "Weapon",
+  "assetName": "Weapon Enemy DroneMissile Module",
+  "displayName": "Weapon Enemy DroneMissile",
+  "level": 1
+ },
+ "2c0da9bc-8259-43a1-9bcc-c9d64f655e90": {
+  "category": "Module",
+  "assetName": "Module Embedded Beacon",
+  "displayName": "",
+  "level": 1
+ },
+ "2cf20dad-69f5-43db-b4fd-a021be584b5f": {
+  "category": "Weapon",
+  "assetName": "Weapon CrossPin Module",
+  "displayName": "Weapon CrossPin",
+  "level": 1
+ },
+ "2def7b71-17c8-40e2-935d-ccdce9270514": {
+  "category": "CrossAlfa",
+  "assetName": "CrossAlfa Module",
+  "displayName": "",
+  "level": 1
+ },
+ "2df1b51f-37ff-4750-a09a-8b9a10ca80a1": {
+  "category": "Module",
+  "assetName": "Module Weapon Purple Shard",
+  "displayName": "SHARD",
+  "description": "Big crystal with large explosion on impact",
+  "level": 1
+ },
+ "2e9bd982-221c-48a2-8cad-deecd40bbd7f": {
+  "category": "Module",
+  "assetName": "Module Aug ProjSpeed",
+  "displayName": "+ PROJECTILE SPEED",
+  "description": "Projectiles move faster",
+  "level": 1
+ },
+ "307b0777-d4a2-4028-a5fb-66f28a299748": {
+  "category": "Module",
+  "assetName": "Module Weapon White Popper",
+  "displayName": "POPPER",
+  "description": "High firerate, basic projectile weapon",
+  "level": 1
+ },
+ "3224e341-24c1-42b6-91e5-3597d3a97bcb": {
+  "category": "Module",
+  "assetName": "Module Embedded CrossTablet",
+  "displayName": "",
+  "level": 1
+ },
+ "351a78e1-2f55-467c-8198-5317fbd7c7a1": {
+  "category": "Weapon_Turret_Laser",
+  "assetName": "Weapon_Turret_Laser Module",
+  "displayName": "Weapon_Turret_Laser",
+  "level": 1
+ },
+ "351d0570-5119-4dc9-8c4a-04ebe9d65eeb": {
+  "category": "Module",
+  "assetName": "Module Aug LessSpread",
+  "displayName": "- SPREAD",
+  "description": "Decreases projectile spread",
+  "level": 1
+ },
+ "391f2d91-7db8-4000-8884-9c9f9c3f0a53": {
+  "category": "CrossLaser",
+  "assetName": "CrossLaser Module",
+  "displayName": "",
+  "level": 1
+ },
+ "39a2df66-c89d-4226-b7c6-4848da16479f": {
+  "category": "Weapon_CrossAlpha",
+  "assetName": "Weapon_CrossAlpha Module",
+  "displayName": "Weapon_CrossAlpha",
+  "level": 1
+ },
+ "3afed7a6-53bc-4f49-8e9b-f938b5f74d96": {
+  "category": "FieldGenerator",
+  "assetName": "FieldGenerator Module",
+  "displayName": "",
+  "level": 1
+ },
+ "3c22cfb1-32d8-4bfc-ab5b-4271b3398d92": {
+  "category": "Weapon_Grunt",
+  "assetName": "Weapon_Grunt Module",
+  "displayName": "Weapon_Grunt",
+  "level": 1
+ },
+ "3cb2c73b-3037-4f99-aa25-d60d24a78f75": {
+  "category": "Consumable",
+  "assetName": "Consumable Beacon",
+  "displayName": "BEACON",
+  "description": "Small device that cuts into the ceiling with small explosives",
+  "maxCount": 10
+ },
+ "3d558c77-fbfc-4f45-8ac0-d9bdc0aad9da": {
+  "category": "Module",
+  "assetName": "Module Active Drone Purple",
+  "displayName": "MISILLE DRONE",
+  "description": "Prints drones equipped\nwith missile launcher",
+  "level": 1
+ },
+ "4080312a-edd9-42ab-a485-b95709fddf08": {
+  "category": "Module",
+  "assetName": "Module Embedded Box",
+  "displayName": "",
+  "level": 1
+ },
+ "40bc74dc-e0cc-4d4a-ba4e-a58c55c4086a": {
+  "category": "Module",
+  "assetName": "Module Weapon Purple Rocket",
+  "displayName": "GEL MISSILE",
+  "description": "Homing missiles that lock on to\nenemies and explode on impact",
+  "level": 2
+ },
+ "4193938c-ea4f-4fb3-8f06-1147eb33bf42": {
+  "category": "Module",
+  "assetName": "Module Passive Add Tech",
+  "displayName": "TECH UP",
+  "description": "Increases maximum <color=#5F46A7>TECH</color> capacity",
+  "level": 1
+ },
+ "443ec472-0026-4dce-a549-8f00e83c3501": {
+  "category": "Module",
+  "assetName": "Module Weapon Caps Laser",
+  "displayName": "LASER",
+  "level": 1
+ },
+ "446fc56b-ec1f-480f-ac9f-d356458f7a45": {
+  "category": "Module",
+  "assetName": "Module Passive Add Electron",
+  "displayName": "ELECTRON UP",
+  "description": "Increases maximum <color=#009AB4>ELECTRON</color> capacity",
+  "level": 1
+ },
+ "459adb5c-e25e-4ef6-be48-caf44b1b08c9": {
+  "category": "Module",
+  "assetName": "Module Embedded CrossJock",
+  "displayName": "",
+  "level": 1
+ },
+ "4618af6d-c054-4157-a4d0-ae0cdf093f33": {
+  "category": "Module",
+  "assetName": "Module Passive Add Fuel",
+  "displayName": "FUEL UP",
+  "description": "Increases maximum <color=#4D79FF>FUEL</color> capacity",
+  "level": 1
+ },
+ "46c8e93d-67fe-4a04-a910-bbf16521971a": {
+  "category": "Weapon",
+  "assetName": "Weapon Rocket Soldier Purple",
+  "displayName": "Weapon Rocket Soldier",
+  "level": 1
+ },
+ "47f8634f-15fe-407b-b15d-329319d52aaf": {
+  "category": "Weapon",
+  "assetName": "Weapon Laser CrossTablet Module",
+  "displayName": "Weapon Laser CrossTablet",
+  "level": 1
+ },
+ "48a433fa-b05d-42e7-b273-b95046c4cef8": {
+  "category": "Module",
+  "assetName": "Module Passive Shield Caps",
+  "displayName": "CAPS SHIELD",
+  "description": "Forms a shield around the ship that absorbs incoming\ndamage but you lose <color=#B16623>CAPS</color> every time this happens.\nthe greater the damage the more you loose.",
+  "level": 1
+ },
+ "48a5fb41-0d95-49d9-93dc-48fe4f634a8f": {
+  "category": "Fly",
+  "assetName": "Fly Laser Module",
+  "displayName": "",
+  "level": 1
+ },
+ "4ab32c61-eaa6-40a4-82b1-2d4fd56764b3": {
+  "category": "Module",
+  "assetName": "Module Active Caps Igniter",
+  "displayName": "IGNITER",
+  "description": "Shoots low range projectiles downwards.\nProjectile explodes igniting most things inside the blast radius",
+  "level": 1
+ },
+ "4b333163-e8aa-48f0-aa93-184e2dfade3f": {
+  "category": "WeaponModule",
+  "assetName": "WeaponModule Beacon",
+  "displayName": "Weapon_Turret_Laser",
+  "level": 1
+ },
+ "4c8788a4-157f-4527-aad7-f6cce9d98b6e": {
+  "category": "Module",
+  "assetName": "Module Embedded Fly",
+  "displayName": "",
+  "level": 1
+ },
+ "4e7e3e86-f3ce-4ecd-86f4-29520d8b85af": {
+  "category": "Module",
+  "assetName": "Module Embedded Grunt",
+  "displayName": "",
+  "level": 1
+ },
+ "4eba9754-339c-4587-98a8-d159fda13ad4": {
+  "category": "Weapon_Cross",
+  "assetName": "Weapon_Cross Module",
+  "displayName": "Weapon_Cross",
+  "level": 1
+ },
+ "501af82f-bdee-459e-8b1c-4281cf53f621": {
+  "category": "Module",
+  "assetName": "Module Weapon White Derbis",
+  "displayName": "DEBRIS",
+  "description": "Small spinning projectiles affected by gravity",
+  "level": 2
+ },
+ "50f36e9d-63df-4ee3-8301-96b0f2b4262b": {
+  "category": "Module",
+  "assetName": "Module Embedded DronePhantom",
+  "displayName": "",
+  "level": 1
+ },
+ "517aaf64-71a1-4878-bba3-d7f9b995a6aa": {
+  "category": "Weapon_CrossQueen",
+  "assetName": "Weapon_CrossQueen Module",
+  "displayName": "Weapon_CrossQueen",
+  "level": 1
+ },
+ "52c8c054-f8d5-40d6-b2e7-17e9d9ccbfd5": {
+  "category": "Module",
+  "assetName": "Module Embedded CrossPin",
+  "displayName": "",
+  "level": 1
+ },
+ "52eaa02f-6030-4552-9a8b-447a0c41b9e3": {
+  "category": "Module",
+  "assetName": "Module Embedded Crate",
+  "displayName": "",
+  "level": 1
+ },
+ "5682bca7-51a4-48b8-bc45-067d1ebaba47": {
+  "category": "Cross",
+  "assetName": "Cross Module",
+  "displayName": "",
+  "level": 1
+ },
+ "57149378-6837-4e76-a6d9-b6f3b3f3435d": {
+  "category": "Weapon_CrossRed",
+  "assetName": "Weapon_CrossRed Module",
+  "displayName": "Weapon_CrossRed",
+  "level": 1
+ },
+ "5e037c2a-994e-44fb-b94f-049dde1a22b7": {
+  "category": "Module",
+  "assetName": "Module Active Purple AirMines",
+  "displayName": "AIR MINE",
+  "description": "Deploys explosive floating mines",
+  "level": 1
+ },
+ "60030afe-a08a-4c61-9bd4-dc4e5ae2e189": {
+  "category": "Weapon",
+  "assetName": "Weapon Module OneShot4",
+  "displayName": "Weapon CrossPin",
+  "level": 1
+ },
+ "62a78ee1-a2ed-404a-b73e-6025725dc988": {
+  "category": "Module",
+  "assetName": "Module Active Drone Suicide",
+  "displayName": "SUICIDE DRONE",
+  "description": "Prints drones that explode\non top of enemies",
+  "level": 1
+ },
+ "63a7f89d-c198-49fe-ad6b-22e43cb48f52": {
+  "category": "Module",
+  "assetName": "Module Weapon White Shotgun",
+  "displayName": "SHOTGUN",
+  "description": "Short range projectiles with high spread",
+  "level": 2
+ },
+ "63fedd1a-0b62-4c1d-89b8-473b53dd38c7": {
+  "category": "WeaponModule",
+  "assetName": "WeaponModule FloaterMiniCaps",
+  "displayName": "Weapon FloaterMiniCaps",
+  "level": 1
+ },
+ "6681e231-1ef9-4e82-96c7-e6c1611e4b19": {
+  "category": "Consumable",
+  "assetName": "Consumable Bomb",
+  "displayName": "BOMB",
+  "description": "Detonates after 5 seconds",
+  "maxCount": 10
+ },
+ "69278b56-c542-4cd5-b33f-95887000e0db": {
+  "category": "Weapon_CrossRed",
+  "assetName": "Weapon_CrossRed Electron Module",
+  "displayName": "Weapon_CrossRed",
+  "level": 1
+ },
+ "693125a0-a1b3-4508-b3eb-f523081e26ac": {
+  "category": "WeaponModule",
+  "assetName": "WeaponModule FloaterMiniPurple",
+  "displayName": "Weapon FloaterMiniCaps",
+  "level": 1
+ },
+ "699decaa-30d6-4b73-970c-d0bc606f83a9": {
+  "category": "Module",
+  "assetName": "Module Aug Firerate",
+  "displayName": "+ FIRERATE",
+  "description": "Increases weapon fire rate",
+  "level": 1
+ },
+ "6b3bedaf-1928-4c0d-8096-060368ee7184": {
+  "category": "Module",
+  "assetName": "Module Weapon Purple ClusterCube",
+  "displayName": "CLUSTER CUBE",
+  "description": "A big bang, then many small bangs after",
+  "level": 2
+ },
+ "6cbe3f36-859a-4a1f-9ec6-fe44534af139": {
+  "category": "Module",
+  "assetName": "Module Active Drone Caps",
+  "displayName": "COMBAT DRONE",
+  "description": "Prints drones equipped with\nprojectile weapon",
+  "level": 1
+ },
+ "6e09adec-e4b4-46f7-bb33-50abb52815c4": {
+  "category": "Module",
+  "assetName": "Module Embedded Floater Mini",
+  "displayName": "",
+  "level": 1
+ },
+ "6fbca6a7-6178-4c6e-8ff7-448b0d6c7658": {
+  "category": "Consumable",
+  "assetName": "Consumable FuelGenerator",
+  "displayName": "FUEL GENERATOR",
+  "description": "Deploys a small device that generates <color=#4D79FF>FUEL</color>\nas long as it's not\ndestroyed",
+  "maxCount": 5
+ },
+ "71019be4-fe93-4624-afcb-a1814ef5f388": {
+  "category": "Module",
+  "assetName": "Module Embedded CrossQueen",
+  "displayName": "",
+  "level": 1
+ },
+ "723ec0b9-de75-4cea-a7dd-d6ab3d4fd7b3": {
+  "category": "Module",
+  "assetName": "Module Embedded BouncerRed",
+  "displayName": "",
+  "level": 1
+ },
+ "73cf7441-4ef5-49e5-b26f-4d8394bd67dd": {
+  "category": "Weapon",
+  "assetName": "Weapon Enemy Queen Bomb Module",
+  "displayName": "Weapon Enemy Queen Bomb",
+  "level": 1
+ },
+ "75ad6d0e-12cc-4a59-87a5-8e6a8b032a98": {
+  "category": "Module",
+  "assetName": "Module Embedded Mine FloaterOfficerCaps",
+  "displayName": "",
+  "level": 1
+ },
+ "7bc63223-bc7e-45fe-bae6-66f4ab86b51d": {
+  "category": "Module",
+  "assetName": "Module Embedded OneShot4",
+  "displayName": "",
+  "level": 1
+ },
+ "7cb9173d-4229-48b8-b079-73dea8d339e5": {
+  "category": "WeaponModule",
+  "assetName": "WeaponModule BouncerRed",
+  "displayName": "Weapon_Bouncer",
+  "level": 1
+ },
+ "7da95b26-e06b-4508-893b-60bde596d98c": {
+  "category": "Module",
+  "assetName": "Module Active Generator Fuel",
+  "displayName": "FIELD GENERATOR",
+  "description": "Generates fuel anywhere you drop it.",
+  "level": 1
+ },
+ "7e911e2c-8298-4fee-a6e2-bf9890fcbb56": {
+  "category": "Module",
+  "assetName": "Module Embedded CrossRedSmall",
+  "displayName": "",
+  "level": 1
+ },
+ "7efd6648-e13f-4f6e-8208-05cf41e63c47": {
+  "category": "Module",
+  "assetName": "Module Active Purple Teardrop",
+  "displayName": "TEARDROP",
+  "description": "Drops a highly explosive bomb",
+  "level": 1
+ },
+ "7fca9e7d-79f6-4a05-8b69-0084d0ac4c3e": {
+  "category": "Turret",
+  "assetName": "Turret Sniper Module",
+  "displayName": "",
+  "level": 1
+ },
+ "7fe9d646-5dd6-43b8-80d2-03ee41bcec67": {
+  "category": "Weapon",
+  "assetName": "Weapon Enemy Turret Sniper Module",
+  "displayName": "Weapon Enemy Drone Sniper",
+  "level": 1
+ },
+ "8034fe08-d0c0-4bdc-8415-80d69d72e712": {
+  "category": "Module",
+  "assetName": "Module Weapon Caps Rocket",
+  "displayName": "FIRE MISSILE",
+  "description": "Slow moving missile that locks on to\nenemies and ignites on impact",
+  "level": 3
+ },
+ "8351e3d0-20bf-4f6d-a97a-2322dd76b596": {
+  "category": "Module",
+  "assetName": "Module Passive Regen Stamina",
+  "displayName": "STAMINA REGEN",
+  "description": "slowly regenerates <color=#A8A8A8>STAMINA</color>",
+  "level": 1
+ },
+ "83539b7a-0b19-4309-931f-06dbb79ecebd": {
+  "category": "Module",
+  "assetName": "Module Active Caps Vial",
+  "displayName": "VIAL",
+  "description": "Drops glass full of hot substance.\nReleasing many burning sub-projectiles on explosion.\nPerfect for starting fires",
+  "level": 1
+ },
+ "8598ed65-8b4b-4f59-8aef-58cbb137fc8d": {
+  "category": "Module",
+  "assetName": "Module Aug Caps AddExplosion",
+  "displayName": "ADD FIRE EXPLOSION",
+  "description": "Projectiles explode and burn on impact\nas long as you have enough CAPS",
+  "level": 1
+ },
+ "869b8723-9f5b-4cb2-9e3d-bd9881f29b20": {
+  "category": "Module",
+  "assetName": "Module Aug Electron AddSpark",
+  "displayName": "Add Spark",
+  "description": "Projectiles zap nearby enemies on impact\nas long as you have enough ELECTRON",
+  "level": 1
+ },
+ "884b1ff5-8188-4c0f-b2f2-99e048dd3003": {
+  "category": "Module",
+  "assetName": "Module Active Drone Phantom",
+  "displayName": "PHANTOM DRONE",
+  "description": "Prints advanced drones\nequipped with laser weapon",
+  "level": 1
+ },
+ "938ea129-d605-4e3e-81eb-f8fbfba79f85": {
+  "category": "Weapon_Minion_CrossQueen",
+  "assetName": "Weapon_Minion_CrossQueen Module",
+  "displayName": "Weapon_Minion_CrossQueen",
+  "level": 1
+ },
+ "957fc473-fd1a-44c1-817e-0b1857250193": {
+  "category": "Weapon_CrossLaser",
+  "assetName": "Weapon_CrossLaser Module",
+  "displayName": "Weapon_CrossLaser",
+  "level": 1
+ },
+ "95988739-700c-4fe7-b44d-31514cdd86d7": {
+  "category": "Module",
+  "assetName": "Module Weapon White Bolt",
+  "displayName": "BOLT",
+  "description": "Long range, high damage projectile weapon",
+  "level": 1
+ },
+ "97b5d6c6-fdee-4e07-9f1c-e7eb71018ab8": {
+  "category": "Module",
+  "assetName": "Module Passive Add Caps",
+  "displayName": "CAPS UP",
+  "description": "Increases maximum <color=#B16623>CAPS</color> capacity",
+  "level": 1
+ },
+ "9851b4de-4a77-40e4-94a0-d5d168f0573f": {
+  "category": "Module",
+  "assetName": "Module Weapon White DiscGun",
+  "displayName": "DISC GUN",
+  "description": "Short range, high damage spinning discs",
+  "level": 1
+ },
+ "9ebbe694-85cd-46de-ba7a-2bfd5934e50c": {
+  "category": "Module",
+  "assetName": "Module Passive Add Stamina",
+  "displayName": "STAMINA UP",
+  "description": "Increases maximum <color=#A8A8A8>STAMINA</color>",
+  "level": 1
+ },
+ "Active": {
+  "category": "Active",
+  "assetName": "Active",
+  "displayName": null
+ },
+ "Bond": {
+  "category": "Ingredient",
+  "assetName": "Ingredient Bond",
+  "displayName": "Bond"
+ },
+ "Chip": {
+  "category": "Ingredient",
+  "assetName": "Ingredient Chip",
+  "displayName": "Chip"
+ },
+ "Coral": {
+  "category": "Ingredient",
+  "assetName": "Ingredient Coral",
+  "displayName": "Fiber"
+ },
+ "Embedded": {
+  "category": "Embedded",
+  "assetName": "Embedded",
+  "displayName": null
+ },
+ "Ex": {
+  "category": "Ingredient",
+  "assetName": "Ingredient Ex",
+  "displayName": "Ex"
+ },
+ "Face": {
+  "category": "Ingredient",
+  "assetName": "Ingredient Face",
+  "displayName": "Face"
+ },
+ "Gland": {
+  "category": "Ingredient",
+  "assetName": "Ingredient Gland",
+  "displayName": "Gland"
+ },
+ "Invalid": {
+  "category": "Invalid",
+  "assetName": "Invalid",
+  "displayName": null
+ },
+ "LevelUp": {
+  "category": "LevelUp",
+  "assetName": "LevelUp",
+  "displayName": null
+ },
+ "Normal": {
+  "category": "Normal",
+  "assetName": "Normal",
+  "displayName": null
+ },
+ "Powerstar": {
+  "category": "Ingredient",
+  "assetName": "Ingredient Powerstar",
+  "displayName": "Powerstar"
+ },
+ "Resource Caps": {
+  "category": "Resource",
+  "assetName": "Resource Caps",
+  "displayName": null
+ },
+ "Resource Electron": {
+  "category": "Resource",
+  "assetName": "Resource Electron",
+  "displayName": null
+ },
+ "Resource Fuel": {
+  "category": "Resource",
+  "assetName": "Resource Fuel",
+  "displayName": null
+ },
+ "Resource Health": {
+  "category": "Resource",
+  "assetName": "Resource Health",
+  "displayName": null
+ },
+ "Resource Money": {
+  "category": "Resource",
+  "assetName": "Resource Money",
+  "displayName": null
+ },
+ "Resource Purple": {
+  "category": "Resource",
+  "assetName": "Resource Purple",
+  "displayName": null
+ },
+ "Resource Tech": {
+  "category": "Resource",
+  "assetName": "Resource Tech",
+  "displayName": null
+ },
+ "Resource White": {
+  "category": "Resource",
+  "assetName": "Resource White",
+  "displayName": null
+ },
+ "Shell": {
+  "category": "Ingredient",
+  "assetName": "Ingredient Shell",
+  "displayName": "Generator"
+ },
+ "Weapon": {
+  "category": "Weapon",
+  "assetName": "Weapon",
+  "displayName": null
+ },
+ "Weapon Beacon": {
+  "category": "Weapon",
+  "assetName": "Weapon Beacon",
+  "displayName": null
+ },
+ "Weapon BouncerRed": {
+  "category": "Weapon",
+  "assetName": "Weapon BouncerRed",
+  "displayName": null
+ },
+ "Weapon CactusFruit Sub": {
+  "category": "Weapon",
+  "assetName": "Weapon CactusFruit Sub",
+  "displayName": null
+ },
+ "Weapon Caps Flame": {
+  "category": "Weapon",
+  "assetName": "Weapon Caps Flame",
+  "displayName": null
+ },
+ "Weapon Caps Igniter": {
+  "category": "Weapon",
+  "assetName": "Weapon Caps Igniter",
+  "displayName": null
+ },
+ "Weapon Caps Laser": {
+  "category": "Weapon",
+  "assetName": "Weapon Caps Laser",
+  "displayName": null
+ },
+ "Weapon Caps Loon": {
+  "category": "Weapon",
+  "assetName": "Weapon Caps Loon",
+  "displayName": null
+ },
+ "Weapon Caps Vial": {
+  "category": "Weapon",
+  "assetName": "Weapon Caps Vial",
+  "displayName": null
+ },
+ "Weapon ClusterCube Sub": {
+  "category": "Weapon",
+  "assetName": "Weapon ClusterCube Sub",
+  "displayName": null
+ },
+ "Weapon Crawler Laser": {
+  "category": "Weapon",
+  "assetName": "Weapon Crawler Laser",
+  "displayName": null
+ },
+ "Weapon CrossPin": {
+  "category": "Weapon",
+  "assetName": "Weapon CrossPin",
+  "displayName": null
+ },
+ "Weapon CrossRedElectron Bouncer": {
+  "category": "Weapon",
+  "assetName": "Weapon CrossRedElectron Bouncer",
+  "displayName": null
+ },
+ "Weapon CrossRedSmall Purple": {
+  "category": "Weapon",
+  "assetName": "Weapon CrossRedSmall Purple",
+  "displayName": null
+ },
+ "Weapon Dandelion Sub": {
+  "category": "Weapon",
+  "assetName": "Weapon Dandelion Sub",
+  "displayName": null
+ },
+ "Weapon Drone": {
+  "category": "Weapon",
+  "assetName": "Weapon Drone",
+  "displayName": null
+ },
+ "Weapon Electron Circuit": {
+  "category": "Weapon",
+  "assetName": "Weapon Electron Circuit",
+  "displayName": null
+ },
+ "Weapon Electron Rocket": {
+  "category": "Weapon",
+  "assetName": "Weapon Electron Rocket",
+  "displayName": null
+ },
+ "Weapon Electron Toroid": {
+  "category": "Weapon",
+  "assetName": "Weapon Electron Toroid",
+  "displayName": null
+ },
+ "Weapon Electron Zapper": {
+  "category": "Weapon",
+  "assetName": "Weapon Electron Zapper",
+  "displayName": null
+ },
+ "Weapon Enemy DroneMissile": {
+  "category": "Weapon",
+  "assetName": "Weapon Enemy DroneMissile",
+  "displayName": null
+ },
+ "Weapon Enemy Queen Bomb": {
+  "category": "Weapon",
+  "assetName": "Weapon Enemy Queen Bomb",
+  "displayName": null
+ },
+ "Weapon Enemy Soldier": {
+  "category": "Weapon",
+  "assetName": "Weapon Enemy Soldier",
+  "displayName": null
+ },
+ "Weapon Enemy Turret Sniper": {
+  "category": "Weapon",
+  "assetName": "Weapon Enemy Turret Sniper",
+  "displayName": null
+ },
+ "Weapon FireBall": {
+  "category": "Weapon",
+  "assetName": "Weapon FireBall",
+  "displayName": null
+ },
+ "Weapon Fish": {
+  "category": "Weapon",
+  "assetName": "Weapon Fish",
+  "displayName": null
+ },
+ "Weapon FloaterMiniCaps": {
+  "category": "Weapon",
+  "assetName": "Weapon FloaterMiniCaps",
+  "displayName": null
+ },
+ "Weapon FloaterMiniPuprle": {
+  "category": "Weapon",
+  "assetName": "Weapon FloaterMiniPuprle",
+  "displayName": null
+ },
+ "Weapon FloaterOfficerCaps Mines": {
+  "category": "Weapon",
+  "assetName": "Weapon FloaterOfficerCaps Mines",
+  "displayName": null
+ },
+ "Weapon FloaterOfficerCaps Orb": {
+  "category": "Weapon",
+  "assetName": "Weapon FloaterOfficerCaps Orb",
+  "displayName": null
+ },
+ "Weapon FloaterOfficerCaps Rocket": {
+  "category": "Weapon",
+  "assetName": "Weapon FloaterOfficerCaps Rocket",
+  "displayName": null
+ },
+ "Weapon FloaterOfficerCaps RocketSub": {
+  "category": "Weapon",
+  "assetName": "Weapon FloaterOfficerCaps RocketSub",
+  "displayName": null
+ },
+ "Weapon FloaterOfficerPurple": {
+  "category": "Weapon",
+  "assetName": "Weapon FloaterOfficerPurple",
+  "displayName": null
+ },
+ "Weapon Item Bomb": {
+  "category": "Weapon",
+  "assetName": "Weapon Item Bomb",
+  "displayName": null
+ },
+ "Weapon Item Matchbox": {
+  "category": "Weapon",
+  "assetName": "Weapon Item Matchbox",
+  "displayName": null
+ },
+ "Weapon Item Matchbox Sub": {
+  "category": "Weapon",
+  "assetName": "Weapon Item Matchbox Sub",
+  "displayName": null
+ },
+ "Weapon Laser CrossTablet": {
+  "category": "Weapon",
+  "assetName": "Weapon Laser CrossTablet",
+  "displayName": null
+ },
+ "Weapon Minion Cross Red": {
+  "category": "Weapon",
+  "assetName": "Weapon Minion Cross Red",
+  "displayName": null
+ },
+ "Weapon Minion CrossRedBomber": {
+  "category": "Weapon",
+  "assetName": "Weapon Minion CrossRedBomber",
+  "displayName": null
+ },
+ "Weapon Minion CrossSmallCaps": {
+  "category": "Weapon",
+  "assetName": "Weapon Minion CrossSmallCaps",
+  "displayName": null
+ },
+ "Weapon OfficerPurple Missile": {
+  "category": "Weapon",
+  "assetName": "Weapon OfficerPurple Missile",
+  "displayName": null
+ },
+ "Weapon OneShot4": {
+  "category": "Weapon",
+  "assetName": "Weapon OneShot4",
+  "displayName": null
+ },
+ "Weapon Purple AirMine": {
+  "category": "Weapon",
+  "assetName": "Weapon Purple AirMine",
+  "displayName": null
+ },
+ "Weapon Purple Can": {
+  "category": "Weapon",
+  "assetName": "Weapon Purple Can",
+  "displayName": null
+ },
+ "Weapon Purple ClusterCube": {
+  "category": "Weapon",
+  "assetName": "Weapon Purple ClusterCube",
+  "displayName": null
+ },
+ "Weapon Purple Flack": {
+  "category": "Weapon",
+  "assetName": "Weapon Purple Flack",
+  "displayName": null
+ },
+ "Weapon Purple Marbles": {
+  "category": "Weapon",
+  "assetName": "Weapon Purple Marbles",
+  "displayName": null
+ },
+ "Weapon Purple Rocket": {
+  "category": "Weapon",
+  "assetName": "Weapon Purple Rocket",
+  "displayName": null
+ },
+ "Weapon Purple Shard": {
+  "category": "Weapon",
+  "assetName": "Weapon Purple Shard",
+  "displayName": null
+ },
+ "Weapon Purple Surge": {
+  "category": "Weapon",
+  "assetName": "Weapon Purple Surge",
+  "displayName": null
+ },
+ "Weapon Rocket CrossRedSmallElectron": {
+  "category": "Weapon",
+  "assetName": "Weapon Rocket CrossRedSmallElectron",
+  "displayName": null
+ },
+ "Weapon Rocket Fire": {
+  "category": "Weapon",
+  "assetName": "Weapon Rocket Fire",
+  "displayName": null
+ },
+ "Weapon Rocket JockRocket": {
+  "category": "Weapon",
+  "assetName": "Weapon Rocket JockRocket",
+  "displayName": null
+ },
+ "Weapon Rocket Rookie": {
+  "category": "Weapon",
+  "assetName": "Weapon Rocket Rookie",
+  "displayName": null
+ },
+ "Weapon Rocket Soldier": {
+  "category": "Weapon",
+  "assetName": "Weapon Rocket Soldier",
+  "displayName": null
+ },
+ "Weapon Rocket TurretSeeker": {
+  "category": "Weapon",
+  "assetName": "Weapon Rocket TurretSeeker",
+  "displayName": null
+ },
+ "Weapon SoldierPurple": {
+  "category": "Weapon",
+  "assetName": "Weapon SoldierPurple",
+  "displayName": null
+ },
+ "Weapon SoldierTech": {
+  "category": "Weapon",
+  "assetName": "Weapon SoldierTech",
+  "displayName": null
+ },
+ "Weapon Tech Dandelion": {
+  "category": "Weapon",
+  "assetName": "Weapon Tech Dandelion",
+  "displayName": null
+ },
+ "Weapon TurretSeeker Sub": {
+  "category": "Weapon",
+  "assetName": "Weapon TurretSeeker Sub",
+  "displayName": null
+ },
+ "Weapon Unit CrossJockBomber": {
+  "category": "Weapon",
+  "assetName": "Weapon Unit CrossJockBomber",
+  "displayName": null
+ },
+ "Weapon Unit CrossJockLaser": {
+  "category": "Weapon",
+  "assetName": "Weapon Unit CrossJockLaser",
+  "displayName": null
+ },
+ "Weapon Unit CrossLaser": {
+  "category": "Weapon",
+  "assetName": "Weapon Unit CrossLaser",
+  "displayName": null
+ },
+ "Weapon Unit CrossRedBomber Bomb": {
+  "category": "Weapon",
+  "assetName": "Weapon Unit CrossRedBomber Bomb",
+  "displayName": null
+ },
+ "Weapon Unit CrossRedElectron": {
+  "category": "Weapon",
+  "assetName": "Weapon Unit CrossRedElectron",
+  "displayName": null
+ },
+ "Weapon Unit CrossRedLaser": {
+  "category": "Weapon",
+  "assetName": "Weapon Unit CrossRedLaser",
+  "displayName": null
+ },
+ "Weapon Unit CrossSmallElectron": {
+  "category": "Weapon",
+  "assetName": "Weapon Unit CrossSmallElectron",
+  "displayName": null
+ },
+ "Weapon Unit FlyZapper": {
+  "category": "Weapon",
+  "assetName": "Weapon Unit FlyZapper",
+  "displayName": null
+ },
+ "Weapon VeinFruit": {
+  "category": "Weapon",
+  "assetName": "Weapon VeinFruit",
+  "displayName": null
+ },
+ "Weapon Vial Sub": {
+  "category": "Weapon",
+  "assetName": "Weapon Vial Sub",
+  "displayName": null
+ },
+ "Weapon White Blades": {
+  "category": "Weapon",
+  "assetName": "Weapon White Blades",
+  "displayName": null
+ },
+ "Weapon White Bolt": {
+  "category": "Weapon",
+  "assetName": "Weapon White Bolt",
+  "displayName": null
+ },
+ "Weapon White Derbis": {
+  "category": "Weapon",
+  "assetName": "Weapon White Derbis",
+  "displayName": null
+ },
+ "Weapon White DiscGun": {
+  "category": "Weapon",
+  "assetName": "Weapon White DiscGun",
+  "displayName": null
+ },
+ "Weapon White Popper": {
+  "category": "Weapon",
+  "assetName": "Weapon White Popper",
+  "displayName": null
+ },
+ "Weapon White Rocket Dart": {
+  "category": "Weapon",
+  "assetName": "Weapon White Rocket Dart",
+  "displayName": null
+ },
+ "Weapon White Shotgun": {
+  "category": "Weapon",
+  "assetName": "Weapon White Shotgun",
+  "displayName": null
+ },
+ "Weapon White Worm": {
+  "category": "Weapon",
+  "assetName": "Weapon White Worm",
+  "displayName": null
+ },
+ "WeaponActiveModule": {
+  "category": "WeaponActiveModule",
+  "assetName": "WeaponActiveModule",
+  "displayName": null
+ },
+ "Weapon_Active_Teardrop": {
+  "category": "Weapon_Active_Teardrop",
+  "assetName": "Weapon_Active_Teardrop",
+  "displayName": null
+ },
+ "Weapon_Cross": {
+  "category": "Weapon_Cross",
+  "assetName": "Weapon_Cross",
+  "displayName": null
+ },
+ "Weapon_CrossAlpha": {
+  "category": "Weapon_CrossAlpha",
+  "assetName": "Weapon_CrossAlpha",
+  "displayName": null
+ },
+ "Weapon_CrossJock": {
+  "category": "Weapon_CrossJock",
+  "assetName": "Weapon_CrossJock",
+  "displayName": null
+ },
+ "Weapon_CrossQueen": {
+  "category": "Weapon_CrossQueen",
+  "assetName": "Weapon_CrossQueen",
+  "displayName": null
+ },
+ "Weapon_FieldGenerator": {
+  "category": "Weapon_FieldGenerator",
+  "assetName": "Weapon_FieldGenerator",
+  "displayName": null
+ },
+ "Weapon_Fly": {
+  "category": "Weapon_Fly",
+  "assetName": "Weapon_Fly",
+  "displayName": null
+ },
+ "Weapon_Fly_Alfa": {
+  "category": "Weapon_Fly_Alfa",
+  "assetName": "Weapon_Fly_Alfa",
+  "displayName": null
+ },
+ "Weapon_Fly_AlfaSub": {
+  "category": "Weapon_Fly_AlfaSub",
+  "assetName": "Weapon_Fly_AlfaSub",
+  "displayName": null
+ },
+ "Weapon_Fly_Dad": {
+  "category": "Weapon_Fly_Dad",
+  "assetName": "Weapon_Fly_Dad",
+  "displayName": null
+ },
+ "Weapon_Fly_Laser": {
+  "category": "Weapon_Fly_Laser",
+  "assetName": "Weapon_Fly_Laser",
+  "displayName": null
+ },
+ "Weapon_Grunt": {
+  "category": "Weapon_Grunt",
+  "assetName": "Weapon_Grunt",
+  "displayName": null
+ },
+ "Weapon_Laser_CrossQueen": {
+  "category": "Weapon_Laser_CrossQueen",
+  "assetName": "Weapon_Laser_CrossQueen",
+  "displayName": null
+ },
+ "Weapon_Minion_CrossQueen": {
+  "category": "Weapon_Minion_CrossQueen",
+  "assetName": "Weapon_Minion_CrossQueen",
+  "displayName": null
+ },
+ "Weapon_PhantomDrone": {
+  "category": "Weapon_PhantomDrone",
+  "assetName": "Weapon_PhantomDrone",
+  "displayName": null
+ },
+ "Weapon_Raven": {
+  "category": "Weapon_Raven",
+  "assetName": "Weapon_Raven",
+  "displayName": null
+ },
+ "Weapon_Turret_Laser": {
+  "category": "Weapon_Turret_Laser",
+  "assetName": "Weapon_Turret_Laser",
+  "displayName": null
+ },
+ "Weapon_Turret_Worm": {
+  "category": "Weapon_Turret_Worm",
+  "assetName": "Weapon_Turret_Worm",
+  "displayName": null
+ },
+ "Weapon_Zipper": {
+  "category": "Weapon_Zipper",
+  "assetName": "Weapon_Zipper",
+  "displayName": null
+ },
+ "a2d09b85-8a79-449c-9dad-61a3dbf9607a": {
+  "category": "Artifact1",
+  "assetName": "Artifact1",
+  "displayName": "RED EYE",
+  "level": 1
+ },
+ "a30f009c-4bbb-4f11-a411-6f8cdb26ceee": {
+  "category": "Module",
+  "assetName": "Module Embedded Maggot",
+  "displayName": "",
+  "level": 1
+ },
+ "a42354fe-a50e-4a2a-a264-28eb728a7b9e": {
+  "category": "WeaponModule",
+  "assetName": "WeaponModule Unit FlyZapper",
+  "displayName": "Weapon_Fly_Alfa",
+  "level": 1
+ },
+ "a4c2162a-319a-45a3-b5cb-073aaef4bbf6": {
+  "category": "Module",
+  "assetName": "Module Weapon Caps Loon",
+  "displayName": "LOON",
+  "description": "Slow moving orb that explodes\nwith high burn pontential",
+  "level": 1
+ },
+ "a5821cd4-48c9-4b1e-96aa-1ef4e0d64a50": {
+  "category": "Weapon",
+  "assetName": "Weapon Drone Module",
+  "displayName": "Weapon Drone",
+  "level": 1
+ },
+ "a672acfa-1043-4e45-87fc-e02a7c339e62": {
+  "category": "Module",
+  "assetName": "Module Active Drone Electron",
+  "displayName": "ELECTRIC DRONE",
+  "description": "Prints drones that electrocute\nnearby enemies",
+  "level": 1
+ },
+ "a8821721-eb57-4934-81d4-4c29427b3a26": {
+  "category": "Module",
+  "assetName": "Module Weapon Fly",
+  "displayName": "Weapon_Fly",
+  "level": 1
+ },
+ "aabbf1de-33e5-4f1d-8cb2-2ad35c95251f": {
+  "category": "Weapon",
+  "assetName": "Weapon Minion CrossRed Module",
+  "displayName": "Weapon Minion CrossRed",
+  "level": 1
+ },
+ "ad411315-6fe7-4d87-90e8-2ca0c418cf1b": {
+  "category": "Consumable",
+  "assetName": "Consumable Matchbox",
+  "displayName": "MATCHBOX",
+  "description": "Detonates after 3 seconds igniting stuff around",
+  "maxCount": 10
+ },
+ "ae453f20-1aa1-4ea2-af9a-ca2756325454": {
+  "category": "Weapon",
+  "assetName": "Weapon Fish Module",
+  "displayName": "Weapon Fish",
+  "level": 1
+ },
+ "b17ce454-50f0-45d8-b565-8c6440688407": {
+  "category": "Module",
+  "assetName": "Module Weapon Purple Marbles",
+  "displayName": "MARBLES",
+  "description": "Slow moving explosive projectiles",
+  "level": 1
+ },
+ "b3c4ae5d-b5ad-46a4-8030-240470591fca": {
+  "category": "Turret",
+  "assetName": "Turret Worm Module",
+  "displayName": "",
+  "level": 1
+ },
+ "bbc0dd01-a91a-427c-977a-f1a546c3e4a0": {
+  "category": "WeaponModule",
+  "assetName": "WeaponModule Crawler Laser",
+  "displayName": "Crawler Laser",
+  "level": 1
+ },
+ "bc282173-4c8b-4960-8742-9069f29d9fbb": {
+  "category": "Weapon_Fly_Dad",
+  "assetName": "Weapon_Fly_Dad Module",
+  "displayName": "Weapon_Fly_Dad",
+  "level": 1
+ },
+ "bcc06d5e-5a27-4313-ae42-dd07877df2bb": {
+  "category": "Module",
+  "assetName": "Module Aug ExtraProjectile",
+  "displayName": "EXTRA PROJECTILE",
+  "description": "Adds 1 extra projectile to every shot\nbut also makes every shot cost more resource",
+  "level": 1
+ },
+ "bd569afb-39b6-46c2-9c5a-57a282f073c4": {
+  "category": "Weapon_Fly_Laser",
+  "assetName": "Weapon_Fly_Laser Module",
+  "displayName": "Weapon_Fly_Laser",
+  "level": 1
+ },
+ "bf8fb7e6-d7fe-4e10-a261-abf1843909a9": {
+  "category": "Module",
+  "assetName": "Module Passive Shield Electron",
+  "displayName": "ELECTRON SHIELD",
+  "description": "Forms a shield around the ship that absorbs incoming\ndamage but you lose <color=#009AB4>ELECTRON</color> every time this happens.\nthe greater the damage the more you loose.",
+  "level": 1
+ },
+ "bfa5e950-37e2-484f-b39c-80c0dce4edc6": {
+  "category": "Weapon_Laser_CrossQueen",
+  "assetName": "Weapon_Laser_CrossQueen Module",
+  "displayName": "Weapon_Laser_CrossQueen",
+  "level": 1
+ },
+ "c0c721ff-3be0-4e4e-a2e1-dff7b1a11230": {
+  "category": "Module",
+  "assetName": "Module Passive Regen Health",
+  "displayName": "HEALTH REGEN",
+  "description": "slowly regenerates <color=#B03B3B>HEALTH</color>",
+  "level": 1
+ },
+ "c0d6e452-badd-4c88-b6a0-12494ed01fce": {
+  "category": "Module",
+  "assetName": "Module Embedded DroneHealth",
+  "displayName": "",
+  "level": 1
+ },
+ "c189627d-ac8f-436c-b833-b66eb22644f6": {
+  "category": "Module",
+  "assetName": "Module Embedded Fish",
+  "displayName": "",
+  "level": 1
+ },
+ "c3450eb2-13e0-42de-a90e-13a052c7b431": {
+  "category": "Module",
+  "assetName": "Module Embedded FlyDad",
+  "displayName": "",
+  "level": 1
+ },
+ "c742cdd3-284d-420a-9feb-399f820c15ce": {
+  "category": "Weapon_Zipper",
+  "assetName": "Weapon_Zipper Module",
+  "displayName": "Weapon_Zipper",
+  "level": 1
+ },
+ "c792bc27-6cc0-4162-bf25-55720fdcc9d4": {
+  "category": "Module",
+  "assetName": "Module Passive Shield Purple",
+  "displayName": "GEL SHIELD",
+  "description": "Forms a shield around the ship that absorbs incoming\ndamage but you lose <color=#B32AAC>GEL</color> every time this happens.\nthe greater the damage the more you loose.",
+  "level": 1
+ },
+ "c8da87d5-997b-4d1c-aefb-5242051a10d7": {
+  "category": "Module",
+  "assetName": "Module BoosterCore",
+  "displayName": "BOOSTER CORE",
+  "description": "Upgrades nearby modules by\nboosting their stats",
+  "level": 1
+ },
+ "c9bd5e9a-485f-407e-af8b-1f9082ac67da": {
+  "category": "Module",
+  "assetName": "Module Active Electron Circuit",
+  "displayName": "CIRCUIT",
+  "description": "Deploys a ring of electrical projectiles",
+  "level": 1
+ },
+ "d346d114-bf89-483f-8112-8da882cf3f45": {
+  "category": "Module",
+  "assetName": "Module Embedded Crawler",
+  "displayName": "Crawler",
+  "level": 1
+ },
+ "d376a260-d9d5-42da-b2fb-fbe20e79f625": {
+  "category": "Module",
+  "assetName": "Module Embedded Child",
+  "displayName": "",
+  "level": 1
+ },
+ "d4e6117e-75d9-490e-bbc6-f6a683b2fd48": {
+  "category": "Module",
+  "assetName": "Module Passive Add Purple",
+  "displayName": "GEL UP",
+  "description": "Increases maximum <color=#B32AAC>GEL</color> capacity",
+  "level": 1
+ },
+ "d9377cc7-3bc4-44c9-af1c-a0647f62e96c": {
+  "category": "Weapon",
+  "assetName": "Weapon Rocket Soldier Module",
+  "displayName": "Weapon Rocket Soldier",
+  "level": 1
+ },
+ "d939827f-4fea-4f61-a7aa-df3baeab6dde": {
+  "category": "Module",
+  "assetName": "Module Embedded Raven",
+  "displayName": "",
+  "level": 1
+ },
+ "d9b599dc-aa8d-41c0-a535-cf66d009c038": {
+  "category": "Module",
+  "assetName": "Module Weapon Tech Dandelion",
+  "displayName": "DANDELION",
+  "description": "Explodes on impact and releases\na cluster of secondary explosives",
+  "level": 3
+ },
+ "dc23d157-0048-48a2-abe2-6a28c2638e5c": {
+  "category": "Module",
+  "assetName": "Module Weapon Electron Rocket",
+  "displayName": "Electron Missile",
+  "description": "Zaps nearby enemies units when explodes",
+  "level": 1
+ },
+ "dd62435c-887d-4531-9f0f-51f8a6ed09e3": {
+  "category": "Module",
+  "assetName": "Module Embedded TurretSeeker",
+  "displayName": "",
+  "level": 1
+ },
+ "dd7c4547-8332-4167-b67d-7b5445b5d8a3": {
+  "category": "Module",
+  "assetName": "Module Passive Regen Tech",
+  "displayName": "TECH REGEN",
+  "description": "slowly regenerates <color=#5F46A7>TECH</color>",
+  "level": 1
+ },
+ "ddd33d91-d543-4ff9-8610-6827b135ea6a": {
+  "category": "Module",
+  "assetName": "Module Weapon Electron Zapper",
+  "displayName": "ZAPPER",
+  "description": "Orbs connected by electron arcs",
+  "level": 1
+ },
+ "df92003e-2ffa-467a-b8bc-0936515311ea": {
+  "category": "Module",
+  "assetName": "Module Aug Range",
+  "displayName": "+ RANGE",
+  "description": "Projectiles travel further",
+  "level": 1
+ },
+ "e00d2bc2-548b-4356-9241-438bea5979cd": {
+  "category": "Weapon_Fly_Alfa",
+  "assetName": "Weapon_Fly_Alfa Module",
+  "displayName": "Weapon_Fly_Alfa",
+  "level": 1
+ },
+ "e070f3d8-c876-440d-a66e-7e9d8fd8b6ca": {
+  "category": "Module",
+  "assetName": "Module PowerCore",
+  "displayName": "POWER CORE",
+  "description": "Supplies POWER to nearby SLOTS expanding\nthe usable area of module clusters",
+  "level": 1
+ },
+ "e0c6bc5b-9a68-4a11-a0cb-8fe5e7436672": {
+  "category": "Module",
+  "assetName": "Module Weapon White Blades",
+  "displayName": "BLADES",
+  "description": "Piercing projectiles",
+  "level": 1
+ },
+ "e1236293-1c9c-472d-ba4f-0246abf80e96": {
+  "category": "Module",
+  "assetName": "Module Weapon White Dart",
+  "displayName": "DART",
+  "description": "Small homing missiles that lock on to enemies",
+  "level": 1
+ },
+ "e2c3772b-9226-43b5-a9c7-6a6456aaeb24": {
+  "category": "Weapon_Raven",
+  "assetName": "Weapon_Raven Module",
+  "displayName": "Weapon_Raven",
+  "level": 1
+ },
+ "e581ddd9-034c-42c1-a501-fe435a52939f": {
+  "category": "Module",
+  "assetName": "Module Weapon Purple Flack",
+  "displayName": "FLACK",
+  "description": "Short range explosive shotgun",
+  "level": 2
+ },
+ "eba0f80e-74fd-45e9-9319-0777c72e0cd6": {
+  "category": "Weapon",
+  "assetName": "Weapon Rocket Soldier Tech",
+  "displayName": "Weapon Rocket Soldier",
+  "level": 1
+ },
+ "ed74decf-4507-46a1-a41b-9b17ca155d8e": {
+  "category": "Module",
+  "assetName": "Module Passive Add Health",
+  "displayName": "HEALTH UP",
+  "description": "Increases maximum <color=#B03B3B>HEALTH</color>",
+  "level": 1
+ },
+ "eecde5fa-0f5d-45d2-bf40-59ed14bded7d": {
+  "category": "Weapon_Turret_Worm",
+  "assetName": "Weapon_Turret_Worm Module",
+  "displayName": "Weapon_Turret_Worm",
+  "level": 1
+ },
+ "f404b176-bec9-486c-9733-65ce4842fdd7": {
+  "category": "Fly",
+  "assetName": "Fly Alfa Module",
+  "displayName": "",
+  "level": 1
+ },
+ "f7168902-c6c4-426c-9da7-f1bfdcb2c2d5": {
+  "category": "Weapon",
+  "assetName": "Weapon Rocket TurretSeeker Module",
+  "displayName": "Weapon Rocket TurretSeeker",
+  "level": 1
+ },
+ "f951a44b-0494-466a-8a03-56ee3351db1e": {
+  "category": "Module",
+  "assetName": "Module Embedded FlyZapper",
+  "displayName": "",
+  "level": 1
+ },
+ "f9fdd750-2a66-4be2-9e9f-b4137d1b6f58": {
+  "category": "Weapon_PhantomDrone",
+  "assetName": "Weapon_PhantomDrone Module",
+  "displayName": "Weapon_PhantomDrone",
+  "level": 1
+ },
+ "fa46fc36-1e37-4c91-a319-172285b9c3dd": {
+  "category": "Module",
+  "assetName": "Module Passive Regen Caps",
+  "displayName": "CAPS REGEN",
+  "description": "slowly regenerates <color=#B16623>CAPS</color>",
+  "level": 1
+ },
+ "fc6c2229-bdbb-4c68-a470-c293db508654": {
+  "category": "Module",
+  "assetName": "Module Weapon Electron Toroid",
+  "displayName": "TOROID",
+  "description": "Zaps nearby enemies until it runs out of charge",
+  "level": 1
+ },
+ "strange_ball": {
+  "category": "Strange",
+  "assetName": "Strange Ball",
+  "displayName": "Strange Ball"
+ }
+}

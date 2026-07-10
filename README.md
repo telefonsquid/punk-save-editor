@@ -1,42 +1,32 @@
-# sv
+# PUNK Save Editor
 
-Everything you need to build a Svelte project, powered by [`sv`](https://github.com/sveltejs/cli).
+A save file editor for [PUNK](https://store.steampowered.com/app/2707980/PUNK/), built with SvelteKit + Tauri. Runs as a website (Chromium-based browsers) and as a standalone desktop app from the same codebase.
 
-## Creating a project
+Currently editable: shared resources (money), run stats, vault ingredients, consumables, and module power levels. Originals are backed up as `*.bak` on first save.
 
-If you're seeing this, you've probably already done this step. Congrats!
+The save format (LZF compression + Odin Serializer binary) is documented in [docs/save-format.md](docs/save-format.md); the codec lives in `src/lib/save/`.
 
-```sh
-# create a new project
-npx sv create my-app
-```
-
-To recreate this project with the same configuration:
+## Development
 
 ```sh
-# recreate this project
-bun x sv@0.16.2 create --template minimal --types ts --add eslint tailwindcss="plugins:typography,forms" sveltekit-adapter="adapter:static" drizzle="database:sqlite+sqlite:libsql" mcp="ide:claude-code+setup:local" experimental="versions:kit+features:async,remoteFunctions" --install bun punk-save-editor
-```
-
-## Developing
-
-Once you've created a project and installed dependencies with `npm install` (or `pnpm install` or `yarn`), start a development server:
-
-```sh
-npm run dev
-
-# or start the server and open the app in a new browser tab
-npm run dev -- --open
+bun install
+bun run dev          # website at http://localhost:5173
+bun run tauri dev    # desktop app
 ```
 
 ## Building
 
-To create a production version of your app:
-
 ```sh
-npm run build
+bun run build        # static site into build/
+bun run tauri build  # desktop installers
 ```
 
-You can preview the production build with `npm run preview`.
+## Regenerating asset names
 
-> To deploy your app, you may need to install an [adapter](https://svelte.dev/docs/kit/adapters) for your target environment.
+`src/lib/save/asset-names.json` maps the GUIDs in save files to display names. After a game update, regenerate it from the installed game:
+
+```sh
+python -m venv venv
+venv/Scripts/pip install UnityPy TypeTreeGeneratorAPI
+venv/Scripts/python scripts/extract-asset-names.py "<path-to>/PUNK Playtest/Punk_Data"
+```
