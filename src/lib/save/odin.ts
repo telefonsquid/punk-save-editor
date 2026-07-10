@@ -111,7 +111,7 @@ export type OdinValue =
 	| boolean
 	| null;
 
-const META_KEYS = new Set(['$type', '$id', '$types', '$ref', '$primitiveArray']);
+export const META_KEYS = new Set(['$type', '$id', '$types', '$ref', '$primitiveArray']);
 const ANON_KEY = /^\$\d+$/;
 
 export function isNode(v: OdinValue): v is OdinNode {

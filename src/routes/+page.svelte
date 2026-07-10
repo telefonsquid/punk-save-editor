@@ -1,4 +1,6 @@
 <script lang="ts">
+	import { SvelteSet } from 'svelte/reactivity';
+	import RawTree from '$lib/components/RawTree.svelte';
 	import { canPickFolder, pickSaveDir } from '$lib/save/io';
 	import {
 		addConsumable,
@@ -11,17 +13,22 @@
 		getResources,
 		ingredientCounts,
 		ingredientIds,
+		loadFile,
 		loadSlot,
+		ODIN_FILES,
+		OPAQUE_FILES,
 		runStats,
 		saveSlot,
 		type SaveSlot
 	} from '$lib/save/slot';
 
 	let slot = $state<SaveSlot | null>(null);
-	let dirty = $state(false);
+	const dirtyFiles = new SvelteSet<string>();
+	const dirty = $derived(dirtyFiles.size > 0);
 	let busy = $state(false);
 	let error = $state<string | null>(null);
 	let statusMessage = $state<string | null>(null);
+	let rawLoading = $state<string | null>(null);
 
 	const stats = $derived(slot ? runStats(slot.rundata) : null);
 	const resources = $derived(slot ? getResources(slot.rundata) : []);
@@ -48,7 +55,7 @@
 			if (!dir) return;
 			busy = true;
 			slot = await loadSlot(dir);
-			dirty = false;
+			dirtyFiles.clear();
 			statusMessage = `Loaded "${dir.name}"`;
 		} catch (err) {
 			error = (err as Error).message;
@@ -58,18 +65,37 @@
 	}
 
 	async function save() {
-		if (!slot) return;
+		if (!slot || dirtyFiles.size === 0) return;
 		error = null;
 		statusMessage = null;
 		busy = true;
 		try {
-			await saveSlot(slot);
-			dirty = false;
-			statusMessage = 'Saved. Originals were backed up as vault.bak / rundata.bak.';
+			const names = [...dirtyFiles];
+			await saveSlot(slot, names);
+			dirtyFiles.clear();
+			statusMessage = `Saved ${names.join(', ')}. Originals were backed up as *.bak.`;
 		} catch (err) {
 			error = (err as Error).message;
 		} finally {
 			busy = false;
+		}
+	}
+
+	function markCurated() {
+		dirtyFiles.add('vault');
+		dirtyFiles.add('rundata');
+	}
+
+	async function openRawFile(name: string, opened: boolean) {
+		if (!opened || !slot || slot.files[name] || rawLoading) return;
+		rawLoading = name;
+		error = null;
+		try {
+			await loadFile(slot, name);
+		} catch (err) {
+			error = (err as Error).message;
+		} finally {
+			rawLoading = null;
 		}
 	}
 
@@ -122,7 +148,7 @@
 		</button>
 	</header>
 
-	<main class="mx-auto max-w-5xl space-y-6 px-6 py-6" oninput={() => (dirty = true)}>
+	<main class="mx-auto max-w-5xl space-y-6 px-6 py-6">
 		{#if error}
 			<p class="rounded border border-red-700 bg-red-950 px-4 py-2 text-sm text-red-300">
 				{error}
@@ -154,7 +180,7 @@
 				</p>
 			</div>
 		{:else}
-			<div class="grid gap-6 md:grid-cols-2">
+			<div class="grid gap-6 md:grid-cols-2" oninput={markCurated}>
 				<section class="rounded-lg border border-zinc-800 bg-zinc-900/50 p-5">
 					<h2 class="mb-4 text-sm font-bold tracking-widest text-fuchsia-400 uppercase">
 						Resources
@@ -244,7 +270,7 @@
 									if (slot && ingredientToAdd) {
 										addIngredient(slot.vault, ingredientToAdd, 1);
 										ingredientToAdd = '';
-										dirty = true;
+										markCurated();
 									}
 								}}
 							>
@@ -294,7 +320,7 @@
 									if (slot && consumableToAdd) {
 										addConsumable(slot.vault, consumableToAdd, 1);
 										consumableToAdd = '';
-										dirty = true;
+										markCurated();
 									}
 								}}
 							>
@@ -350,6 +376,53 @@
 					{/if}
 				</section>
 			</div>
+
+			<details class="rounded-lg border border-amber-900/60 bg-zinc-900/50">
+				<summary
+					class="cursor-pointer px-5 py-4 text-sm font-bold tracking-widest text-amber-400 uppercase select-none"
+				>
+					Modify at your own risk
+				</summary>
+				<div class="space-y-3 px-5 pb-5">
+					<p class="text-sm text-zinc-400">
+						Every value the save files contain, unfiltered. The game does not validate any of this:
+						nonsensical values can corrupt the run or make it fail to load (originals are backed up
+						as <code class="text-xs">*.bak</code> on first save). Changes here are saved per file
+						with the Save button above.
+					</p>
+					{#each ODIN_FILES as name (name)}
+						<details
+							class="rounded border border-zinc-800 bg-zinc-950/50 px-3 py-2"
+							ontoggle={(e) => openRawFile(name, e.currentTarget.open)}
+						>
+							<summary class="cursor-pointer text-sm font-semibold text-zinc-300 select-none">
+								{name}
+								{#if dirtyFiles.has(name)}
+									<span class="text-xs text-amber-400">· modified</span>
+								{:else if !slot.files[name]}
+									<span class="text-xs text-zinc-600">· click to load</span>
+								{/if}
+							</summary>
+							{#if slot.files[name]}
+								<div class="mt-2">
+									<RawTree
+										container={slot.files}
+										key={name}
+										label="root"
+										ondirty={() => dirtyFiles.add(name)}
+									/>
+								</div>
+							{:else if rawLoading === name}
+								<p class="mt-2 text-sm text-zinc-500">Decoding…</p>
+							{/if}
+						</details>
+					{/each}
+					<p class="text-xs text-zinc-600">
+						Not editable here: {OPAQUE_FILES.join(', ')} (raw terrain data and PNG images rather
+						than serialized objects).
+					</p>
+				</div>
+			</details>
 		{/if}
 	</main>
 </div>

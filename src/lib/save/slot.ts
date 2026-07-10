@@ -15,7 +15,23 @@ export interface SaveSlot {
 	levelinfo: OdinNode;
 	vault: OdinNode;
 	rundata: OdinNode;
+	/** Every loaded Odin file by name, including the three above. */
+	files: Record<string, OdinNode>;
 }
+
+/** All Odin-serialized files a save folder can contain. `world` is a raw
+ * struct dump and `fow`/`map`/`scanner` are PNGs, so they are not listed. */
+export const ODIN_FILES = [
+	'levelinfo',
+	'vault',
+	'rundata',
+	'entities',
+	'graph',
+	'mapicons'
+] as const;
+
+/** Save files that exist but cannot be edited as an Odin tree. */
+export const OPAQUE_FILES = ['world', 'fow', 'map', 'scanner'] as const;
 
 export interface AssetInfo {
 	category: string;
@@ -54,24 +70,33 @@ export async function loadSlot(dir: SaveDir): Promise<SaveSlot> {
 			throw new Error(`Not a PUNK save folder: missing '${required}' file`);
 		}
 	}
-	return {
-		dir,
+	const files: Record<string, OdinNode> = {
 		levelinfo: await loadOdin(dir, 'levelinfo'),
 		vault: await loadOdin(dir, 'vault'),
 		rundata: await loadOdin(dir, 'rundata')
 	};
+	return { dir, levelinfo: files.levelinfo, vault: files.vault, rundata: files.rundata, files };
 }
 
-/** Writes vault and rundata back, backing up originals to *.bak once. */
-export async function saveSlot(slot: SaveSlot): Promise<void> {
-	for (const [file, tree] of [
-		['vault', slot.vault],
-		['rundata', slot.rundata]
-	] as const) {
-		if (!(await slot.dir.exists(`${file}.bak`))) {
-			await slot.dir.write(`${file}.bak`, await slot.dir.read(file));
+/** Loads (and caches) one of the optional ODIN_FILES, e.g. 'entities'. */
+export async function loadFile(slot: SaveSlot, name: string): Promise<OdinNode> {
+	if (slot.files[name]) return slot.files[name];
+	if (!(await slot.dir.exists(name))) throw new Error(`Save has no '${name}' file`);
+	return (slot.files[name] = await loadOdin(slot.dir, name));
+}
+
+/** Writes the given loaded files back, backing up each original to *.bak once. */
+export async function saveSlot(
+	slot: SaveSlot,
+	names: readonly string[] = ['vault', 'rundata']
+): Promise<void> {
+	for (const name of names) {
+		const tree = slot.files[name];
+		if (!tree) throw new Error(`'${name}' is not loaded`);
+		if (!(await slot.dir.exists(`${name}.bak`))) {
+			await slot.dir.write(`${name}.bak`, await slot.dir.read(name));
 		}
-		await slot.dir.write(file, lzfCompress(OdinBinaryWriter.write(tree)));
+		await slot.dir.write(name, lzfCompress(OdinBinaryWriter.write(tree)));
 	}
 }
 
