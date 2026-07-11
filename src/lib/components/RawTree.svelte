@@ -14,7 +14,12 @@
 
 	let { container, key, label, ondirty }: Props = $props();
 
-	const value = $derived((container as Record<string | number, unknown>)[key] as OdinValue);
+	// The containers are raw (non-reactive) save-tree objects; keep a local
+	// reactive mirror of the value so scalar edits update the UI, while set()
+	// writes through to the actual tree the serializer reads. container/key
+	// never change for a given tree node, so capturing them once is intended.
+	// svelte-ignore state_referenced_locally
+	let value = $state.raw((container as Record<string | number, unknown>)[key] as OdinValue);
 
 	const kind = $derived.by(() => {
 		if (value === null) return 'null';
@@ -45,6 +50,7 @@
 
 	function set(v: unknown) {
 		(container as Record<string | number, unknown>)[key] = v;
+		value = v as OdinValue;
 		ondirty();
 	}
 

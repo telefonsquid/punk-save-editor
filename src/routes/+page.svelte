@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { SvelteSet } from 'svelte/reactivity';
 	import RawTree from '$lib/components/RawTree.svelte';
-	import { canPickFolder, pickSaveDir } from '$lib/save/io';
+	import { canPickFolder, pickSaveDir, type SaveDir } from '$lib/save/io';
 	import {
 		addConsumable,
 		addIngredient,
@@ -22,20 +22,40 @@
 		type SaveSlot
 	} from '$lib/save/slot';
 
-	let slot = $state<SaveSlot | null>(null);
+	// The decoded save trees are huge plain-object graphs and deliberately NOT
+	// deep-reactive: a deep $state proxy stores mutations in its own signal
+	// storage and never writes them back to the underlying objects, so the
+	// serializer would save stale data. The UI mutates the raw trees directly
+	// and bumps `version` to refresh the derived views below.
+	let slot = $state.raw<SaveSlot | null>(null);
+	let version = $state(0);
 	const dirtyFiles = new SvelteSet<string>();
+	const loadedFiles = new SvelteSet<string>();
 	const dirty = $derived(dirtyFiles.size > 0);
 	let busy = $state(false);
 	let error = $state<string | null>(null);
 	let statusMessage = $state<string | null>(null);
 	let rawLoading = $state<string | null>(null);
 
-	const stats = $derived(slot ? runStats(slot.rundata) : null);
-	const resources = $derived(slot ? getResources(slot.rundata) : []);
-	const ingIds = $derived(slot ? ingredientIds(slot.vault) : []);
-	const ingCounts = $derived(slot ? ingredientCounts(slot.vault) : []);
-	const consumables = $derived(slot ? getConsumables(slot.vault) : []);
-	const modules = $derived(slot ? getModules(slot.vault) : []);
+	const views = $derived.by(() => {
+		if (version < 0 || !slot) return null; // reading `version` makes edits invalidate these
+		return {
+			stats: runStats(slot.rundata),
+			runTime: formatDuration(runStats(slot.rundata).totalRunTime),
+			resources: [...getResources(slot.rundata)],
+			ingIds: [...ingredientIds(slot.vault)],
+			ingCounts: ingredientCounts(slot.vault),
+			consumables: [...getConsumables(slot.vault)],
+			modules: [...getModules(slot.vault)]
+		};
+	});
+	const stats = $derived(views?.stats ?? null);
+	const runTime = $derived(views?.runTime ?? '');
+	const resources = $derived(views?.resources ?? []);
+	const ingIds = $derived(views?.ingIds ?? []);
+	const ingCounts = $derived(views?.ingCounts ?? []);
+	const consumables = $derived(views?.consumables ?? []);
+	const modules = $derived(views?.modules ?? []);
 
 	const allIngredients = assetsByCategory('Ingredient');
 	const allConsumables = assetsByCategory('Consumable');
@@ -51,11 +71,14 @@
 		error = null;
 		statusMessage = null;
 		try {
-			const dir = await pickSaveDir();
+			const dir = (import.meta.env.DEV && devTestDir()) || (await pickSaveDir());
 			if (!dir) return;
 			busy = true;
 			slot = await loadSlot(dir);
 			dirtyFiles.clear();
+			loadedFiles.clear();
+			for (const name of Object.keys(slot.files)) loadedFiles.add(name);
+			version++;
 			statusMessage = `Loaded "${dir.name}"`;
 		} catch (err) {
 			error = (err as Error).message;
@@ -86,12 +109,33 @@
 		dirtyFiles.add('rundata');
 	}
 
+	function refreshViews() {
+		version++;
+	}
+
+	/** Dev-only escape hatch so automated tests can inject an in-memory SaveDir. */
+	function devTestDir(): SaveDir | null {
+		return (window as unknown as { __punkTestDir?: SaveDir }).__punkTestDir ?? null;
+	}
+
+	/** oninput handler that writes a finite number straight into the raw tree. */
+	function numInput(target: object, prop: string | number) {
+		return (e: Event) => {
+			const el = e.currentTarget as HTMLInputElement;
+			const n = Number(el.value);
+			if (el.value !== '' && Number.isFinite(n)) {
+				(target as Record<string | number, unknown>)[prop] = n;
+			}
+		};
+	}
+
 	async function openRawFile(name: string, opened: boolean) {
-		if (!opened || !slot || slot.files[name] || rawLoading) return;
+		if (!opened || !slot || loadedFiles.has(name) || rawLoading) return;
 		rawLoading = name;
 		error = null;
 		try {
 			await loadFile(slot, name);
+			loadedFiles.add(name);
 		} catch (err) {
 			error = (err as Error).message;
 		} finally {
@@ -180,7 +224,7 @@
 				</p>
 			</div>
 		{:else}
-			<div class="grid gap-6 md:grid-cols-2" oninput={markCurated}>
+			<div class="grid gap-6 md:grid-cols-2" oninput={markCurated} onchange={refreshViews}>
 				<section class="rounded-lg border border-zinc-800 bg-zinc-900/50 p-5">
 					<h2 class="mb-4 text-sm font-bold tracking-widest text-fuchsia-400 uppercase">
 						Resources
@@ -191,7 +235,8 @@
 							<input
 								type="number"
 								class="w-32 rounded border-zinc-700 bg-zinc-900 text-right"
-								bind:value={pair.$v}
+								value={pair.$v}
+								oninput={numInput(pair, '$v')}
 							/>
 						</label>
 					{:else}
@@ -209,7 +254,8 @@
 							<input
 								type="number"
 								class="w-32 rounded border-zinc-700 bg-zinc-900 text-right"
-								bind:value={stats.killedEnemyCount}
+								value={stats.killedEnemyCount}
+								oninput={numInput(stats, 'killedEnemyCount')}
 							/>
 						</label>
 						<label class="mb-2 flex items-center justify-between gap-4">
@@ -217,19 +263,21 @@
 							<input
 								type="number"
 								class="w-32 rounded border-zinc-700 bg-zinc-900 text-right"
-								bind:value={stats.killedBossCount}
+								value={stats.killedBossCount}
+								oninput={numInput(stats, 'killedBossCount')}
 							/>
 						</label>
 						<label class="mb-2 flex items-center justify-between gap-4">
 							<span>
 								Run time
-								<span class="text-zinc-500">({formatDuration(stats.totalRunTime)})</span>
+								<span class="text-zinc-500">({runTime})</span>
 							</span>
 							<input
 								type="number"
 								step="any"
 								class="w-32 rounded border-zinc-700 bg-zinc-900 text-right"
-								bind:value={stats.totalRunTime}
+								value={stats.totalRunTime}
+								oninput={numInput(stats, 'totalRunTime')}
 							/>
 						</label>
 					{/if}
@@ -246,7 +294,8 @@
 								type="number"
 								min="0"
 								class="w-32 rounded border-zinc-700 bg-zinc-900 text-right"
-								bind:value={ingCounts[i]}
+								value={ingCounts[i]}
+								oninput={numInput(ingCounts, i)}
 							/>
 						</label>
 					{:else}
@@ -271,6 +320,7 @@
 										addIngredient(slot.vault, ingredientToAdd, 1);
 										ingredientToAdd = '';
 										markCurated();
+										refreshViews();
 									}
 								}}
 							>
@@ -296,7 +346,8 @@
 								type="number"
 								min="0"
 								class="w-32 rounded border-zinc-700 bg-zinc-900 text-right"
-								bind:value={c.amount}
+								value={c.amount}
+								oninput={numInput(c, 'amount')}
 							/>
 						</label>
 					{:else}
@@ -321,6 +372,7 @@
 										addConsumable(slot.vault, consumableToAdd, 1);
 										consumableToAdd = '';
 										markCurated();
+										refreshViews();
 									}
 								}}
 							>
@@ -366,7 +418,8 @@
 												type="number"
 												min="0"
 												class="w-24 rounded border-zinc-700 bg-zinc-900 text-right"
-												bind:value={m.powerLevel}
+												value={m.powerLevel}
+												oninput={numInput(m, 'powerLevel')}
 											/>
 										</td>
 									</tr>
@@ -399,17 +452,20 @@
 								{name}
 								{#if dirtyFiles.has(name)}
 									<span class="text-xs text-amber-400">· modified</span>
-								{:else if !slot.files[name]}
+								{:else if !loadedFiles.has(name)}
 									<span class="text-xs text-zinc-600">· click to load</span>
 								{/if}
 							</summary>
-							{#if slot.files[name]}
+							{#if loadedFiles.has(name)}
 								<div class="mt-2">
 									<RawTree
 										container={slot.files}
 										key={name}
 										label="root"
-										ondirty={() => dirtyFiles.add(name)}
+										ondirty={() => {
+											dirtyFiles.add(name);
+											refreshViews();
+										}}
 									/>
 								</div>
 							{:else if rawLoading === name}
