@@ -98,6 +98,9 @@ These JSON files under `src/lib/save/` are extracted from the installed game and
 - `resource-icons.json` — resource id → data-URI PNG of its HUD icon. `python
   scripts/extract-resource-icons.py [Punk_Data]`. Rendered by `components/ResourceIcon.svelte`
   (pixelated). Extracted game art *is* committed here — see the copyright note in game-code.md.
+- `item-icons.json` — ingredient/consumable/module id → data-URI PNG of its item art (long edge
+  capped to 64 px). `python scripts/extract-item-icons.py [Punk_Data]`. Rendered by
+  `components/ItemIcon.svelte` (pixelated).
 
 All need the Python venv with UnityPy (see game-code.md).
 

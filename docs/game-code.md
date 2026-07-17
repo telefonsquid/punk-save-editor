@@ -164,3 +164,15 @@ Each `Resource` ScriptableObject has a `Sprite icon` (the little HUD glyph for h
 writes an `id → data-URI PNG` map to `src/lib/save/resource-icons.json`. They're tiny pixel-art (~8–13
 px), so inlining them as base64 keeps the editor self-contained (the `ResourceIcon.svelte` component
 renders them with `image-rendering: pixelated`). Regenerate on game update.
+
+### Item icons
+
+Ingredients, consumables and modules carry their own item art: `Ingredient.iconBig`/`iconSmall`,
+`Consumable.icon`, `ModuleData.icon` (all normal Unity `Sprite` fields, so they're in the type tree
+even for the Odin-serialized `ModuleData`). `scripts/extract-item-icons.py` loads the whole folder
+into one env (cross-file sprite PPtrs again), discriminates the three asset kinds by their fields
+(`moduleType` → module, `maxCount`+`icon` → consumable, `iconBig`/`iconSmall` → ingredient), and
+writes an `id → data-URI PNG` map to `src/lib/save/item-icons.json`. This art is larger than the HUD
+glyphs, so each sprite's long edge is capped to 64 px (nearest-neighbour) to keep the JSON checkin-
+sized. Rendered by `components/ItemIcon.svelte` (pixelated); assets with no sprite assigned (a few
+modules, e.g. `Weapon_Fly`) are simply absent from the map. Regenerate on game update.

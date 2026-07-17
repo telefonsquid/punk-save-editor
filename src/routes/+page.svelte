@@ -2,6 +2,7 @@
 	import { SvelteSet } from 'svelte/reactivity';
 	import RawTree from '$lib/components/RawTree.svelte';
 	import ResourceIcon from '$lib/components/ResourceIcon.svelte';
+	import ItemIcon from '$lib/components/ItemIcon.svelte';
 	import { isDownloadDir, pickSaveDir, supportsInPlaceSave, type SaveDir } from '$lib/save/io';
 	import {
 		addConsumable,
@@ -83,12 +84,19 @@
 
 	const allIngredients = assetsByCategory('Ingredient');
 	const allConsumables = assetsByCategory('Consumable');
-	const addableIngredients = $derived(allIngredients.filter(({ id }) => !ingIds.includes(id)));
 	const addableConsumables = $derived(
 		allConsumables.filter(({ id }) => !consumables.some((c) => c.consumableId === id))
 	);
 
-	let ingredientToAdd = $state('');
+	// The vault only stores ingredients the player actually owns, but the UI
+	// shows every ingredient (owned or not) so counts can be raised from zero.
+	// This maps id -> owned count for the display; missing ids read as 0.
+	const ingCountById = $derived.by(() => {
+		const m: Record<string, number> = {};
+		ingIds.forEach((id, i) => (m[id] = ingCounts[i]));
+		return m;
+	});
+
 	let consumableToAdd = $state('');
 
 	async function open() {
@@ -165,6 +173,21 @@
 			if (el.value !== '' && Number.isFinite(n)) {
 				(target as Record<string | number, unknown>)[prop] = n;
 			}
+		};
+	}
+
+	/** oninput for an ingredient row: writes the count into the vault by id,
+	 * inserting the ingredient if the player didn't own it yet (0 stays 0). */
+	function ingredientInput(id: string) {
+		return (e: Event) => {
+			if (!slot) return;
+			const el = e.currentTarget as HTMLInputElement;
+			const n = Number(el.value);
+			if (el.value === '' || !Number.isFinite(n)) return;
+			const v = Math.max(0, Math.round(n));
+			if (v !== n) el.value = String(v);
+			addIngredient(slot.vault, id, v);
+			dirtyFiles.add('vault');
 		};
 	}
 
@@ -368,8 +391,23 @@
 								oninput={numInput(pair, '$v')}
 							/>
 						</label>
-					{:else}
-						<p class="text-sm text-zinc-500">No resources in this save.</p>
+					{/each}
+					<!-- Every ingredient is listed, even ones the player doesn't own yet
+					     (shown as 0); raising a count from zero inserts it into the vault. -->
+					{#each allIngredients as { id } (id)}
+						<label class="mb-2 flex items-center justify-between gap-4">
+							<span class="flex items-center gap-2">
+								<ItemIcon {id} class="h-6 w-6 shrink-0" />
+								{displayName(id)}
+							</span>
+							<input
+								type="number"
+								min="0"
+								class="w-32 rounded border-zinc-700 bg-zinc-900 text-right"
+								value={ingCountById[id] ?? 0}
+								oninput={ingredientInput(id)}
+							/>
+						</label>
 					{/each}
 				</section>
 
@@ -414,58 +452,12 @@
 
 				<section class="rounded-lg border border-zinc-800 bg-zinc-900/50 p-5">
 					<h2 class="mb-4 text-sm font-bold tracking-widest text-fuchsia-400 uppercase">
-						Vault · Ingredients
-					</h2>
-					{#each ingIds as id, i (id)}
-						<label class="mb-2 flex items-center justify-between gap-4">
-							<span>{displayName(id)}</span>
-							<input
-								type="number"
-								min="0"
-								class="w-32 rounded border-zinc-700 bg-zinc-900 text-right"
-								value={ingCounts[i]}
-								oninput={numInput(ingCounts, i)}
-							/>
-						</label>
-					{:else}
-						<p class="text-sm text-zinc-500">Vault has no ingredients.</p>
-					{/each}
-					{#if addableIngredients.length > 0}
-						<div class="mt-4 flex gap-2 border-t border-zinc-800 pt-3">
-							<select
-								class="flex-1 rounded border-zinc-700 bg-zinc-900 text-sm"
-								bind:value={ingredientToAdd}
-							>
-								<option value="" disabled>Add ingredient…</option>
-								{#each addableIngredients as { id } (id)}
-									<option value={id}>{displayName(id)}</option>
-								{/each}
-							</select>
-							<button
-								class="rounded border border-zinc-700 px-3 text-sm hover:border-lime-400 hover:text-lime-400 disabled:opacity-40"
-								disabled={!ingredientToAdd}
-								onclick={() => {
-									if (slot && ingredientToAdd) {
-										addIngredient(slot.vault, ingredientToAdd, 1);
-										ingredientToAdd = '';
-										markCurated();
-										refreshViews();
-									}
-								}}
-							>
-								Add
-							</button>
-						</div>
-					{/if}
-				</section>
-
-				<section class="rounded-lg border border-zinc-800 bg-zinc-900/50 p-5">
-					<h2 class="mb-4 text-sm font-bold tracking-widest text-fuchsia-400 uppercase">
 						Vault · Consumables
 					</h2>
 					{#each consumables as c, i (i)}
 						<label class="mb-2 flex items-center justify-between gap-4">
-							<span>
+							<span class="flex items-center gap-2">
+								<ItemIcon id={c.consumableId} class="h-6 w-6 shrink-0" />
 								{displayName(c.consumableId)}
 								{#if c.consumableId && assets[c.consumableId]?.maxCount}
 									<span class="text-xs text-zinc-500">max {assets[c.consumableId].maxCount}</span>
@@ -531,12 +523,17 @@
 								{#each modules as m, i (i)}
 									<tr class="border-b border-zinc-800/50">
 										<td class="py-2 pr-4">
-											{displayName(m.moduleDataId)}
-											{#if m.moduleDataId && assets[m.moduleDataId]?.description}
-												<div class="max-w-md truncate text-xs text-zinc-500">
-													{assets[m.moduleDataId].description}
+											<div class="flex items-center gap-2">
+												<ItemIcon id={m.moduleDataId} class="h-7 w-7 shrink-0" />
+												<div>
+													{displayName(m.moduleDataId)}
+													{#if m.moduleDataId && assets[m.moduleDataId]?.description}
+														<div class="max-w-md truncate text-xs text-zinc-500">
+															{assets[m.moduleDataId].description}
+														</div>
+													{/if}
 												</div>
-											{/if}
+											</div>
 										</td>
 										<td class="py-2 pr-4 text-zinc-400">
 											{m.moduleDataId ? (assets[m.moduleDataId]?.level ?? '—') : '—'}
