@@ -5,9 +5,10 @@ source or modding API. This is the field guide for getting back into the game's 
 you need a fact the save files alone don't reveal (what a field means, how a value is computed, what
 an id refers to).
 
-> **Copyright:** the decompiled C# and extracted assets are the game's intellectual property. Keep
-> them in the scratchpad, never commit them to this repo. Only *derived facts* (field names, formats,
-> generated lookup tables) live here.
+> **Copyright:** this is all the game's intellectual property. The **decompiled C#** stays in the
+> scratchpad — never commit it. **Extracted assets** (resource icons, sprites, and the like) *may* be
+> committed as generated data produced by a checked-in script (see below), alongside the derived
+> lookup tables (field names, formats, id→name maps).
 
 ## Where the game is
 
@@ -154,3 +155,12 @@ Module/consumable/ingredient/resource ids in saves are Unity asset ids (GUIDs or
 strings). `scripts/extract-asset-names.py` dumps every identifiable asset's `id → {category,
 assetName, displayName, …}` into `src/lib/save/asset-names.json`, surfaced through
 `slot.ts:displayName()`. Regenerate it (and `module-caps.json`) whenever the game updates.
+
+### Resource icons
+
+Each `Resource` ScriptableObject has a `Sprite icon` (the little HUD glyph for health/fuel/etc.).
+`scripts/extract-resource-icons.py` loads the whole `Punk_Data` folder into one UnityPy environment
+(so the cross-file sprite `PPtr` resolves), reads each icon to a PIL image via `sprite.image`, and
+writes an `id → data-URI PNG` map to `src/lib/save/resource-icons.json`. They're tiny pixel-art (~8–13
+px), so inlining them as base64 keeps the editor self-contained (the `ResourceIcon.svelte` component
+renders them with `image-rendering: pixelated`). Regenerate on game update.

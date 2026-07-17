@@ -89,14 +89,17 @@ node; the `state_referenced_locally` autofixer warning is intentionally silenced
 
 ## Generated data (regenerate on game update)
 
-Both JSON files under `src/lib/save/` are extracted from the installed game and checked in:
+These JSON files under `src/lib/save/` are extracted from the installed game and checked in:
 
 - `asset-names.json` — id → display name/category. `python scripts/extract-asset-names.py [Punk_Data]`.
 - `module-caps.json` — module GUID → capacity effects + slot level deltas. Two steps:
   `python scripts/extract-module-caps.py [Punk_Data]` then `bun scripts/extract-module-caps.ts`. The
   intermediate `scripts/module-effects-raw.json` is gitignored.
+- `resource-icons.json` — resource id → data-URI PNG of its HUD icon. `python
+  scripts/extract-resource-icons.py [Punk_Data]`. Rendered by `components/ResourceIcon.svelte`
+  (pixelated). Extracted game art *is* committed here — see the copyright note in game-code.md.
 
-Both need the Python venv with UnityPy (see game-code.md).
+All need the Python venv with UnityPy (see game-code.md).
 
 ## In-browser end-to-end testing
 

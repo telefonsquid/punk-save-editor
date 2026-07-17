@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { SvelteSet } from 'svelte/reactivity';
 	import RawTree from '$lib/components/RawTree.svelte';
+	import ResourceIcon from '$lib/components/ResourceIcon.svelte';
 	import { isDownloadDir, pickSaveDir, supportsInPlaceSave, type SaveDir } from '$lib/save/io';
 	import {
 		addConsumable,
@@ -101,6 +102,14 @@
 			dirtyFiles.clear();
 			loadedFiles.clear();
 			for (const name of Object.keys(slot.files)) loadedFiles.add(name);
+			// Ship resources live in the heavier `entities` file; load it up front
+			// so they show without a click. A save without it is still openable.
+			try {
+				await loadFile(slot, 'entities');
+				loadedFiles.add('entities');
+			} catch {
+				/* no entities file — the ship section falls back to its notice */
+			}
 			version++;
 			statusMessage = `Loaded "${dir.name}"`;
 		} catch (err) {
@@ -284,6 +293,63 @@
 				</p>
 			</div>
 		{:else}
+			<section
+				class="rounded-lg border border-zinc-800 bg-zinc-900/50 p-5"
+				onchange={refreshViews}
+			>
+				<h2 class="mb-4 text-sm font-bold tracking-widest text-fuchsia-400 uppercase">
+					Ship resources
+				</h2>
+				{#if !shipView}
+					<p class="mb-3 text-sm text-zinc-400">
+						Current fuel, health, ammo etc. are stored with the ship in the
+						<code class="text-xs">entities</code> file, which isn't present in this save.
+					</p>
+					<button
+						class="rounded border border-zinc-700 px-3 py-1.5 text-sm font-semibold hover:border-lime-400 hover:text-lime-400 disabled:opacity-40"
+						disabled={rawLoading !== null}
+						onclick={() => openRawFile('entities', true)}
+					>
+						{rawLoading === 'entities' ? 'Decoding…' : 'Retry loading ship resources'}
+					</button>
+				{:else if shipView.rows.length === 0}
+					<p class="text-sm text-zinc-500">No ship with resource tanks found in this save.</p>
+				{:else}
+					<div class="grid gap-x-8 md:grid-cols-2">
+						{#each shipView.rows as row (row.id)}
+							{@const outOfRange = row.value < 0 || (row.max !== undefined && row.value > row.max)}
+							<label class="mb-2 flex items-center justify-between gap-4">
+								<span class="flex items-center gap-2">
+									<ResourceIcon id={row.id} class="h-5 w-5 shrink-0" />
+									{shipResourceLabel(row.id)}
+									{#if outOfRange}
+										<span class="text-xs text-red-400">out of range — may crash the game</span>
+									{/if}
+								</span>
+								<span class="flex items-baseline gap-2">
+									<input
+										type="number"
+										step="any"
+										min="0"
+										max={row.max !== undefined ? row.max : undefined}
+										class="w-32 rounded border-zinc-700 bg-zinc-900 text-right"
+										value={row.value}
+										oninput={shipResInput(row.pair, row.max)}
+									/>
+									<span class="w-14 text-sm text-zinc-500">
+										/ {row.max !== undefined ? fmtCap(row.max) : '?'}
+									</span>
+								</span>
+							</label>
+						{/each}
+					</div>
+					<p class="mt-2 text-xs text-zinc-600">
+						Max values are derived from the modules installed on the ship grid and update as you edit
+						them; edits are clamped to the max.
+					</p>
+				{/if}
+			</section>
+
 			<div class="grid gap-6 md:grid-cols-2" oninput={markCurated} onchange={refreshViews}>
 				<section class="rounded-lg border border-zinc-800 bg-zinc-900/50 p-5">
 					<h2 class="mb-4 text-sm font-bold tracking-widest text-fuchsia-400 uppercase">
@@ -291,7 +357,10 @@
 					</h2>
 					{#each resources as pair (pair.$k)}
 						<label class="mb-2 flex items-center justify-between gap-4">
-							<span>{displayName(pair.$k)}</span>
+							<span class="flex items-center gap-2">
+								<ResourceIcon id={pair.$k} class="h-5 w-5 shrink-0" />
+								{displayName(pair.$k)}
+							</span>
 							<input
 								type="number"
 								class="w-32 rounded border-zinc-700 bg-zinc-900 text-right"
@@ -489,62 +558,6 @@
 					{/if}
 				</section>
 			</div>
-
-			<section
-				class="rounded-lg border border-zinc-800 bg-zinc-900/50 p-5"
-				onchange={refreshViews}
-			>
-				<h2 class="mb-4 text-sm font-bold tracking-widest text-fuchsia-400 uppercase">
-					Ship resources
-				</h2>
-				{#if !shipView}
-					<p class="mb-3 text-sm text-zinc-400">
-						Current fuel, health, ammo etc. are stored with the ship in the
-						<code class="text-xs">entities</code> file.
-					</p>
-					<button
-						class="rounded border border-zinc-700 px-3 py-1.5 text-sm font-semibold hover:border-lime-400 hover:text-lime-400 disabled:opacity-40"
-						disabled={rawLoading !== null}
-						onclick={() => openRawFile('entities', true)}
-					>
-						{rawLoading === 'entities' ? 'Decoding…' : 'Load ship resources'}
-					</button>
-				{:else if shipView.rows.length === 0}
-					<p class="text-sm text-zinc-500">No ship with resource tanks found in this save.</p>
-				{:else}
-					<div class="grid gap-x-8 md:grid-cols-2">
-						{#each shipView.rows as row (row.id)}
-							{@const outOfRange = row.value < 0 || (row.max !== undefined && row.value > row.max)}
-							<label class="mb-2 flex items-center justify-between gap-4">
-								<span>
-									{shipResourceLabel(row.id)}
-									{#if outOfRange}
-										<span class="text-xs text-red-400">out of range — may crash the game</span>
-									{/if}
-								</span>
-								<span class="flex items-baseline gap-2">
-									<input
-										type="number"
-										step="any"
-										min="0"
-										max={row.max !== undefined ? row.max : undefined}
-										class="w-32 rounded border-zinc-700 bg-zinc-900 text-right"
-										value={row.value}
-										oninput={shipResInput(row.pair, row.max)}
-									/>
-									<span class="w-14 text-sm text-zinc-500">
-										/ {row.max !== undefined ? fmtCap(row.max) : '?'}
-									</span>
-								</span>
-							</label>
-						{/each}
-					</div>
-					<p class="mt-2 text-xs text-zinc-600">
-						Max values are derived from the modules installed on the ship grid; edits are clamped
-						to them.
-					</p>
-				{/if}
-			</section>
 
 			<details class="rounded-lg border border-amber-900/60 bg-zinc-900/50">
 				<summary
