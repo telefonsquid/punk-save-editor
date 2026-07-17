@@ -27,3 +27,6 @@ vite.config.ts.timestamp-*
 # Tauri
 /src-tauri/target
 /src-tauri/gen
+
+# Intermediate asset dump (extract-module-caps.py -> extract-module-caps.ts)
+/scripts/module-effects-raw.json

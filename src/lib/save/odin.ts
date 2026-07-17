@@ -100,9 +100,16 @@ export interface OdinPrimitiveArray {
 	data: Uint8Array;
 }
 
+/** Reference to a Unity object outside the stream (asset files only, never
+ * seen in save files — the writer does not support it). */
+export interface OdinExternalRef {
+	$ext: number | string;
+}
+
 export type OdinValue =
 	| OdinNode
 	| OdinRef
+	| OdinExternalRef
 	| OdinPrimitiveArray
 	| OdinValue[]
 	| string
@@ -111,7 +118,7 @@ export type OdinValue =
 	| boolean
 	| null;
 
-export const META_KEYS = new Set(['$type', '$id', '$types', '$ref', '$primitiveArray']);
+export const META_KEYS = new Set(['$type', '$id', '$types', '$ref', '$ext', '$primitiveArray']);
 const ANON_KEY = /^\$\d+$/;
 
 export function isNode(v: OdinValue): v is OdinNode {
@@ -120,6 +127,7 @@ export function isNode(v: OdinValue): v is OdinNode {
 		v !== null &&
 		!Array.isArray(v) &&
 		!('$ref' in v) &&
+		!('$ext' in v) &&
 		!('$primitiveArray' in v)
 	);
 }
@@ -156,6 +164,24 @@ export class OdinBinaryReader {
 			throw new Error(`odin: ${buf.length - reader.pos} trailing bytes after root value`);
 		}
 		return value;
+	}
+
+	/**
+	 * Parses a stream of named members (Odin's `DeserializeUnityObject` layout,
+	 * used inside Unity assets' serializationData) into one node. Save files
+	 * instead have a single root — use {@link parse} for those.
+	 */
+	static parseMembers(buf: Uint8Array): OdinNode {
+		const reader = new OdinBinaryReader(buf);
+		const node: OdinNode = { $type: null };
+		let anon = 0;
+		while (reader.pos < buf.length) {
+			const { name, value, end } = reader.readEntry();
+			if (end === 'stream') break;
+			if (end) throw new Error(`odin: unexpected ${end} end at ${reader.pos}`);
+			node[name ?? `$${anon++}`] = value;
+		}
+		return node;
 	}
 
 	private u8(): number {
@@ -332,6 +358,15 @@ export class OdinBinaryReader {
 			case EntryType.NamedInternalReference:
 			case EntryType.UnnamedInternalReference:
 				return { name, value: { $ref: this.i32() } };
+			case EntryType.NamedExternalReferenceByIndex:
+			case EntryType.UnnamedExternalReferenceByIndex:
+				return { name, value: { $ext: this.i32() } };
+			case EntryType.NamedExternalReferenceByGuid:
+			case EntryType.UnnamedExternalReferenceByGuid:
+				return { name, value: { $ext: this.guid() } };
+			case EntryType.NamedExternalReferenceByString:
+			case EntryType.UnnamedExternalReferenceByString:
+				return { name, value: { $ext: this.str() } };
 			case EntryType.NamedSByte:
 			case EntryType.UnnamedSByte:
 				return scalar((this.u8() << 24) >> 24, EntryType.UnnamedSByte);

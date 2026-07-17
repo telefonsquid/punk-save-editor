@@ -4,9 +4,10 @@ import { sveltekit } from '@sveltejs/kit/vite';
 import { defineConfig } from 'vite';
 
 export default defineConfig({
-	// Tauri expects the dev server on a fixed port (see src-tauri/tauri.conf.json devUrl)
+	// Tauri expects the dev server on a fixed port (see src-tauri/tauri.conf.json devUrl);
+	// PORT overrides it so a second dev server can run beside the default one.
 	server: {
-		port: 5173,
+		port: Number(process.env.PORT) || 5173,
 		strictPort: true
 	},
 	plugins: [

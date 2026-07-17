@@ -42,9 +42,42 @@ Key encodings:
 - **Struct node** (value types): same but without `refId`.
 - **Array**: `StartOfArray (0x06)`, `length: i64`, elements as entries, `EndOfArray (0x07)`.
 - **Primitive array** (blittable element types, e.g. `bool[]`): `PrimitiveArray (0x08)`, `length: i32`, `bytesPerElement: i32`, then raw little-endian data.
+- **External reference** (`$ext` in our reader): a `PPtr` to a Unity object *outside* the stream. Three flavors — by index (`i32`), by GUID (16 bytes), by string. **Never appears in save files** (saves are self-contained), only in asset `serializationData` (see [game-code.md](game-code.md)). The writer does not support them.
 - Primitives are little-endian; booleans are 1 byte; GUIDs are 16 bytes in .NET `Guid` memory layout (mixed-endian).
 
 All numeric/scalar fields observed in the saves parse cleanly with the reader in `src/lib/save/odin.ts` (verified byte-exact on all six Odin files of a real save).
+
+### `OdinBinaryReader` API
+
+- `OdinBinaryReader.parse(bytes)` — one root value (what `SerializationUtility.SerializeValue` writes). Use for **save files**.
+- `OdinBinaryReader.parseMembers(bytes)` — a bare sequence of named members with no enclosing node, wrapped into one `OdinNode`. Use for **asset `serializationData`** (Odin's `DeserializeUnityObject` layout).
+- `OdinBinaryWriter.write(node)` — re-serializes; `write(parse(x))` is byte-identical on every save file.
+
+### Node shape in the decoded tree
+
+Our reader produces plain objects. Meta keys (all in `META_KEYS`): `$type` (assembly-qualified name or `null`), `$id` (ref-node id), `$types` (per-field `EntryType` metadata, needed to re-serialize scalars losslessly), `$ref` (internal reference → an `$id`), `$ext` (external reference), `$primitiveArray`. Anonymous members (unnamed array-element fields, `List<T>`/`Dictionary` internals) get keys `$0`, `$1`, … in emission order.
+
+- **`List<T>`** serializes as a node whose single anonymous member `$0` is the backing array. Access via `listItems(node)`.
+- **`Dictionary<K,V>`** serializes as a node with a `comparer` member and an anonymous pairs array of `{$k, $v}` nodes. **The pairs array is not always `$1`** — its index shifts by one depending on whether `comparer` was emitted inline or as a back-reference (`$ref`). Always find it as "the first array-valued non-meta member": use `dictPairs(node)` in `slot.ts`, never a hard-coded `$0`/`$1`.
+
+## `entities` file (`List<EntityData.Memento>`)
+
+Root is a `List<EntityData.Memento>` (so `root.$0` is the array; ~5500 entries in a mid-game save). Each `EntityData.Memento` node:
+
+| Field | Meaning |
+| ----- | ------- |
+| `entityId` | asset/prefab id string, e.g. `"Ship"`, `"Unit_FlyZapper"`, `"Enemy_Fly_Laser"` |
+| `instanceId` | runtime int id (referenced by `Unit` memento `ownerId`) |
+| `position` / `rotation` | `Vector3` / `Quaternion` struct nodes (`$0..$3`) |
+| `isInitialized`, `isUnloadable` | bools |
+| `componentMementos` | `List<IMemento>` — one memento per savable component on the entity |
+
+Component memento `$type`s seen: `Unit+Data+Memento` (resource tanks), `ModuleGridOwner+Data+Memento` (the module grid), `AIAgent+Data+Memento`.
+
+**The player ship** is the single entity with `entityId === "Ship"`. Its components:
+
+- `Unit+Data+Memento.resourceValues` — `Dictionary<string, float>` of **current** resource values keyed by resource id (`"Resource Health"`, `"Resource Fuel"`, `"Resource White"`, `"Resource Purple"`, `"Resource Caps"`, `"Resource Electron"`, `"Resource Tech"`). **Max capacity is not stored** — the game recomputes it from installed modules on load (see [game-code.md](game-code.md) § Resources & tanks). A negative value here crashes the game on load (see the known-bug note in the repo memory / `scratchpad/fix-negative-resource.ts`).
+- `ModuleGridOwner+Data+Memento.gridMemento` (`ModuleGrid+Memento`) — `slotTypes: Dictionary<Vector2Int, string>` and `modules: Dictionary<Vector2Int, Module.Memento>`. Grid positions are absolute `Vector2Int` (`$0`,`$1`); the ship grid is centered at `(50, 50)`. Each `Module.Memento`: `moduleDataId` (GUID), N/E/S/W connection bools, `powerCore`/`levelModificationField` (`ModuleEffectField`: `fieldData` bool `$primitiveArray` + `width`/`height`), `powerLevel: int`.
 
 ### Interesting data for an editor
 

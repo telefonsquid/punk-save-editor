@@ -19,6 +19,9 @@
 		OPAQUE_FILES,
 		runStats,
 		saveSlot,
+		shipResourceCaps,
+		shipResources,
+		type ResourcePair,
 		type SaveSlot
 	} from '$lib/save/slot';
 
@@ -49,6 +52,24 @@
 			modules: [...getModules(slot.vault)]
 		};
 	});
+	// Ship resources live in the (lazily loaded) entities file; max values are
+	// derived from the installed grid modules, so recompute both on every edit.
+	// The rows snapshot $k/$v into fresh objects: the pairs themselves keep
+	// their identity across recomputes, so expressions reading them directly
+	// would not re-render inside the keyed each.
+	const shipView = $derived.by(() => {
+		if (version < 0 || !slot || !loadedFiles.has('entities')) return null;
+		const entities = slot.files.entities;
+		const caps = shipResourceCaps(entities);
+		const rows = shipResources(entities).map((pair) => ({
+			pair,
+			id: pair.$k,
+			value: pair.$v,
+			max: caps.get(pair.$k)
+		}));
+		return { rows };
+	});
+
 	const stats = $derived(views?.stats ?? null);
 	const runTime = $derived(views?.runTime ?? '');
 	const resources = $derived(views?.resources ?? []);
@@ -127,6 +148,29 @@
 				(target as Record<string | number, unknown>)[prop] = n;
 			}
 		};
+	}
+
+	/** Like numInput for a ship resource, clamped to [0, max]. Negative values
+	 * are known to crash the game on load, over-max gets clamped in play. */
+	function shipResInput(pair: ResourcePair, max: number | undefined) {
+		return (e: Event) => {
+			const el = e.currentTarget as HTMLInputElement;
+			const n = Number(el.value);
+			if (el.value === '' || !Number.isFinite(n)) return;
+			let v = Math.max(0, n);
+			if (max !== undefined) v = Math.min(v, max);
+			if (v !== n) el.value = String(v);
+			pair.$v = v;
+			dirtyFiles.add('entities');
+		};
+	}
+
+	function shipResourceLabel(id: string): string {
+		return id.replace(/^Resource /, '');
+	}
+
+	function fmtCap(v: number): string {
+		return Number.isInteger(v) ? String(v) : v.toFixed(1);
 	}
 
 	async function openRawFile(name: string, opened: boolean) {
@@ -429,6 +473,62 @@
 					{/if}
 				</section>
 			</div>
+
+			<section
+				class="rounded-lg border border-zinc-800 bg-zinc-900/50 p-5"
+				onchange={refreshViews}
+			>
+				<h2 class="mb-4 text-sm font-bold tracking-widest text-fuchsia-400 uppercase">
+					Ship resources
+				</h2>
+				{#if !shipView}
+					<p class="mb-3 text-sm text-zinc-400">
+						Current fuel, health, ammo etc. are stored with the ship in the
+						<code class="text-xs">entities</code> file.
+					</p>
+					<button
+						class="rounded border border-zinc-700 px-3 py-1.5 text-sm font-semibold hover:border-lime-400 hover:text-lime-400 disabled:opacity-40"
+						disabled={rawLoading !== null}
+						onclick={() => openRawFile('entities', true)}
+					>
+						{rawLoading === 'entities' ? 'Decoding…' : 'Load ship resources'}
+					</button>
+				{:else if shipView.rows.length === 0}
+					<p class="text-sm text-zinc-500">No ship with resource tanks found in this save.</p>
+				{:else}
+					<div class="grid gap-x-8 md:grid-cols-2">
+						{#each shipView.rows as row (row.id)}
+							{@const outOfRange = row.value < 0 || (row.max !== undefined && row.value > row.max)}
+							<label class="mb-2 flex items-center justify-between gap-4">
+								<span>
+									{shipResourceLabel(row.id)}
+									{#if outOfRange}
+										<span class="text-xs text-red-400">out of range — may crash the game</span>
+									{/if}
+								</span>
+								<span class="flex items-baseline gap-2">
+									<input
+										type="number"
+										step="any"
+										min="0"
+										max={row.max !== undefined ? row.max : undefined}
+										class="w-32 rounded border-zinc-700 bg-zinc-900 text-right"
+										value={row.value}
+										oninput={shipResInput(row.pair, row.max)}
+									/>
+									<span class="w-14 text-sm text-zinc-500">
+										/ {row.max !== undefined ? fmtCap(row.max) : '?'}
+									</span>
+								</span>
+							</label>
+						{/each}
+					</div>
+					<p class="mt-2 text-xs text-zinc-600">
+						Max values are derived from the modules installed on the ship grid; edits are clamped
+						to them.
+					</p>
+				{/if}
+			</section>
 
 			<details class="rounded-lg border border-amber-900/60 bg-zinc-900/50">
 				<summary
