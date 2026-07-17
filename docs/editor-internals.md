@@ -21,7 +21,8 @@ hard project rule.
 
 ```
 io.ts        SaveDir  { name, read(name), write(name,bytes), exists(name) }
-             pickSaveDir() -> Tauri plugin-fs OR web File System Access API
+             pickSaveDir() -> Tauri fs | Chromium FSA | Firefox/Safari upload+download
+zip.ts       makeZip(entries)  (store-only ZIP for the download fallback)
    |
 lzf.ts       lzfDecompress / lzfCompress  (CLZF2 port; see save-format.md)
 odin.ts      OdinBinaryReader.parse / .parseMembers, OdinBinaryWriter.write, EntryType, isNode
@@ -33,7 +34,19 @@ components/RawTree.svelte   recursive "modify at your own risk" tree editor
 ```
 
 `SaveDir` abstracts *where* files come from, so the same code runs against a Tauri folder, a browser
-folder handle, or an in-memory test dir. `loadSlot` eagerly loads `levelinfo`/`vault`/`rundata`;
+folder handle, or an in-memory test dir. `pickSaveDir()` picks a backend by capability:
+
+- **Tauri** — `@tauri-apps/plugin-fs`, in place.
+- **Chromium** — File System Access API (`showDirectoryPicker`), in place.
+- **Firefox/Safari** — neither can write a real folder, so `pickWebUpload()` returns a
+  `DownloadSaveDir`: the user picks the folder via a directory `<input>`, every file is read into an
+  in-memory `Map`, writes accumulate there, and `exportChanges()` hands back a zip (changed files +
+  their `.bak` originals) built by `zip.ts` (a from-scratch store-only ZIP writer — save files are
+  already LZF-compressed). `supportsInPlaceSave()` gates the UI; `isDownloadDir()` switches the Save
+  button to "Download changes". The save codec, accessors, and `saveSlot` are unchanged — only the
+  `SaveDir` differs.
+
+`loadSlot` eagerly loads `levelinfo`/`vault`/`rundata`;
 `loadFile(slot, name)` lazily loads and caches the heavier optional files (`entities`, `graph`,
 `mapicons`) into `slot.files`. `saveSlot(slot, names)` writes only the named files, backing up each
 original to `*.bak` **once** before the first overwrite.

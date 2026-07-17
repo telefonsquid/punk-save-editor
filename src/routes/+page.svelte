@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { SvelteSet } from 'svelte/reactivity';
 	import RawTree from '$lib/components/RawTree.svelte';
-	import { canPickFolder, pickSaveDir, type SaveDir } from '$lib/save/io';
+	import { isDownloadDir, pickSaveDir, supportsInPlaceSave, type SaveDir } from '$lib/save/io';
 	import {
 		addConsumable,
 		addIngredient,
@@ -35,6 +35,8 @@
 	const dirtyFiles = new SvelteSet<string>();
 	const loadedFiles = new SvelteSet<string>();
 	const dirty = $derived(dirtyFiles.size > 0);
+	// Firefox/Safari can't write in place; saving downloads a zip instead.
+	const downloadMode = $derived(!!slot && isDownloadDir(slot.dir));
 	let busy = $state(false);
 	let error = $state<string | null>(null);
 	let statusMessage = $state<string | null>(null);
@@ -117,7 +119,14 @@
 			const names = [...dirtyFiles];
 			await saveSlot(slot, names);
 			dirtyFiles.clear();
-			statusMessage = `Saved ${names.join(', ')}. Originals were backed up as *.bak.`;
+			if (isDownloadDir(slot.dir)) {
+				slot.dir.exportChanges();
+				statusMessage =
+					`Downloaded "${slot.dir.name}-edited.zip" (${names.join(', ')} + *.bak backups). ` +
+					`Extract it into your save folder to apply the changes.`;
+			} else {
+				statusMessage = `Saved ${names.join(', ')}. Originals were backed up as *.bak.`;
+			}
 		} catch (err) {
 			error = (err as Error).message;
 		} finally {
@@ -232,7 +241,7 @@
 			onclick={save}
 			disabled={!slot || !dirty || busy}
 		>
-			Save changes
+			{downloadMode ? 'Download changes' : 'Save changes'}
 		</button>
 	</header>
 
@@ -247,6 +256,12 @@
 				{statusMessage}
 			</p>
 		{/if}
+		{#if downloadMode}
+			<p class="rounded border border-amber-800 bg-amber-950/50 px-4 py-2 text-xs text-amber-300">
+				This browser edits in memory. <strong>Download changes</strong> gives you a zip — extract it
+				into your save folder to apply it (it includes <code>.bak</code> backups). Close the game first.
+			</p>
+		{/if}
 
 		{#if !slot}
 			<div class="rounded-lg border border-dashed border-zinc-700 p-12 text-center text-zinc-400">
@@ -257,10 +272,11 @@
 						>%USERPROFILE%\AppData\LocalLow\DefaultCompany\Punk\saves\save001</code
 					>
 				</p>
-				{#if !canPickFolder()}
+				{#if !supportsInPlaceSave()}
 					<p class="mt-4 text-sm text-amber-400">
-						This browser can't open local folders — use a Chromium-based browser (Chrome, Edge) or
-						the desktop app.
+						This browser can't write files directly. You'll pick your save folder, edit, then
+						download a zip of the changes to extract back into it. For in-place saving, use a
+						Chromium browser (Chrome, Edge) or the desktop app.
 					</p>
 				{/if}
 				<p class="mt-4 text-xs text-zinc-500">
