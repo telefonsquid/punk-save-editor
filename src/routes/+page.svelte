@@ -19,6 +19,7 @@
 		loadSlot,
 		ODIN_FILES,
 		OPAQUE_FILES,
+		reorderConsumables,
 		runStats,
 		saveSlot,
 		shipResourceCaps,
@@ -82,11 +83,23 @@
 	const consumables = $derived(views?.consumables ?? []);
 	const modules = $derived(views?.modules ?? []);
 
-	const allIngredients = assetsByCategory('Ingredient');
+	// Ingredients that exist in the game data but are unused in the current build
+	// (never obtainable in a run) — hidden from the editor to avoid confusion,
+	// but kept in the asset data so they reappear if a future build uses them.
+	const DISABLED_INGREDIENTS = new Set(['Bond', 'Ex', 'Face']);
+	const allIngredients = assetsByCategory('Ingredient').filter(
+		({ id }) => !DISABLED_INGREDIENTS.has(id)
+	);
 	const allConsumables = assetsByCategory('Consumable');
+
+	// Only the filled slots are shown; empty ("(none)") slots are surfaced as
+	// add buttons instead. Reordering acts on this filtered list.
+	const filledConsumables = $derived(consumables.filter((c) => c.consumableId));
 	const addableConsumables = $derived(
 		allConsumables.filter(({ id }) => !consumables.some((c) => c.consumableId === id))
 	);
+	// Index (into filledConsumables) of the row currently being dragged.
+	let dragIndex = $state<number | null>(null);
 
 	// The vault only stores ingredients the player actually owns, but the UI
 	// shows every ingredient (owned or not) so counts can be raised from zero.
@@ -97,7 +110,15 @@
 		return m;
 	});
 
-	let consumableToAdd = $state('');
+	/** Finish a consumable drag: move the dragged row to slot `to`. */
+	function dropConsumable(to: number) {
+		if (slot && dragIndex !== null && dragIndex !== to) {
+			reorderConsumables(slot.vault, dragIndex, to);
+			markCurated();
+			refreshViews();
+		}
+		dragIndex = null;
+	}
 
 	async function open() {
 		error = null;
@@ -454,51 +475,63 @@
 					<h2 class="mb-4 text-sm font-bold tracking-widest text-fuchsia-400 uppercase">
 						Vault · Consumables
 					</h2>
-					{#each consumables as c, i (i)}
-						<label class="mb-2 flex items-center justify-between gap-4">
-							<span class="flex items-center gap-2">
-								<ItemIcon id={c.consumableId} class="h-6 w-6 shrink-0" />
-								{displayName(c.consumableId)}
-								{#if c.consumableId && assets[c.consumableId]?.maxCount}
-									<span class="text-xs text-zinc-500">max {assets[c.consumableId].maxCount}</span>
-								{/if}
-							</span>
-							<input
-								type="number"
-								min="0"
-								class="w-32 rounded border-zinc-700 bg-zinc-900 text-right"
-								value={c.amount}
-								oninput={numInput(c, 'amount')}
-							/>
-						</label>
-					{:else}
-						<p class="text-sm text-zinc-500">Vault has no consumables.</p>
-					{/each}
+					<ul class="list-none">
+						{#each filledConsumables as c, i (c.consumableId)}
+							<!-- Drag a row onto another to reorder the inventory slots. -->
+							<li
+								role="listitem"
+								class="mb-2 flex items-center justify-between gap-4 rounded {dragIndex === i
+									? 'opacity-40'
+									: ''}"
+								ondragover={(e) => e.preventDefault()}
+								ondrop={() => dropConsumable(i)}
+							>
+								<span class="flex items-center gap-2">
+									<button
+										type="button"
+										class="cursor-move px-1 text-zinc-600 select-none hover:text-zinc-300"
+										draggable="true"
+										aria-label="Drag to reorder {displayName(c.consumableId)}"
+										ondragstart={() => (dragIndex = i)}
+										ondragend={() => (dragIndex = null)}
+									>
+										⠿
+									</button>
+									<ItemIcon id={c.consumableId} class="h-6 w-6 shrink-0" />
+									{displayName(c.consumableId)}
+									{#if c.consumableId && assets[c.consumableId]?.maxCount}
+										<span class="text-xs text-zinc-500">max {assets[c.consumableId].maxCount}</span>
+									{/if}
+								</span>
+								<input
+									type="number"
+									min="0"
+									class="w-32 rounded border-zinc-700 bg-zinc-900 text-right"
+									value={c.amount}
+									oninput={numInput(c, 'amount')}
+								/>
+							</li>
+						{:else}
+							<p class="text-sm text-zinc-500">Vault has no consumables.</p>
+						{/each}
+					</ul>
 					{#if addableConsumables.length > 0}
-						<div class="mt-4 flex gap-2 border-t border-zinc-800 pt-3">
-							<select
-								class="flex-1 rounded border-zinc-700 bg-zinc-900 text-sm"
-								bind:value={consumableToAdd}
-							>
-								<option value="" disabled>Add consumable…</option>
-								{#each addableConsumables as { id } (id)}
-									<option value={id}>{displayName(id)}</option>
-								{/each}
-							</select>
-							<button
-								class="rounded border border-zinc-700 px-3 text-sm hover:border-lime-400 hover:text-lime-400 disabled:opacity-40"
-								disabled={!consumableToAdd}
-								onclick={() => {
-									if (slot && consumableToAdd) {
-										addConsumable(slot.vault, consumableToAdd, 1);
-										consumableToAdd = '';
-										markCurated();
-										refreshViews();
-									}
-								}}
-							>
-								Add
-							</button>
+						<div class="mt-4 flex flex-wrap gap-2 border-t border-zinc-800 pt-3">
+							{#each addableConsumables as { id } (id)}
+								<button
+									class="flex items-center gap-1.5 rounded border border-zinc-700 px-2.5 py-1 text-sm hover:border-lime-400 hover:text-lime-400"
+									onclick={() => {
+										if (slot) {
+											addConsumable(slot.vault, id, 1);
+											markCurated();
+											refreshViews();
+										}
+									}}
+								>
+									<ItemIcon {id} class="h-5 w-5 shrink-0" />
+									Add {displayName(id)}
+								</button>
+							{/each}
 						</div>
 					{/if}
 				</section>

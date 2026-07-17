@@ -177,9 +177,19 @@ export function getConsumables(vault: OdinNode): ConsumableView[] {
 const CONSUMABLE_MENTO_TYPE = 'Vault+Memento+ConsumableMento, Punk.Main';
 
 export function addConsumable(vault: OdinNode, id: string, amount: number): void {
-	const existing = getConsumables(vault).find((c) => c.consumableId === id);
+	const slots = getConsumables(vault);
+	const existing = slots.find((c) => c.consumableId === id);
 	if (existing) {
 		existing.amount = amount;
+		return;
+	}
+	// The vault keeps a fixed run of consumable slots (8), empty ones having a
+	// null id. Mirror the game's Vault.Add: fill the first empty slot rather than
+	// growing the list, so the restored inventory keeps its slot count.
+	const empty = slots.find((c) => c.consumableId == null);
+	if (empty) {
+		empty.consumableId = id;
+		empty.amount = amount;
 		return;
 	}
 	const node: OdinNode = {
@@ -189,6 +199,20 @@ export function addConsumable(vault: OdinNode, id: string, amount: number): void
 		$types: { amount: { e: EntryType.UnnamedInt } }
 	};
 	listItems(vault.consumables as OdinValue).push(node);
+}
+
+/** Reorders the vault's non-empty consumables. `from`/`to` index into the
+ * filled slots only (as shown in the UI); empty slots are kept trailing so the
+ * fixed slot count the game restores from the memento is preserved. */
+export function reorderConsumables(vault: OdinNode, from: number, to: number): void {
+	const arr = listItems(vault.consumables as OdinValue);
+	const filled = arr.filter((c) => (c as unknown as ConsumableView).consumableId != null);
+	const empty = arr.filter((c) => (c as unknown as ConsumableView).consumableId == null);
+	if (from < 0 || from >= filled.length || to < 0 || to >= filled.length) return;
+	const [moved] = filled.splice(from, 1);
+	filled.splice(to, 0, moved);
+	arr.length = 0;
+	arr.push(...filled, ...empty);
 }
 
 // ---------------------------------------------------------------------------

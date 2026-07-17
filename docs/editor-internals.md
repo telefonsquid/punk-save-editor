@@ -86,6 +86,11 @@ node; the `state_referenced_locally` autofixer warning is intentionally silenced
   a `$ref` (see save-format.md).
 - Ship resources: `shipResources(entities)` (current `{$k,$v}` pairs, mutate in place) and
   `shipResourceCaps(entities)` (`Map<resourceId, max>` from the grid — see game-code.md).
+- Consumables: the vault holds a **fixed run of 8 slots**, empty ones carrying a `null` id (the game's
+  `Vault()` seeds 8 and `RestoreFromMemento` rebuilds one slot per memento entry). `addConsumable`
+  mirrors `Vault.Add` — it fills the first empty slot rather than growing the list. `reorderConsumables`
+  reorders the filled slots and keeps the empties trailing, so the slot count is preserved. The UI hides
+  the empty slots and offers an add button per absent consumable type instead.
 
 ## Generated data (regenerate on game update)
 
