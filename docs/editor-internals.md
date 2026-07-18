@@ -267,8 +267,12 @@ toggles / power cores / remove, the picker passes an Add button.
   edge length of the *whole* grid (`1fr` tracks, not a fixed cell), so a 3×3 and a 7×7 both render
   56×56 and a row of shapes stays a row of equal tiles — the odd sizes read as coarser or finer
   rather than smaller or larger. The "add custom shape" button is a `size-14` dashed tile for the
-  same reason, and slots in as the last item. Grids are square-cornered: a rounded diagram would
-  disagree with the square cells inside it.
+  same reason, and slots in as the last item — square-cornered with a 2px dashed edge, matching the
+  `ring-2` a selected shape carries, so it sits in the row as a tile rather than beside it. Grids are
+  square-cornered: a rounded diagram would disagree with the square cells inside it. Both badge
+  glyphs (the delete cross, the add plus) are drawn SVG rather than `×`/`+` characters — a glyph sits
+  on the text baseline and carries the font's side bearings, so at these sizes it can be neither
+  centred nor scaled against the box it fills.
 - **Stat lines** (`$lib/game/module-stats.ts`) are the "+2 max Fuel" / "0.2 per shot" numbers. They
   come from two places: `WeaponData` for weapon modules (damage, fire rate, per-shot cost) and the
   decoded `ModuleEffect` list for everything else. Effects are evaluated at the module's *own* asset

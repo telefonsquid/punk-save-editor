@@ -306,7 +306,11 @@ Ingredients, consumables and modules carry their own item art: `Ingredient.iconB
 even for the Odin-serialized `ModuleData`). `scripts/extract-item-icons.py` loads the whole folder
 into one env (cross-file sprite PPtrs again), discriminates the three asset kinds by their fields
 (`moduleType` → module, `maxCount`+`icon` → consumable, `iconBig`/`iconSmall` → ingredient), and
-writes an `id → data-URI PNG` map to `src/lib/game/item-icons.json`. This art is larger than the HUD
-glyphs, so each sprite's long edge is capped to 64 px (nearest-neighbour) to keep the JSON checkin-
-sized. Rendered by `components/ItemIcon.svelte` (pixelated); assets with no sprite assigned (a few
+writes an `id → data-URI PNG` map to `src/lib/game/item-icons.json`. Sprites are inlined at their
+**native pixel size** — never resampled, because the editor draws every icon at an exact integer
+multiple of its natural size to keep the pixel grid intact. For ingredients that means `iconSmall`
+in preference to `iconBig`: the editor lists ingredients directly under the ship resources, and the
+big sprites range from 15 px to 29 px square, which made one list read as several sizes of thing.
+The small ones are a uniform 17 px. Rendered by `components/ItemIcon.svelte` (pixelated); assets
+with no sprite assigned (a few
 modules, e.g. `Weapon_Fly`) are simply absent from the map. Regenerate on game update.

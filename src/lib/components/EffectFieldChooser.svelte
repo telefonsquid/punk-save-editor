@@ -113,7 +113,7 @@
 			{@render userMark()}
 			<button
 				type="button"
-				class="absolute -top-[0.4375rem] -right-[0.4375rem] flex size-3.5 items-center justify-center rounded-sm border border-zinc-700 bg-zinc-900 text-zinc-500 hover:border-red-500 hover:text-red-400"
+				class="absolute -top-[0.375rem] -right-[0.375rem] flex size-3 items-center justify-center border border-zinc-700 bg-zinc-900 text-zinc-500 hover:border-red-500 hover:text-red-400"
 				title="Delete this custom shape"
 				aria-label="Delete this custom shape"
 				onclick={() => customFields.remove(key)}
@@ -121,23 +121,29 @@
 				<!-- A drawn cross rather than the × glyph: a glyph sits on the text
 				     baseline, which leaves it a pixel or two high in a box this small
 				     however the line box is centred. -->
-				<svg class="size-2" viewBox="0 0 8 8" fill="none" stroke="currentColor" stroke-width="1.5">
+				<svg class="size-1.5" viewBox="0 0 8 8" fill="none" stroke="currentColor" stroke-width="1.75">
 					<path d="M1 1l6 6M7 1l-6 6" />
 				</svg>
 			</button>
 		</span>
 	{/each}
 
-	<!-- Same footprint as a shape so it reads as the next tile in the row; the
+	<!-- Same footprint, square corners and 2px edge as a selected shape's ring, so
+	     it reads as the next tile in the row rather than a control beside it; the
 	     modal does the explaining. -->
 	<button
 		type="button"
-		class="inline-flex size-14 items-center justify-center rounded-sm border border-dashed border-zinc-700 text-lg leading-none text-zinc-600 hover:border-amber-500 hover:text-amber-400"
+		class="inline-flex size-14 items-center justify-center border-2 border-dashed border-zinc-700 text-zinc-600 hover:border-amber-500 hover:text-amber-400"
 		title="Add custom shape"
 		aria-label="Add custom shape"
 		onclick={() => (adding = true)}
 	>
-		+
+		<!-- Drawn, like the delete cross: a `+` glyph sits on the text baseline and
+		     carries the font's own side bearings, so it can be neither centred nor
+		     sized against the tile it fills. -->
+		<svg class="size-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+			<path d="M12 5v14M5 12h14" />
+		</svg>
 	</button>
 </div>
 

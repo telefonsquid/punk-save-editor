@@ -34,7 +34,10 @@ def pick_icon(a: punklib.Asset):
     if a.is_module or a.cls in punklib.CONSUMABLE_CLASSES:
         return a.d.get("icon")
     if a.cls == "Ingredient":
-        return a.d.get("iconBig") or a.d.get("iconSmall")
+        # `iconSmall`, not `iconBig`: ingredients are listed next to resources in
+        # the editor, and the big sprite is roughly twice the height of a
+        # resource glyph, which made the same list read as two sizes of thing.
+        return a.d.get("iconSmall") or a.d.get("iconBig")
     return None
 
 
