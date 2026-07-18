@@ -86,7 +86,7 @@
 			<EffectFieldGrid
 				field={canvas}
 				{color}
-				cell="1.75rem"
+				size="14rem"
 				label="Paint the area of effect"
 				oncell={toggleCell}
 			/>

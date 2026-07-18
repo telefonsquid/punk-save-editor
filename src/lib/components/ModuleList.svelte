@@ -151,10 +151,6 @@
 											label="{kind.label} the highlighted slots around it"
 										/>
 									{/each}
-									<span class="text-[0.65rem] tracking-wider text-zinc-500">
-										{kind.label}
-										{#if kind.shapes.length > 1}(one of {kind.shapes.length}){/if}
-									</span>
 								</div>
 							{/if}
 						{/each}

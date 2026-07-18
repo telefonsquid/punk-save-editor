@@ -4,12 +4,12 @@
 	import { effectFieldChoices, effectFieldKey, type EffectField } from '$lib/game/data';
 	import { customFields } from '$lib/editor/custom-fields.svelte';
 
-	// Picks the shape a power core or booster projects. The options come in two
-	// bands: every orientation the game itself could roll (see
-	// `effectFieldChoices`), and the shapes the player has painted. The split is
-	// the point — staying in the first band keeps a module indistinguishable from
-	// a legitimately rolled one, and the second says plainly that you have left
-	// that behind.
+	// Picks the shape a power core or booster projects: every orientation the
+	// game itself could roll (see `effectFieldChoices`), then the shapes the
+	// player has painted, then the button to paint another. Hand-painted ones sit
+	// in the same row as the rest but carry a marker, because the distinction
+	// that matters — this one the game could not have rolled — belongs on the
+	// shape itself, not on a heading a long way from it.
 	let {
 		candidates,
 		value,
@@ -22,7 +22,7 @@
 		/** The shape in effect now, or null for a module that has none yet. */
 		value: EffectField | null;
 		color?: string | null;
-		/** What this field does, e.g. "POWERS" or "BOOSTS". */
+		/** What this field does, e.g. "POWERS" or "BOOSTS". Used for labelling only. */
 		label: string;
 		onchange: (field: EffectField) => void;
 	} = $props();
@@ -34,7 +34,7 @@
 	const custom = $derived(customFields.list);
 
 	/**
-	 * A shape the module already has that is in neither band — a field painted on
+	 * A shape the module already has that is in neither list — a field painted on
 	 * another machine, or one whose saved entry has since been deleted. Without
 	 * this there would be no way back to it after clicking away.
 	 */
@@ -45,66 +45,85 @@
 	});
 </script>
 
-<div class="mt-1.5">
-	<div class="flex flex-wrap items-center gap-2">
-		{#each rolled as shape (effectFieldKey(shape))}
-			<EffectFieldGrid
-				field={shape}
-				{color}
-				selected={effectFieldKey(shape) === currentKey}
-				label="{label} this pattern of slots"
-				onselect={() => onchange(shape)}
-			/>
-		{/each}
-		{#if orphan}
+<!-- Straddles the top border of its shape, where it can't be mistaken for a
+     painted cell. The tooltip lives on the wrapper so hovering anywhere on the
+     shape explains the mark. -->
+{#snippet userMark()}
+	<svg
+		class="pointer-events-none absolute -top-1.5 left-1/2 size-3 -translate-x-1/2 rounded-full bg-zinc-900 p-px text-amber-500"
+		viewBox="0 0 16 16"
+		fill="currentColor"
+		aria-hidden="true"
+	>
+		<circle cx="8" cy="5" r="3" />
+		<path d="M2 15a6 6 0 0 1 12 0z" />
+	</svg>
+{/snippet}
+
+<div class="mt-1.5 flex flex-wrap items-center gap-2">
+	{#each rolled as shape (effectFieldKey(shape))}
+		<EffectFieldGrid
+			field={shape}
+			{color}
+			selected={effectFieldKey(shape) === currentKey}
+			label="{label} this pattern of slots"
+			onselect={() => onchange(shape)}
+		/>
+	{/each}
+
+	{#if orphan}
+		<!-- `inline-flex`, not `inline-block`: an inline-block box carries the line's
+		     descender space, which would push both badges off the grid's own edge. -->
+		<span class="relative inline-flex" title="User-defined custom shape">
 			<EffectFieldGrid
 				field={orphan}
 				{color}
 				selected
-				label="{label} this pattern of slots (custom)"
+				label="{label} this custom pattern of slots"
 				onselect={() => onchange(orphan)}
 			/>
-		{/if}
-		<span class="text-[0.65rem] tracking-wider text-zinc-500">
-			{label}
-			{#if rolled.length > 1}({rolled.length} shapes){/if}
+			{@render userMark()}
 		</span>
-	</div>
+	{/if}
 
-	<div class="mt-1.5 flex flex-wrap items-center gap-2">
-		{#each custom as shape (effectFieldKey(shape))}
-			{@const key = effectFieldKey(shape)}
-			<!-- The remove button sits over its own shape rather than in a separate
-			     list, so there is never a question which one it deletes. -->
-			<span class="relative inline-block">
-				<EffectFieldGrid
-					field={shape}
-					{color}
-					selected={key === currentKey}
-					label="{label} this custom pattern of slots"
-					onselect={() => onchange(shape)}
-				/>
-				<button
-					type="button"
-					class="absolute -top-1.5 -right-1.5 rounded-full border border-zinc-700 bg-zinc-900 px-1 text-[0.55rem] leading-none text-zinc-500 hover:border-red-500 hover:text-red-400"
-					aria-label="Delete this custom shape"
-					onclick={() => customFields.remove(key)}
-				>
-					×
-				</button>
-			</span>
-		{/each}
-		<button
-			type="button"
-			class="rounded border border-amber-800/70 px-1.5 py-0.5 text-[0.65rem] tracking-wider text-amber-500/80 hover:border-amber-500 hover:text-amber-400"
-			onclick={() => (adding = true)}
-		>
-			+ Add custom shape
-		</button>
-		{#if custom.length > 0}
-			<span class="text-[0.65rem] tracking-wider text-amber-700/80">CUSTOM</span>
-		{/if}
-	</div>
+	{#each custom as shape (effectFieldKey(shape))}
+		{@const key = effectFieldKey(shape)}
+		<!-- The marker and the remove button both sit on the shape rather than in a
+		     separate list, so there is never a question which one they belong to. -->
+		<!-- `inline-flex`, not `inline-block`: an inline-block box carries the line's
+		     descender space, which would push both badges off the grid's own edge. -->
+		<span class="relative inline-flex" title="User-defined custom shape">
+			<EffectFieldGrid
+				field={shape}
+				{color}
+				selected={key === currentKey}
+				label="{label} this custom pattern of slots"
+				onselect={() => onchange(shape)}
+			/>
+			{@render userMark()}
+			<button
+				type="button"
+				class="absolute -top-2 -right-2 flex size-4 items-center justify-center rounded-sm border border-zinc-700 bg-zinc-900 text-[0.7rem] leading-none text-zinc-500 hover:border-red-500 hover:text-red-400"
+				title="Delete this custom shape"
+				aria-label="Delete this custom shape"
+				onclick={() => customFields.remove(key)}
+			>
+				×
+			</button>
+		</span>
+	{/each}
+
+	<!-- Same footprint as a shape so it reads as the next tile in the row; the
+	     modal does the explaining. -->
+	<button
+		type="button"
+		class="inline-flex size-14 items-center justify-center rounded-sm border border-dashed border-zinc-700 text-lg leading-none text-zinc-600 hover:border-amber-500 hover:text-amber-400"
+		title="Add custom shape"
+		aria-label="Add custom shape"
+		onclick={() => (adding = true)}
+	>
+		+
+	</button>
 </div>
 
 <!-- Mounted on demand: a chooser exists per field per module row, and every one
