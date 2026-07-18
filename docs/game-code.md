@@ -170,6 +170,46 @@ one module with `canBeBoosted = false`. Because it sits on the grid, the ordinar
 `Time.time > lastDecreaseTime + resource.rechargeDelay` and the tank isn't full. The editor reports
 the steady-state rate, not what you'd observe right after taking damage.
 
+### The other module effects
+
+`ModifyResourceCapacity` and `ResourceAutoChargeEffect` are two of eight `ModuleEffect` subclasses,
+and all eight share one shape: a `FloatSeries` magnitude evaluated at level-1, usually a `Resource`
+reference, and a few flat scalars. Only the field *names* differ, which is why
+`scripts/extract-module-caps.ts` decodes them from a single table rather than case by case:
+
+| C# type | kind | magnitude field | notes |
+| --- | --- | --- | --- |
+| `ModifyResourceCapacity` | `capacity` | `delta` | 109 effects |
+| `ResourceAutoChargeEffect` | `regen` | `rechargeRate` | 27 |
+| `ModifyWeaponProperty` | `weaponProperty` | `value` | 8; `targetProperty` enum (fire rate, spread, damage, …) and `operation` ∈ {Add, Multiply} |
+| `AddShieldEffect` | `shield` | `effectiveness` | 6; absorbs damage against a resource |
+| `DrainResourceEffect` | `drain` | `drainRate` | 5; enemy parts |
+| `AddExplosionEffect` | `explosion` | `damageAmount` | 4; also a `burn` series and an explosion radius |
+| `AddBurnEffect` | `burn` | `amount` | 1 |
+| `AddDischargeEffect` | `discharge` | `damageIncrement` | 1; chain lightning |
+
+The last three, plus `AddExplosionEffect`, are weapon augments and charge a `costPerProjectile` in a
+`costResource` on top of their effect — that is the "cost per shot" the editor prints.
+
+### Weapon stats
+
+A weapon module is a `WeaponModuleData` (a `ModuleData` subclass) pointing at a `WeaponData`. That
+asset is a plain Unity typetree object, so `extract-module-info.py` reads it directly: `damage`
+(a `Damage` struct = amount + a `Resource` damage type), `fireRate`, `cost` + `resourceUsed`
+(`IHasCost` — the per-shot price the ship pays), `burstSize`, `projectileCount`, `spread`,
+`knockbackForce`. 60 of the 145 modules have one.
+
+`ModuleType` is a tiny ScriptableObject (`displayName`, `orderInShop`, `isMain`) and is the game's
+own shop grouping: WEAPONS, GADGETS, UPGRADES, WEAPON MODS, POWER, BOOSTERS, Embedded. Weapons and
+gadgets are the categories that carry a `powerCore` sprite; upgrades and weapon mods have none and a
+`powerLevel` of `[1,1]`.
+
+### Rich text in descriptions
+
+`ModuleData.description` is TextMesh Pro markup. In the current build only `<color=#rrggbb>` occurs,
+and the colours are the resource colours — `<color=#4D79FF>FUEL</color>` is Fuel's blue. See the
+rich-text section in editor-internals.md for how the editor renders it.
+
 ### Ids → human names
 
 Module/consumable/ingredient/resource ids in saves are Unity asset ids (GUIDs or `"Resource X"`

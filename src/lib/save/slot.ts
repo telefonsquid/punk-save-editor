@@ -276,21 +276,46 @@ export function shipResources(entities: OdinNode): ResourcePair[] {
 	return dictPairs(unit.resourceValues) as unknown as ResourcePair[];
 }
 
-/** A `FloatSeries`-valued module effect (see scripts/extract-module-caps.ts). */
-interface SeriesEffect {
-	resource: string;
+/** A `FloatSeries` magnitude: `base (+|*) change` per level above the first. */
+export interface Series {
 	base: number;
 	method: string;
 	change: number;
 }
-const capModules = moduleCaps.modules as Record<
-	string,
-	{ level: number; canBeBoosted: boolean; caps: SeriesEffect[]; regen: SeriesEffect[] }
->;
+
+/**
+ * One decoded `ModuleEffect` (see scripts/extract-module-caps.ts, which flattens
+ * all eight C# subclasses onto this shape). `kind` is `capacity`, `regen`,
+ * `drain`, `shield`, `weaponProperty`, `explosion`, `burn` or `discharge`.
+ */
+export interface ModuleEffectInfo {
+	kind: string;
+	resource: string | null;
+	series: Series | null;
+	cost?: { amount: number; resource: string | null };
+	extra?: Record<string, number | boolean | string>;
+}
+
+interface ModuleCapsEntry {
+	level: number;
+	canBeBoosted: boolean;
+	effects: ModuleEffectInfo[];
+}
+const capModules = moduleCaps.modules as unknown as Record<string, ModuleCapsEntry>;
 const slotLevelDeltas = moduleCaps.slotLevelDeltas as Record<string, number>;
 
+/** The effects of a module id, in the order the game declares them. */
+export function moduleEffects(id: string | null | undefined): ModuleEffectInfo[] {
+	return (id ? capModules[id]?.effects : null) ?? [];
+}
+
+/** The level a module's effects are evaluated at when nothing boosts it. */
+export function moduleLevel(id: string | null | undefined): number {
+	return (id ? capModules[id]?.level : null) ?? 1;
+}
+
 /** `FloatSeries.GetElement`: the effect's magnitude at a zero-based level index. */
-function seriesAt(e: SeriesEffect, idx: number): number {
+export function seriesAt(e: Series, idx: number): number {
 	return e.method === 'mul' ? e.base * Math.pow(e.change, idx) : e.base + e.change * idx;
 }
 
@@ -301,10 +326,7 @@ function seriesAt(e: SeriesEffect, idx: number): number {
  * not simulated, so modules parked unpowered on the grid still count: an upper
  * bound, exact for valid layouts.
  */
-function sumGridEffects(
-	entities: OdinNode,
-	pick: (m: { caps: SeriesEffect[]; regen: SeriesEffect[] }) => SeriesEffect[]
-): Map<string, number> {
+function sumGridEffects(entities: OdinNode, kind: string): Map<string, number> {
 	const totals = new Map<string, number>();
 	const gridOwner = shipMemento(entities, 'ModuleGridOwner');
 	const gridValue = (gridOwner?.gridMemento ?? null) as OdinValue;
@@ -349,8 +371,9 @@ function sumGridEffects(
 		let level = info.level;
 		if (info.canBeBoosted) level += levelDeltas.get(key(x, y)) ?? 0;
 		const idx = Math.max(0, level - 1);
-		for (const e of pick(info)) {
-			totals.set(e.resource, (totals.get(e.resource) ?? 0) + seriesAt(e, idx));
+		for (const e of info.effects) {
+			if (e.kind !== kind || !e.resource || !e.series) continue;
+			totals.set(e.resource, (totals.get(e.resource) ?? 0) + seriesAt(e.series, idx));
 		}
 	}
 	return totals;
@@ -358,7 +381,7 @@ function sumGridEffects(
 
 /** Max capacity per resource id, from the grid's ModifyResourceCapacity effects. */
 export function shipResourceCaps(entities: OdinNode): Map<string, number> {
-	return sumGridEffects(entities, (m) => m.caps);
+	return sumGridEffects(entities, 'capacity');
 }
 
 /**
@@ -374,7 +397,7 @@ export function shipResourceCaps(entities: OdinNode): Map<string, number> {
  * after taking damage is zero for a moment.
  */
 export function shipResourceRegen(entities: OdinNode): Map<string, number> {
-	return sumGridEffects(entities, (m) => m.regen);
+	return sumGridEffects(entities, 'regen');
 }
 
 function isPrimitiveArray(v: OdinValue | null | undefined): v is import('./odin').OdinPrimitiveArray {
@@ -419,15 +442,52 @@ export type ConnectionKey = (typeof CONNECTION_SIDES)[number]['key'];
  */
 export interface ModuleInfo {
 	color: string | null;
+	type: { name: string; order: number; isMain: boolean } | null;
+	description: string | null;
 	powerLevel: [number, number];
 	powerCore: { width: number; height: number; data: number[] } | null;
+	weapon: WeaponStats | null;
 	resource: string | null;
+}
+
+/** The numbers the game prints on a weapon card (`WeaponData`). */
+export interface WeaponStats {
+	damage?: number;
+	damageType?: string;
+	fireRate?: number;
+	cost?: number;
+	costResource?: string;
+	burstSize?: number;
+	projectileCount?: number;
+	spread?: number;
+	knockback?: number;
 }
 
 export const moduleInfos = moduleInfoJson as unknown as Record<string, ModuleInfo>;
 
 export function moduleInfo(id: string | null | undefined): ModuleInfo | null {
 	return id ? (moduleInfos[id] ?? null) : null;
+}
+
+/**
+ * The module's shop category, straight from its `ModuleType` asset — the game's
+ * own grouping, so a game update that adds or renames one carries through
+ * without touching the editor. `POWER`/`BOOSTERS`/`Embedded` are single-module
+ * categories the player never shops for; the rest are WEAPONS, GADGETS,
+ * WEAPON MODS and UPGRADES (the ship modules).
+ */
+export function moduleCategory(id: string | null | undefined): string {
+	return moduleInfo(id)?.type?.name ?? 'OTHER';
+}
+
+/**
+ * Whether a module takes part in the power-core mechanic. Weapons and gadgets
+ * carry a core sprite and a `powerLevel` range worth editing; ship modules
+ * (UPGRADES) and weapon mods have neither, so the editor hides the field for
+ * them rather than showing a number that can only ever be 1.
+ */
+export function usesPowerCore(id: string | null | undefined): boolean {
+	return !!moduleInfo(id)?.powerCore;
 }
 
 const MODULE_MEMENTO_TYPE = 'Module+Memento, Punk.Main';

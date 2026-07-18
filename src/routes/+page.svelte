@@ -3,6 +3,8 @@
 	import RawTree from '$lib/components/RawTree.svelte';
 	import ResourceIcon from '$lib/components/ResourceIcon.svelte';
 	import ItemIcon from '$lib/components/ItemIcon.svelte';
+	import ModuleList from '$lib/components/ModuleList.svelte';
+	import ModulePicker from '$lib/components/ModulePicker.svelte';
 	import { isDownloadDir, pickSaveDir, supportsInPlaceSave, type SaveDir } from '$lib/save/io';
 	import {
 		addConsumable,
@@ -19,12 +21,12 @@
 		ingredientIds,
 		loadFile,
 		loadSlot,
-		moduleInfo,
 		ODIN_FILES,
 		OPAQUE_FILES,
 		removeModule,
 		reorderConsumables,
 		resourceLabel,
+		usesPowerCore,
 		runStats,
 		saveSlot,
 		shipResourceCaps,
@@ -118,8 +120,9 @@
 	);
 	// Index (into filledConsumables) of the row currently being dragged.
 	let dragIndex = $state<number | null>(null);
-	// Module id chosen in the "add a module" picker (a plain string, not save data).
-	let moduleToAdd = $state('');
+	// The add-module picker is a modal over the same list component the vault uses.
+	let pickerOpen = $state(false);
+	const addableModuleIds = allModules.map(({ id }) => id);
 
 	// A derived recompute reuses the underlying module nodes, so the keyed
 	// {#each} would not notice an edited connection if the template read the node
@@ -130,12 +133,14 @@
 			index,
 			id: m.moduleDataId,
 			powerLevel: m.powerLevel,
-			info: moduleInfo(m.moduleDataId),
 			connections: Object.fromEntries(
 				CONNECTION_SIDES.map(({ key }) => [key, m[key]])
 			) as Record<ConnectionKey, boolean>
 		}))
 	);
+	// The shared list only needs identity; `key` is the vault index, which the
+	// actions snippet uses to find the editable row back in `moduleRows`.
+	const moduleItems = $derived(moduleRows.map((row) => ({ key: row.index, id: row.id })));
 
 	// The vault only stores ingredients the player actually owns, but the UI
 	// shows every ingredient (owned or not) so counts can be raised from zero.
@@ -153,10 +158,9 @@
 		refreshViews();
 	}
 
-	function addModuleToVault() {
-		if (!slot || !moduleToAdd) return;
-		addModule(slot.vault, moduleToAdd);
-		moduleToAdd = '';
+	function addModuleToVault(id: string) {
+		if (!slot || !id) return;
+		addModule(slot.vault, id);
 		markCurated();
 		refreshViews();
 	}
@@ -616,117 +620,61 @@
 					<h2 class="mb-4 text-sm font-bold tracking-widest text-fuchsia-400 uppercase">
 						Vault · Modules
 					</h2>
-					{#if moduleRows.length === 0}
-						<p class="text-sm text-zinc-500">Vault has no modules.</p>
-					{:else}
-						<table class="w-full text-sm">
-							<thead>
-								<tr class="border-b border-zinc-800 text-left text-xs text-zinc-500 uppercase">
-									<th class="py-2 pr-4">Module</th>
-									<th class="py-2 pr-4">Tier</th>
-									<th class="py-2 pr-4">Connections</th>
-									<th class="py-2 pr-4 text-right">Max power cores</th>
-									<th class="py-2"><span class="sr-only">Remove</span></th>
-								</tr>
-							</thead>
-							<tbody>
-								{#each moduleRows as row (row.index)}
-									<tr class="border-b border-zinc-800/50">
-										<td class="py-2 pr-4">
-											<div class="flex items-center gap-2">
-												<!-- Modules share a ColorAsset with the resource they belong
-												     to, which is what tints them in the game itself. -->
-												<span
-													class="h-9 w-1 shrink-0 rounded-full"
-													style:background-color={row.info?.color ?? '#52525b'}
-												></span>
-												<ItemIcon id={row.id} />
-												<div>
-													<span style:color={row.info?.color ?? undefined}>
-														{displayName(row.id)}
-													</span>
-													{#if row.info?.resource}
-														<span class="ml-1 text-xs text-zinc-500">
-															{resourceLabel(row.info.resource)}
-														</span>
-													{/if}
-													{#if row.id && assets[row.id]?.description}
-														<div class="max-w-md truncate text-xs text-zinc-500">
-															{assets[row.id].description}
-														</div>
-													{/if}
-												</div>
-											</div>
-										</td>
-										<td class="py-2 pr-4 text-zinc-400">
-											{row.id ? (assets[row.id]?.level ?? '—') : '—'}
-										</td>
-										<td class="py-2 pr-4">
-											<div class="flex gap-1">
-												{#each CONNECTION_SIDES as side (side.key)}
-													<button
-														type="button"
-														class="h-7 w-7 rounded border text-xs font-semibold {row.connections[
-															side.key
-														]
-															? 'border-lime-400 bg-lime-400/20 text-lime-300'
-															: 'border-zinc-700 text-zinc-600 hover:border-zinc-500'}"
-														aria-pressed={row.connections[side.key]}
-														aria-label="{side.label} connection of {displayName(row.id)}"
-														onclick={() => toggleConnection(row.module, side.key)}
-													>
-														{side.label}
-													</button>
-												{/each}
-											</div>
-										</td>
-										<td class="py-2 pr-4 text-right">
-											<input
-												type="number"
-												min="0"
-												class="w-24 rounded border-zinc-700 bg-zinc-900 text-right"
-												value={row.powerLevel}
-												oninput={numInput(row.module, 'powerLevel')}
-											/>
-										</td>
-										<td class="py-2 text-right">
-											<button
-												type="button"
-												class="rounded border border-zinc-700 px-2 py-1 text-xs text-zinc-500 hover:border-red-500 hover:text-red-400"
-												aria-label="Remove {displayName(row.id)} from the vault"
-												onclick={() => removeModuleAt(row.index)}
-											>
-												Remove
-											</button>
-										</td>
-									</tr>
+					<ModuleList items={moduleItems} empty="Vault has no modules.">
+						{#snippet actions(item)}
+							{@const row = moduleRows[item.key as number]}
+							<div class="flex gap-1">
+								{#each CONNECTION_SIDES as side (side.key)}
+									<button
+										type="button"
+										class="h-7 w-7 rounded border text-xs font-semibold {row.connections[side.key]
+											? 'border-lime-400 bg-lime-400/20 text-lime-300'
+											: 'border-zinc-700 text-zinc-600 hover:border-zinc-500'}"
+										aria-pressed={row.connections[side.key]}
+										aria-label="{side.label} connection of {displayName(row.id)}"
+										onclick={() => toggleConnection(row.module, side.key)}
+									>
+										{side.label}
+									</button>
 								{/each}
-							</tbody>
-						</table>
-					{/if}
-					<div class="mt-4 flex flex-wrap items-center gap-2 border-t border-zinc-800 pt-3">
-						<select
-							class="rounded border-zinc-700 bg-zinc-900 py-1 text-sm"
-							aria-label="Module to add to the vault"
-							bind:value={moduleToAdd}
-						>
-							<option value="">Add a module…</option>
-							{#each allModules as { id } (id)}
-								<option value={id}>{displayName(id)}</option>
-							{/each}
-						</select>
+							</div>
+							<!-- Power cores only apply to weapons and gadgets; ship modules and
+							     weapon mods have no core, so the field would be dead there. -->
+							{#if usesPowerCore(row.id)}
+								<label class="flex items-center gap-1 text-xs text-zinc-500">
+									Cores
+									<input
+										type="number"
+										min="0"
+										class="w-16 rounded border-zinc-700 bg-zinc-900 text-right"
+										value={row.powerLevel}
+										oninput={numInput(row.module, 'powerLevel')}
+									/>
+								</label>
+							{/if}
+							<button
+								type="button"
+								class="rounded border border-zinc-700 px-2 py-1 text-xs text-zinc-500 hover:border-red-500 hover:text-red-400"
+								aria-label="Remove {displayName(row.id)} from the vault"
+								onclick={() => removeModuleAt(row.index)}
+							>
+								Remove
+							</button>
+						{/snippet}
+					</ModuleList>
+					<div class="mt-4 flex flex-wrap items-center gap-3 border-t border-zinc-800 pt-3">
 						<button
 							type="button"
-							class="rounded border border-zinc-700 px-3 py-1 text-sm font-semibold hover:border-lime-400 hover:text-lime-400 disabled:opacity-40"
-							disabled={!moduleToAdd}
-							onclick={addModuleToVault}
+							class="rounded border border-zinc-700 px-3 py-1 text-sm font-semibold hover:border-lime-400 hover:text-lime-400"
+							onclick={() => (pickerOpen = true)}
 						>
-							Add to vault
+							Add a module…
 						</button>
 						<span class="text-xs text-zinc-600">
-							Added with all four connections and the module's highest power-core capacity.
+							Browse every equippable module, grouped the way the game groups them.
 						</span>
 					</div>
+					<ModulePicker bind:open={pickerOpen} ids={addableModuleIds} onadd={addModuleToVault} />
 				</section>
 			</div>
 

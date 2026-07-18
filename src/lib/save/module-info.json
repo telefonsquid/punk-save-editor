@@ -1,51 +1,92 @@
 {
  "00063348-e7eb-492c-bad7-e4a89b18a2ae": {
   "color": "#ffffff",
+  "type": {
+   "name": "Embedded",
+   "order": 100,
+   "isMain": true
+  },
+  "description": null,
   "powerLevel": [
    1,
    1
   ],
   "powerCore": null,
+  "weapon": null,
   "resource": "Resource White"
  },
  "0081b7d8-cd9a-409b-abcb-fee408247d9b": {
   "color": "#ffffff",
+  "type": {
+   "name": "Embedded",
+   "order": 100,
+   "isMain": true
+  },
+  "description": null,
   "powerLevel": [
    1,
    1
   ],
   "powerCore": null,
+  "weapon": null,
   "resource": "Resource White"
  },
  "035350a1-11f2-411b-b16e-d38f5f80155a": {
   "color": "#ffffff",
+  "type": {
+   "name": "WEAPON MODS",
+   "order": 2,
+   "isMain": false
+  },
+  "description": null,
   "powerLevel": [
    1,
    1
   ],
   "powerCore": null,
+  "weapon": null,
   "resource": "Resource White"
  },
  "04e1c99f-6b61-4008-9b0b-e4ab7c6aa4c0": {
   "color": "#6a36ff",
+  "type": {
+   "name": "UPGRADES",
+   "order": 1,
+   "isMain": false
+  },
+  "description": "Forms a shield around the ship that absorbs incoming\ndamage but you lose <color=#5F46A7>TECH</color> every time this happens.\nthe greater the damage the more you loose.",
   "powerLevel": [
    1,
    1
   ],
   "powerCore": null,
+  "weapon": null,
   "resource": "Resource Tech"
  },
  "050f8469-3cdd-4b25-8cd0-f699e6f7331e": {
   "color": "#ffffff",
+  "type": {
+   "name": "Embedded",
+   "order": 100,
+   "isMain": true
+  },
+  "description": null,
   "powerLevel": [
    1,
    1
   ],
   "powerCore": null,
+  "weapon": null,
   "resource": "Resource White"
  },
  "10b13ed7-aacd-4774-9bf0-5362223b7c7b": {
   "color": "#ff7700",
+  "type": {
+   "name": "WEAPONS",
+   "order": 3,
+   "isMain": true
+  },
+  "description": "it's a flamethrower, yes",
   "powerLevel": [
    5,
    5
@@ -80,38 +121,75 @@
     0,
     0
    ]
+  },
+  "weapon": {
+   "damage": 0.5,
+   "damageType": "Resource Caps",
+   "fireRate": 14.0,
+   "cost": 0.2,
+   "costResource": "Resource Caps",
+   "burstSize": 2.0,
+   "spread": 10.0,
+   "knockback": 10.0
   },
   "resource": "Resource Caps"
  },
  "10c5f8e4-55ec-4b91-b2fc-6ebacf3cfb6f": {
   "color": "#ffffff",
+  "type": {
+   "name": "Embedded",
+   "order": 100,
+   "isMain": true
+  },
+  "description": null,
   "powerLevel": [
    1,
    1
   ],
   "powerCore": null,
+  "weapon": null,
   "resource": "Resource White"
  },
  "123b8db0-b3db-4d14-91ad-ab46a34341c4": {
   "color": "#6a36ff",
+  "type": {
+   "name": "WEAPON MODS",
+   "order": 2,
+   "isMain": false
+  },
+  "description": "Projectiles explode on impact\nas long as you have enough TECH",
   "powerLevel": [
    1,
    1
   ],
   "powerCore": null,
+  "weapon": null,
   "resource": "Resource Tech"
  },
  "1294da98-b85b-4bc4-af5d-e512170a6545": {
   "color": "#ffffff",
+  "type": {
+   "name": "Embedded",
+   "order": 100,
+   "isMain": true
+  },
+  "description": null,
   "powerLevel": [
    1,
    1
   ],
   "powerCore": null,
+  "weapon": null,
   "resource": "Resource White"
  },
  "12fd6892-c826-412e-a894-ed8404a7be5f": {
   "color": "#ff00f0",
+  "type": {
+   "name": "WEAPONS",
+   "order": 3,
+   "isMain": true
+  },
+  "description": "Launches small crystals affected by gravity.\nCrystals exlode on impact.",
   "powerLevel": [
    5,
    5
@@ -147,10 +225,25 @@
     0
    ]
   },
+  "weapon": {
+   "damage": 2.0,
+   "damageType": "Resource Purple",
+   "fireRate": 4.0,
+   "cost": 1.0,
+   "costResource": "Resource Purple",
+   "spread": 10.0,
+   "knockback": 10.0
+  },
   "resource": "Resource Purple"
  },
  "14ef55b4-2260-4a73-b0f1-8a081f841b31": {
   "color": "#ff00f0",
+  "type": {
+   "name": "GADGETS",
+   "order": 4,
+   "isMain": true
+  },
+  "description": "Launches a number of explosive missiles in every direcion",
   "powerLevel": [
    2,
    5
@@ -186,37 +279,65 @@
     0
    ]
   },
+  "weapon": null,
   "resource": "Resource Purple"
  },
  "1731e6e4-c087-477f-b292-4b9199dce7ef": {
   "color": "#ffffff",
+  "type": {
+   "name": "Embedded",
+   "order": 100,
+   "isMain": true
+  },
+  "description": null,
   "powerLevel": [
    1,
    1
   ],
   "powerCore": null,
+  "weapon": null,
   "resource": "Resource White"
  },
  "199b8db0-b3db-4d84-91ad-ab46a32341c4": {
   "color": "#ff00f0",
+  "type": {
+   "name": "WEAPON MODS",
+   "order": 2,
+   "isMain": false
+  },
+  "description": "Projectiles explode on impact\nas long as you have enough GEL",
   "powerLevel": [
    1,
    1
   ],
   "powerCore": null,
+  "weapon": null,
   "resource": "Resource Purple"
  },
  "1a00aa71-b1e5-4a5c-806c-5d8d30a1353a": {
   "color": "#ff00f0",
+  "type": {
+   "name": "UPGRADES",
+   "order": 1,
+   "isMain": false
+  },
+  "description": "slowly regenerates <color=#B32AAC>GEL</color>",
   "powerLevel": [
    1,
    1
   ],
   "powerCore": null,
+  "weapon": null,
   "resource": "Resource Purple"
  },
  "1a8a22e0-f893-4acd-b247-b547d9034cc5": {
   "color": "#ffffff",
+  "type": {
+   "name": "WEAPONS",
+   "order": 3,
+   "isMain": true
+  },
+  "description": null,
   "powerLevel": [
    1,
    1
@@ -252,28 +373,54 @@
     0
    ]
   },
+  "weapon": {
+   "fireRate": 1.0,
+   "cost": 5.0,
+   "costResource": "Resource White",
+   "spread": 10.0
+  },
   "resource": "Resource White"
  },
  "1b2a128e-d45b-476a-bc42-bc31f0c83375": {
   "color": "#ffffff",
+  "type": {
+   "name": "Embedded",
+   "order": 100,
+   "isMain": true
+  },
+  "description": null,
   "powerLevel": [
    1,
    1
   ],
   "powerCore": null,
+  "weapon": null,
   "resource": "Resource White"
  },
  "1e76dca3-2972-4d83-95ec-81519216c698": {
   "color": "#ffffff",
+  "type": {
+   "name": "WEAPON MODS",
+   "order": 2,
+   "isMain": false
+  },
+  "description": "Projectiles explode on impact\nas long as you have enough STAMINA",
   "powerLevel": [
    1,
    1
   ],
   "powerCore": null,
+  "weapon": null,
   "resource": "Resource White"
  },
  "1fb76d64-e477-4e86-8954-6d5cfb262ca1": {
   "color": "#ffffff",
+  "type": {
+   "name": "WEAPONS",
+   "order": 3,
+   "isMain": true
+  },
+  "description": "Shoots lines of tiny projectiles short range",
   "powerLevel": [
    2,
    4
@@ -309,10 +456,26 @@
     0
    ]
   },
+  "weapon": {
+   "damage": 1.0,
+   "damageType": "Resource White",
+   "fireRate": 6.0,
+   "cost": 1.0,
+   "costResource": "Resource White",
+   "projectileCount": 3.0,
+   "spread": 10.0,
+   "knockback": 5.0
+  },
   "resource": "Resource White"
  },
  "1fc77425-8190-43d6-ac92-1e3a71008cae": {
   "color": "#ffffff",
+  "type": {
+   "name": "Embedded",
+   "order": 100,
+   "isMain": true
+  },
+  "description": null,
   "powerLevel": [
    8,
    8
@@ -348,37 +511,65 @@
     0
    ]
   },
+  "weapon": null,
   "resource": "Resource White"
  },
  "206512c3-2157-45c1-b8f5-d552348ee4b0": {
   "color": "#ffffff",
+  "type": {
+   "name": "Embedded",
+   "order": 100,
+   "isMain": true
+  },
+  "description": null,
   "powerLevel": [
    1,
    1
   ],
   "powerCore": null,
+  "weapon": null,
   "resource": "Resource White"
  },
  "269b634c-3091-4298-838f-af525562dc6b": {
   "color": "#ffffff",
+  "type": {
+   "name": "Embedded",
+   "order": 100,
+   "isMain": true
+  },
+  "description": null,
   "powerLevel": [
    1,
    1
   ],
   "powerCore": null,
+  "weapon": null,
   "resource": "Resource White"
  },
  "28228fa7-5770-4380-b454-f75cd2bbca53": {
   "color": "#ff7700",
+  "type": {
+   "name": "WEAPON MODS",
+   "order": 2,
+   "isMain": false
+  },
+  "description": "Adds burn to every projectile\nas long as you have enough CAPS",
   "powerLevel": [
    1,
    1
   ],
   "powerCore": null,
+  "weapon": null,
   "resource": "Resource Caps"
  },
  "2b2dbb4d-69e8-40ff-a212-a52efdf9c587": {
   "color": "#ffffff",
+  "type": {
+   "name": "WEAPONS",
+   "order": 3,
+   "isMain": true
+  },
+  "description": null,
   "powerLevel": [
    1,
    1
@@ -413,20 +604,38 @@
     0,
     0
    ]
+  },
+  "weapon": {
+   "fireRate": 0.5,
+   "costResource": "Resource White",
+   "spread": 10.0
   },
   "resource": "Resource White"
  },
  "2c0da9bc-8259-43a1-9bcc-c9d64f655e90": {
   "color": "#ffffff",
+  "type": {
+   "name": "Embedded",
+   "order": 100,
+   "isMain": true
+  },
+  "description": null,
   "powerLevel": [
    1,
    1
   ],
   "powerCore": null,
+  "weapon": null,
   "resource": "Resource White"
  },
  "2cf20dad-69f5-43db-b4fd-a021be584b5f": {
   "color": "#ffffff",
+  "type": {
+   "name": "WEAPONS",
+   "order": 3,
+   "isMain": true
+  },
+  "description": null,
   "powerLevel": [
    1,
    1
@@ -461,20 +670,39 @@
     0,
     0
    ]
+  },
+  "weapon": {
+   "damage": 1.0,
+   "fireRate": 30.0,
+   "costResource": "Resource Caps",
+   "spread": 360.0
   },
   "resource": "Resource White"
  },
  "2def7b71-17c8-40e2-935d-ccdce9270514": {
   "color": "#ffffff",
+  "type": {
+   "name": "Embedded",
+   "order": 100,
+   "isMain": true
+  },
+  "description": null,
   "powerLevel": [
    1,
    1
   ],
   "powerCore": null,
+  "weapon": null,
   "resource": "Resource White"
  },
  "2df1b51f-37ff-4750-a09a-8b9a10ca80a1": {
   "color": "#ff00f0",
+  "type": {
+   "name": "WEAPONS",
+   "order": 3,
+   "isMain": true
+  },
+  "description": "Big crystal with large explosion on impact",
   "powerLevel": [
    5,
    5
@@ -509,20 +737,42 @@
     0,
     0
    ]
+  },
+  "weapon": {
+   "damage": 4.0,
+   "damageType": "Resource Purple",
+   "fireRate": 2.0,
+   "cost": 2.0,
+   "costResource": "Resource Purple",
+   "spread": 10.0,
+   "knockback": 100.0
   },
   "resource": "Resource Purple"
  },
  "2e9bd982-221c-48a2-8cad-deecd40bbd7f": {
   "color": "#ffffff",
+  "type": {
+   "name": "WEAPON MODS",
+   "order": 2,
+   "isMain": false
+  },
+  "description": "Projectiles move faster",
   "powerLevel": [
    1,
    1
   ],
   "powerCore": null,
+  "weapon": null,
   "resource": "Resource White"
  },
  "307b0777-d4a2-4028-a5fb-66f28a299748": {
   "color": "#ffffff",
+  "type": {
+   "name": "WEAPONS",
+   "order": 3,
+   "isMain": true
+  },
+  "description": "High firerate, basic projectile weapon",
   "powerLevel": [
    2,
    4
@@ -557,20 +807,41 @@
     0,
     0
    ]
+  },
+  "weapon": {
+   "damage": 1.0,
+   "damageType": "Resource White",
+   "fireRate": 7.0,
+   "cost": 1.0,
+   "costResource": "Resource White",
+   "spread": 7.0
   },
   "resource": "Resource White"
  },
  "3224e341-24c1-42b6-91e5-3597d3a97bcb": {
   "color": "#ffffff",
+  "type": {
+   "name": "Embedded",
+   "order": 100,
+   "isMain": true
+  },
+  "description": null,
   "powerLevel": [
    1,
    1
   ],
   "powerCore": null,
+  "weapon": null,
   "resource": "Resource White"
  },
  "351a78e1-2f55-467c-8198-5317fbd7c7a1": {
   "color": "#ffffff",
+  "type": {
+   "name": "WEAPONS",
+   "order": 3,
+   "isMain": true
+  },
+  "description": null,
   "powerLevel": [
    1,
    1
@@ -605,29 +876,55 @@
     0,
     0
    ]
+  },
+  "weapon": {
+   "damage": 1.0,
+   "damageType": "Resource Caps",
+   "fireRate": 30.0,
+   "costResource": "Resource Caps"
   },
   "resource": "Resource White"
  },
  "351d0570-5119-4dc9-8c4a-04ebe9d65eeb": {
   "color": "#ffffff",
+  "type": {
+   "name": "WEAPON MODS",
+   "order": 2,
+   "isMain": false
+  },
+  "description": "Decreases projectile spread",
   "powerLevel": [
    1,
    1
   ],
   "powerCore": null,
+  "weapon": null,
   "resource": "Resource White"
  },
  "391f2d91-7db8-4000-8884-9c9f9c3f0a53": {
   "color": "#ffffff",
+  "type": {
+   "name": "Embedded",
+   "order": 100,
+   "isMain": true
+  },
+  "description": null,
   "powerLevel": [
    1,
    1
   ],
   "powerCore": null,
+  "weapon": null,
   "resource": "Resource White"
  },
  "39a2df66-c89d-4226-b7c6-4848da16479f": {
   "color": "#ffffff",
+  "type": {
+   "name": "WEAPONS",
+   "order": 3,
+   "isMain": true
+  },
+  "description": null,
   "powerLevel": [
    1,
    1
@@ -662,20 +959,41 @@
     0,
     0
    ]
+  },
+  "weapon": {
+   "damage": 1.0,
+   "damageType": "Resource White",
+   "fireRate": 7.0,
+   "costResource": "Resource White",
+   "projectileCount": 4.0,
+   "spread": 360.0
   },
   "resource": "Resource White"
  },
  "3afed7a6-53bc-4f49-8e9b-f938b5f74d96": {
   "color": "#ffffff",
+  "type": {
+   "name": "Embedded",
+   "order": 100,
+   "isMain": true
+  },
+  "description": null,
   "powerLevel": [
    1,
    1
   ],
   "powerCore": null,
+  "weapon": null,
   "resource": "Resource White"
  },
  "3c22cfb1-32d8-4bfc-ab5b-4271b3398d92": {
   "color": "#ffffff",
+  "type": {
+   "name": "WEAPONS",
+   "order": 3,
+   "isMain": true
+  },
+  "description": null,
   "powerLevel": [
    1,
    1
@@ -710,11 +1028,25 @@
     0,
     0
    ]
+  },
+  "weapon": {
+   "damage": 1.0,
+   "damageType": "Resource White",
+   "fireRate": 0.25,
+   "costResource": "Resource White",
+   "burstSize": 2.0,
+   "knockback": 500.0
   },
   "resource": "Resource White"
  },
  "3d558c77-fbfc-4f45-8ac0-d9bdc0aad9da": {
   "color": "#ff00f0",
+  "type": {
+   "name": "GADGETS",
+   "order": 4,
+   "isMain": true
+  },
+  "description": "Prints drones equipped\nwith missile launcher",
   "powerLevel": [
    1,
    1
@@ -750,19 +1082,33 @@
     0
    ]
   },
+  "weapon": null,
   "resource": "Resource Purple"
  },
  "4080312a-edd9-42ab-a485-b95709fddf08": {
   "color": "#ffffff",
+  "type": {
+   "name": "Embedded",
+   "order": 100,
+   "isMain": true
+  },
+  "description": null,
   "powerLevel": [
    1,
    1
   ],
   "powerCore": null,
+  "weapon": null,
   "resource": "Resource White"
  },
  "40bc74dc-e0cc-4d4a-ba4e-a58c55c4086a": {
   "color": "#ff00f0",
+  "type": {
+   "name": "WEAPONS",
+   "order": 3,
+   "isMain": true
+  },
+  "description": "Homing missiles that lock on to\nenemies and explode on impact",
   "powerLevel": [
    5,
    5
@@ -797,20 +1143,41 @@
     0,
     0
    ]
+  },
+  "weapon": {
+   "damage": 1.0,
+   "damageType": "Resource Purple",
+   "fireRate": 5.0,
+   "cost": 2.0,
+   "costResource": "Resource Purple",
+   "spread": 20.0
   },
   "resource": "Resource Purple"
  },
  "4193938c-ea4f-4fb3-8f06-1147eb33bf42": {
   "color": "#6a36ff",
+  "type": {
+   "name": "UPGRADES",
+   "order": 1,
+   "isMain": false
+  },
+  "description": "Increases maximum <color=#5F46A7>TECH</color> capacity",
   "powerLevel": [
    1,
    1
   ],
   "powerCore": null,
+  "weapon": null,
   "resource": "Resource Tech"
  },
  "443ec472-0026-4dce-a549-8f00e83c3501": {
   "color": "#ff7700",
+  "type": {
+   "name": "WEAPONS",
+   "order": 3,
+   "isMain": true
+  },
+  "description": null,
   "powerLevel": [
    5,
    5
@@ -845,38 +1212,73 @@
     0,
     0
    ]
+  },
+  "weapon": {
+   "damage": 0.5,
+   "damageType": "Resource Caps",
+   "fireRate": 13.0,
+   "cost": 0.15,
+   "costResource": "Resource Caps",
+   "spread": 5.0
   },
   "resource": "Resource Caps"
  },
  "446fc56b-ec1f-480f-ac9f-d356458f7a45": {
   "color": "#00d8ff",
+  "type": {
+   "name": "UPGRADES",
+   "order": 1,
+   "isMain": false
+  },
+  "description": "Increases maximum <color=#009AB4>ELECTRON</color> capacity",
   "powerLevel": [
    1,
    1
   ],
   "powerCore": null,
+  "weapon": null,
   "resource": "Resource Electron"
  },
  "459adb5c-e25e-4ef6-be48-caf44b1b08c9": {
   "color": "#ffffff",
+  "type": {
+   "name": "Embedded",
+   "order": 100,
+   "isMain": true
+  },
+  "description": null,
   "powerLevel": [
    1,
    1
   ],
   "powerCore": null,
+  "weapon": null,
   "resource": "Resource White"
  },
  "4618af6d-c054-4157-a4d0-ae0cdf093f33": {
   "color": "#144eff",
+  "type": {
+   "name": "UPGRADES",
+   "order": 1,
+   "isMain": false
+  },
+  "description": "Increases maximum <color=#4D79FF>FUEL</color> capacity",
   "powerLevel": [
    1,
    1
   ],
   "powerCore": null,
+  "weapon": null,
   "resource": "Resource Fuel"
  },
  "46c8e93d-67fe-4a04-a910-bbf16521971a": {
   "color": "#ffffff",
+  "type": {
+   "name": "WEAPONS",
+   "order": 3,
+   "isMain": true
+  },
+  "description": null,
   "powerLevel": [
    1,
    1
@@ -911,11 +1313,24 @@
     0,
     0
    ]
+  },
+  "weapon": {
+   "damageType": "Resource Purple",
+   "fireRate": 0.5,
+   "costResource": "Resource White",
+   "burstSize": 3.0,
+   "knockback": 1500.0
   },
   "resource": "Resource White"
  },
  "47f8634f-15fe-407b-b15d-329319d52aaf": {
   "color": "#ffffff",
+  "type": {
+   "name": "WEAPONS",
+   "order": 3,
+   "isMain": true
+  },
+  "description": null,
   "powerLevel": [
    1,
    1
@@ -950,29 +1365,57 @@
     0,
     0
    ]
+  },
+  "weapon": {
+   "damage": 1.0,
+   "damageType": "Resource Caps",
+   "fireRate": 60.0,
+   "costResource": "Resource Caps",
+   "projectileCount": 2.0,
+   "spread": 360.0
   },
   "resource": "Resource White"
  },
  "48a433fa-b05d-42e7-b273-b95046c4cef8": {
   "color": "#ff7700",
+  "type": {
+   "name": "UPGRADES",
+   "order": 1,
+   "isMain": false
+  },
+  "description": "Forms a shield around the ship that absorbs incoming\ndamage but you lose <color=#B16623>CAPS</color> every time this happens.\nthe greater the damage the more you loose.",
   "powerLevel": [
    1,
    1
   ],
   "powerCore": null,
+  "weapon": null,
   "resource": "Resource Caps"
  },
  "48a5fb41-0d95-49d9-93dc-48fe4f634a8f": {
   "color": "#ffffff",
+  "type": {
+   "name": "Embedded",
+   "order": 100,
+   "isMain": true
+  },
+  "description": null,
   "powerLevel": [
    1,
    1
   ],
   "powerCore": null,
+  "weapon": null,
   "resource": "Resource White"
  },
  "4ab32c61-eaa6-40a4-82b1-2d4fd56764b3": {
   "color": "#ff7700",
+  "type": {
+   "name": "GADGETS",
+   "order": 4,
+   "isMain": true
+  },
+  "description": "Shoots low range projectiles downwards.\nProjectile explodes igniting most things inside the blast radius",
   "powerLevel": [
    2,
    5
@@ -1008,10 +1451,17 @@
     0
    ]
   },
+  "weapon": null,
   "resource": "Resource Caps"
  },
  "4b333163-e8aa-48f0-aa93-184e2dfade3f": {
   "color": "#ffffff",
+  "type": {
+   "name": "WEAPONS",
+   "order": 3,
+   "isMain": true
+  },
+  "description": null,
   "powerLevel": [
    1,
    1
@@ -1046,29 +1496,56 @@
     0,
     0
    ]
+  },
+  "weapon": {
+   "damage": 1.0,
+   "damageType": "Resource White",
+   "fireRate": 2.0,
+   "costResource": "Resource White",
+   "knockback": 5.0
   },
   "resource": "Resource White"
  },
  "4c8788a4-157f-4527-aad7-f6cce9d98b6e": {
   "color": "#ffffff",
+  "type": {
+   "name": "Embedded",
+   "order": 100,
+   "isMain": true
+  },
+  "description": null,
   "powerLevel": [
    1,
    1
   ],
   "powerCore": null,
+  "weapon": null,
   "resource": "Resource White"
  },
  "4e7e3e86-f3ce-4ecd-86f4-29520d8b85af": {
   "color": "#ffffff",
+  "type": {
+   "name": "Embedded",
+   "order": 100,
+   "isMain": true
+  },
+  "description": null,
   "powerLevel": [
    1,
    1
   ],
   "powerCore": null,
+  "weapon": null,
   "resource": "Resource White"
  },
  "4eba9754-339c-4587-98a8-d159fda13ad4": {
   "color": "#ffffff",
+  "type": {
+   "name": "WEAPONS",
+   "order": 3,
+   "isMain": true
+  },
+  "description": null,
   "powerLevel": [
    1,
    1
@@ -1104,10 +1581,24 @@
     0
    ]
   },
+  "weapon": {
+   "damage": 1.0,
+   "damageType": "Resource White",
+   "fireRate": 7.0,
+   "costResource": "Resource White",
+   "projectileCount": 4.0,
+   "spread": 360.0
+  },
   "resource": "Resource White"
  },
  "501af82f-bdee-459e-8b1c-4281cf53f621": {
   "color": "#ffffff",
+  "type": {
+   "name": "WEAPONS",
+   "order": 3,
+   "isMain": true
+  },
+  "description": "Small spinning projectiles affected by gravity",
   "powerLevel": [
    2,
    4
@@ -1143,19 +1634,41 @@
     0
    ]
   },
+  "weapon": {
+   "damage": 1.0,
+   "damageType": "Resource White",
+   "fireRate": 8.0,
+   "cost": 0.5,
+   "costResource": "Resource White",
+   "spread": 10.0,
+   "knockback": 3.0
+  },
   "resource": "Resource White"
  },
  "50f36e9d-63df-4ee3-8301-96b0f2b4262b": {
   "color": "#ffffff",
+  "type": {
+   "name": "Embedded",
+   "order": 100,
+   "isMain": true
+  },
+  "description": null,
   "powerLevel": [
    1,
    1
   ],
   "powerCore": null,
+  "weapon": null,
   "resource": "Resource White"
  },
  "517aaf64-71a1-4878-bba3-d7f9b995a6aa": {
   "color": "#ffffff",
+  "type": {
+   "name": "WEAPONS",
+   "order": 3,
+   "isMain": true
+  },
+  "description": null,
   "powerLevel": [
    1,
    1
@@ -1190,38 +1703,72 @@
     0,
     0
    ]
+  },
+  "weapon": {
+   "damage": 4.0,
+   "damageType": "Resource White",
+   "fireRate": 1.0,
+   "costResource": "Resource White",
+   "spread": 360.0
   },
   "resource": "Resource White"
  },
  "52c8c054-f8d5-40d6-b2e7-17e9d9ccbfd5": {
   "color": "#ffffff",
+  "type": {
+   "name": "Embedded",
+   "order": 100,
+   "isMain": true
+  },
+  "description": null,
   "powerLevel": [
    1,
    1
   ],
   "powerCore": null,
+  "weapon": null,
   "resource": "Resource White"
  },
  "52eaa02f-6030-4552-9a8b-447a0c41b9e3": {
   "color": "#ffffff",
+  "type": {
+   "name": "Embedded",
+   "order": 100,
+   "isMain": true
+  },
+  "description": null,
   "powerLevel": [
    1,
    1
   ],
   "powerCore": null,
+  "weapon": null,
   "resource": "Resource White"
  },
  "5682bca7-51a4-48b8-bc45-067d1ebaba47": {
   "color": "#ffffff",
+  "type": {
+   "name": "Embedded",
+   "order": 100,
+   "isMain": true
+  },
+  "description": null,
   "powerLevel": [
    1,
    1
   ],
   "powerCore": null,
+  "weapon": null,
   "resource": "Resource White"
  },
  "57149378-6837-4e76-a6d9-b6f3b3f3435d": {
   "color": "#ffffff",
+  "type": {
+   "name": "WEAPONS",
+   "order": 3,
+   "isMain": true
+  },
+  "description": null,
   "powerLevel": [
    1,
    1
@@ -1257,10 +1804,22 @@
     0
    ]
   },
+  "weapon": {
+   "damage": 2.0,
+   "damageType": "Resource White",
+   "fireRate": 4.0,
+   "costResource": "Resource White"
+  },
   "resource": "Resource White"
  },
  "5e037c2a-994e-44fb-b94f-049dde1a22b7": {
   "color": "#ff00f0",
+  "type": {
+   "name": "GADGETS",
+   "order": 4,
+   "isMain": true
+  },
+  "description": "Deploys explosive floating mines",
   "powerLevel": [
    2,
    5
@@ -1296,10 +1855,17 @@
     0
    ]
   },
+  "weapon": null,
   "resource": "Resource Purple"
  },
  "60030afe-a08a-4c61-9bd4-dc4e5ae2e189": {
   "color": "#ffffff",
+  "type": {
+   "name": "WEAPONS",
+   "order": 3,
+   "isMain": true
+  },
+  "description": null,
   "powerLevel": [
    1,
    1
@@ -1334,11 +1900,24 @@
     0,
     0
    ]
+  },
+  "weapon": {
+   "damage": 1.0,
+   "fireRate": 30.0,
+   "costResource": "Resource Caps",
+   "projectileCount": 4.0,
+   "spread": 360.0
   },
   "resource": "Resource White"
  },
  "62a78ee1-a2ed-404a-b73e-6025725dc988": {
   "color": "#ff0000",
+  "type": {
+   "name": "GADGETS",
+   "order": 4,
+   "isMain": true
+  },
+  "description": "Prints drones that explode\non top of enemies",
   "powerLevel": [
    1,
    1
@@ -1374,10 +1953,17 @@
     0
    ]
   },
+  "weapon": null,
   "resource": "Resource Health"
  },
  "63a7f89d-c198-49fe-ad6b-22e43cb48f52": {
   "color": "#ffffff",
+  "type": {
+   "name": "WEAPONS",
+   "order": 3,
+   "isMain": true
+  },
+  "description": "Short range projectiles with high spread",
   "powerLevel": [
    2,
    4
@@ -1413,10 +1999,26 @@
     0
    ]
   },
+  "weapon": {
+   "damage": 1.0,
+   "damageType": "Resource White",
+   "fireRate": 1.3,
+   "cost": 5.0,
+   "costResource": "Resource White",
+   "projectileCount": 10.0,
+   "spread": 20.0,
+   "knockback": 100.0
+  },
   "resource": "Resource White"
  },
  "63fedd1a-0b62-4c1d-89b8-473b53dd38c7": {
   "color": "#ffffff",
+  "type": {
+   "name": "WEAPONS",
+   "order": 3,
+   "isMain": true
+  },
+  "description": null,
   "powerLevel": [
    1,
    1
@@ -1451,11 +2053,25 @@
     0,
     0
    ]
+  },
+  "weapon": {
+   "damage": 2.0,
+   "damageType": "Resource Caps",
+   "fireRate": 0.7,
+   "costResource": "Resource White",
+   "burstSize": 3.0,
+   "spread": 360.0
   },
   "resource": "Resource White"
  },
  "69278b56-c542-4cd5-b33f-95887000e0db": {
   "color": "#ffffff",
+  "type": {
+   "name": "WEAPONS",
+   "order": 3,
+   "isMain": true
+  },
+  "description": null,
   "powerLevel": [
    1,
    1
@@ -1490,11 +2106,27 @@
     0,
     0
    ]
+  },
+  "weapon": {
+   "damage": 3.0,
+   "damageType": "Resource Electron",
+   "fireRate": 5.0,
+   "cost": 6.0,
+   "costResource": "Resource White",
+   "projectileCount": 2.0,
+   "spread": 30.0,
+   "knockback": 15.0
   },
   "resource": "Resource White"
  },
  "693125a0-a1b3-4508-b3eb-f523081e26ac": {
   "color": "#ffffff",
+  "type": {
+   "name": "WEAPONS",
+   "order": 3,
+   "isMain": true
+  },
+  "description": null,
   "powerLevel": [
    1,
    1
@@ -1530,19 +2162,38 @@
     0
    ]
   },
+  "weapon": {
+   "damageType": "Resource Purple",
+   "fireRate": 3.0,
+   "costResource": "Resource White",
+   "knockback": 1500.0
+  },
   "resource": "Resource White"
  },
  "699decaa-30d6-4b73-970c-d0bc606f83a9": {
   "color": "#ffffff",
+  "type": {
+   "name": "WEAPON MODS",
+   "order": 2,
+   "isMain": false
+  },
+  "description": "Increases weapon fire rate",
   "powerLevel": [
    1,
    1
   ],
   "powerCore": null,
+  "weapon": null,
   "resource": "Resource White"
  },
  "6b3bedaf-1928-4c0d-8096-060368ee7184": {
   "color": "#ff00f0",
+  "type": {
+   "name": "WEAPONS",
+   "order": 3,
+   "isMain": true
+  },
+  "description": "A big bang, then many small bangs after",
   "powerLevel": [
    5,
    5
@@ -1578,10 +2229,25 @@
     0
    ]
   },
+  "weapon": {
+   "damage": 1.0,
+   "damageType": "Resource Purple",
+   "fireRate": 0.5,
+   "cost": 3.0,
+   "costResource": "Resource Purple",
+   "spread": 10.0,
+   "knockback": 300.0
+  },
   "resource": "Resource Purple"
  },
  "6cbe3f36-859a-4a1f-9ec6-fe44534af139": {
   "color": "#ff7700",
+  "type": {
+   "name": "GADGETS",
+   "order": 4,
+   "isMain": true
+  },
+  "description": "Prints drones equipped with\nprojectile weapon",
   "powerLevel": [
    1,
    2
@@ -1617,37 +2283,65 @@
     0
    ]
   },
+  "weapon": null,
   "resource": "Resource Caps"
  },
  "6e09adec-e4b4-46f7-bb33-50abb52815c4": {
   "color": "#ffffff",
+  "type": {
+   "name": "Embedded",
+   "order": 100,
+   "isMain": true
+  },
+  "description": null,
   "powerLevel": [
    1,
    1
   ],
   "powerCore": null,
+  "weapon": null,
   "resource": "Resource White"
  },
  "71019be4-fe93-4624-afcb-a1814ef5f388": {
   "color": "#ffffff",
+  "type": {
+   "name": "Embedded",
+   "order": 100,
+   "isMain": true
+  },
+  "description": null,
   "powerLevel": [
    1,
    1
   ],
   "powerCore": null,
+  "weapon": null,
   "resource": "Resource White"
  },
  "723ec0b9-de75-4cea-a7dd-d6ab3d4fd7b3": {
   "color": "#ffffff",
+  "type": {
+   "name": "Embedded",
+   "order": 100,
+   "isMain": true
+  },
+  "description": null,
   "powerLevel": [
    1,
    1
   ],
   "powerCore": null,
+  "weapon": null,
   "resource": "Resource White"
  },
  "73cf7441-4ef5-49e5-b26f-4d8394bd67dd": {
   "color": "#ffffff",
+  "type": {
+   "name": "WEAPONS",
+   "order": 3,
+   "isMain": true
+  },
+  "description": null,
   "powerLevel": [
    1,
    1
@@ -1682,29 +2376,56 @@
     0,
     0
    ]
+  },
+  "weapon": {
+   "damageType": "Resource White",
+   "fireRate": 0.4,
+   "costResource": "Resource White",
+   "burstSize": 3.0,
+   "knockback": 100.0
   },
   "resource": "Resource White"
  },
  "75ad6d0e-12cc-4a59-87a5-8e6a8b032a98": {
   "color": "#ffffff",
+  "type": {
+   "name": "Embedded",
+   "order": 100,
+   "isMain": true
+  },
+  "description": null,
   "powerLevel": [
    1,
    1
   ],
   "powerCore": null,
+  "weapon": null,
   "resource": "Resource White"
  },
  "7bc63223-bc7e-45fe-bae6-66f4ab86b51d": {
   "color": "#ffffff",
+  "type": {
+   "name": "Embedded",
+   "order": 100,
+   "isMain": true
+  },
+  "description": null,
   "powerLevel": [
    1,
    1
   ],
   "powerCore": null,
+  "weapon": null,
   "resource": "Resource White"
  },
  "7cb9173d-4229-48b8-b079-73dea8d339e5": {
   "color": "#ffffff",
+  "type": {
+   "name": "WEAPONS",
+   "order": 3,
+   "isMain": true
+  },
+  "description": null,
   "powerLevel": [
    1,
    1
@@ -1739,11 +2460,25 @@
     0,
     0
    ]
+  },
+  "weapon": {
+   "damage": 1.0,
+   "damageType": "Resource Health",
+   "fireRate": 10.0,
+   "costResource": "Resource White",
+   "spread": 0.1,
+   "knockback": 100.0
   },
   "resource": "Resource White"
  },
  "7da95b26-e06b-4508-893b-60bde596d98c": {
   "color": "#6a36ff",
+  "type": {
+   "name": "GADGETS",
+   "order": 4,
+   "isMain": true
+  },
+  "description": "Generates fuel anywhere you drop it.",
   "powerLevel": [
    2,
    5
@@ -1779,19 +2514,33 @@
     0
    ]
   },
+  "weapon": null,
   "resource": "Resource Tech"
  },
  "7e911e2c-8298-4fee-a6e2-bf9890fcbb56": {
   "color": "#ffffff",
+  "type": {
+   "name": "Embedded",
+   "order": 100,
+   "isMain": true
+  },
+  "description": null,
   "powerLevel": [
    1,
    1
   ],
   "powerCore": null,
+  "weapon": null,
   "resource": "Resource White"
  },
  "7efd6648-e13f-4f6e-8208-05cf41e63c47": {
   "color": "#ff00f0",
+  "type": {
+   "name": "GADGETS",
+   "order": 4,
+   "isMain": true
+  },
+  "description": "Drops a highly explosive bomb",
   "powerLevel": [
    2,
    5
@@ -1827,19 +2576,33 @@
     0
    ]
   },
+  "weapon": null,
   "resource": "Resource Purple"
  },
  "7fca9e7d-79f6-4a05-8b69-0084d0ac4c3e": {
   "color": "#ffffff",
+  "type": {
+   "name": "Embedded",
+   "order": 100,
+   "isMain": true
+  },
+  "description": null,
   "powerLevel": [
    1,
    1
   ],
   "powerCore": null,
+  "weapon": null,
   "resource": "Resource White"
  },
  "7fe9d646-5dd6-43b8-80d2-03ee41bcec67": {
   "color": "#ffffff",
+  "type": {
+   "name": "WEAPONS",
+   "order": 3,
+   "isMain": true
+  },
+  "description": null,
   "powerLevel": [
    1,
    1
@@ -1874,11 +2637,24 @@
     0,
     0
    ]
+  },
+  "weapon": {
+   "damageType": "Resource Caps",
+   "fireRate": 0.5,
+   "costResource": "Resource White",
+   "spread": 5.0,
+   "knockback": 200.0
   },
   "resource": "Resource White"
  },
  "8034fe08-d0c0-4bdc-8415-80d69d72e712": {
   "color": "#ff7700",
+  "type": {
+   "name": "WEAPONS",
+   "order": 3,
+   "isMain": true
+  },
+  "description": "Slow moving missile that locks on to\nenemies and ignites on impact",
   "powerLevel": [
    5,
    5
@@ -1913,20 +2689,39 @@
     0,
     0
    ]
+  },
+  "weapon": {
+   "fireRate": 5.0,
+   "cost": 3.0,
+   "costResource": "Resource Caps",
+   "spread": 20.0
   },
   "resource": "Resource Caps"
  },
  "8351e3d0-20bf-4f6d-a97a-2322dd76b596": {
   "color": "#ffffff",
+  "type": {
+   "name": "UPGRADES",
+   "order": 1,
+   "isMain": false
+  },
+  "description": "slowly regenerates <color=#A8A8A8>STAMINA</color>",
   "powerLevel": [
    1,
    1
   ],
   "powerCore": null,
+  "weapon": null,
   "resource": "Resource White"
  },
  "83539b7a-0b19-4309-931f-06dbb79ecebd": {
   "color": "#ff7700",
+  "type": {
+   "name": "GADGETS",
+   "order": 4,
+   "isMain": true
+  },
+  "description": "Drops glass full of hot substance.\nReleasing many burning sub-projectiles on explosion.\nPerfect for starting fires",
   "powerLevel": [
    2,
    5
@@ -1962,28 +2757,49 @@
     0
    ]
   },
+  "weapon": null,
   "resource": "Resource Caps"
  },
  "8598ed65-8b4b-4f59-8aef-58cbb137fc8d": {
   "color": "#ff7700",
+  "type": {
+   "name": "WEAPON MODS",
+   "order": 2,
+   "isMain": false
+  },
+  "description": "Projectiles explode and burn on impact\nas long as you have enough CAPS",
   "powerLevel": [
    1,
    1
   ],
   "powerCore": null,
+  "weapon": null,
   "resource": "Resource Caps"
  },
  "869b8723-9f5b-4cb2-9e3d-bd9881f29b20": {
   "color": "#00d8ff",
+  "type": {
+   "name": "WEAPON MODS",
+   "order": 2,
+   "isMain": false
+  },
+  "description": "Projectiles zap nearby enemies on impact\nas long as you have enough ELECTRON",
   "powerLevel": [
    1,
    1
   ],
   "powerCore": null,
+  "weapon": null,
   "resource": "Resource Electron"
  },
  "884b1ff5-8188-4c0f-b2f2-99e048dd3003": {
   "color": "#6a36ff",
+  "type": {
+   "name": "GADGETS",
+   "order": 4,
+   "isMain": true
+  },
+  "description": "Prints advanced drones\nequipped with laser weapon",
   "powerLevel": [
    1,
    1
@@ -2019,10 +2835,17 @@
     0
    ]
   },
+  "weapon": null,
   "resource": "Resource Tech"
  },
  "938ea129-d605-4e3e-81eb-f8fbfba79f85": {
   "color": "#ffffff",
+  "type": {
+   "name": "WEAPONS",
+   "order": 3,
+   "isMain": true
+  },
+  "description": null,
   "powerLevel": [
    1,
    1
@@ -2057,11 +2880,22 @@
     0,
     0
    ]
+  },
+  "weapon": {
+   "fireRate": 0.2,
+   "costResource": "Resource Caps",
+   "burstSize": 4.0
   },
   "resource": "Resource White"
  },
  "957fc473-fd1a-44c1-817e-0b1857250193": {
   "color": "#ffffff",
+  "type": {
+   "name": "WEAPONS",
+   "order": 3,
+   "isMain": true
+  },
+  "description": null,
   "powerLevel": [
    1,
    1
@@ -2096,11 +2930,25 @@
     0,
     0
    ]
+  },
+  "weapon": {
+   "damage": 2.0,
+   "damageType": "Resource Caps",
+   "fireRate": 30.0,
+   "costResource": "Resource Caps",
+   "projectileCount": 4.0,
+   "spread": 360.0
   },
   "resource": "Resource White"
  },
  "95988739-700c-4fe7-b44d-31514cdd86d7": {
   "color": "#ffffff",
+  "type": {
+   "name": "WEAPONS",
+   "order": 3,
+   "isMain": true
+  },
+  "description": "Long range, high damage projectile weapon",
   "powerLevel": [
    2,
    4
@@ -2135,20 +2983,42 @@
     0,
     0
    ]
+  },
+  "weapon": {
+   "damage": 4.0,
+   "damageType": "Resource White",
+   "fireRate": 0.7,
+   "cost": 5.0,
+   "costResource": "Resource White",
+   "spread": 10.0,
+   "knockback": 270.0
   },
   "resource": "Resource White"
  },
  "97b5d6c6-fdee-4e07-9f1c-e7eb71018ab8": {
   "color": "#ff7700",
+  "type": {
+   "name": "UPGRADES",
+   "order": 1,
+   "isMain": false
+  },
+  "description": "Increases maximum <color=#B16623>CAPS</color> capacity",
   "powerLevel": [
    1,
    1
   ],
   "powerCore": null,
+  "weapon": null,
   "resource": "Resource Caps"
  },
  "9851b4de-4a77-40e4-94a0-d5d168f0573f": {
   "color": "#ffffff",
+  "type": {
+   "name": "WEAPONS",
+   "order": 3,
+   "isMain": true
+  },
+  "description": "Short range, high damage spinning discs",
   "powerLevel": [
    2,
    4
@@ -2183,38 +3053,74 @@
     0,
     0
    ]
+  },
+  "weapon": {
+   "damage": 3.0,
+   "damageType": "Resource White",
+   "fireRate": 4.0,
+   "cost": 2.0,
+   "costResource": "Resource White",
+   "spread": 17.0,
+   "knockback": 30.0
   },
   "resource": "Resource White"
  },
  "9ebbe694-85cd-46de-ba7a-2bfd5934e50c": {
   "color": "#ffffff",
+  "type": {
+   "name": "UPGRADES",
+   "order": 1,
+   "isMain": false
+  },
+  "description": "Increases maximum <color=#A8A8A8>STAMINA</color>",
   "powerLevel": [
    1,
    1
   ],
   "powerCore": null,
+  "weapon": null,
   "resource": "Resource White"
  },
  "a2d09b85-8a79-449c-9dad-61a3dbf9607a": {
   "color": "#ff0000",
+  "type": {
+   "name": "UPGRADES",
+   "order": 1,
+   "isMain": false
+  },
+  "description": null,
   "powerLevel": [
    1,
    1
   ],
   "powerCore": null,
+  "weapon": null,
   "resource": "Resource Health"
  },
  "a30f009c-4bbb-4f11-a411-6f8cdb26ceee": {
   "color": "#ffffff",
+  "type": {
+   "name": "Embedded",
+   "order": 100,
+   "isMain": true
+  },
+  "description": null,
   "powerLevel": [
    1,
    1
   ],
   "powerCore": null,
+  "weapon": null,
   "resource": "Resource White"
  },
  "a42354fe-a50e-4a2a-a264-28eb728a7b9e": {
   "color": "#ffffff",
+  "type": {
+   "name": "WEAPONS",
+   "order": 3,
+   "isMain": true
+  },
+  "description": null,
   "powerLevel": [
    1,
    1
@@ -2249,11 +3155,25 @@
     0,
     0
    ]
+  },
+  "weapon": {
+   "damageType": "Resource Electron",
+   "fireRate": 5.0,
+   "costResource": "Resource White",
+   "projectileCount": 2.0,
+   "spread": 30.0,
+   "knockback": 20.0
   },
   "resource": "Resource White"
  },
  "a4c2162a-319a-45a3-b5cb-073aaef4bbf6": {
   "color": "#ff7700",
+  "type": {
+   "name": "WEAPONS",
+   "order": 3,
+   "isMain": true
+  },
+  "description": "Slow moving orb that explodes\nwith high burn pontential",
   "powerLevel": [
    5,
    5
@@ -2288,11 +3208,25 @@
     0,
     0
    ]
+  },
+  "weapon": {
+   "damage": 2.0,
+   "fireRate": 2.0,
+   "cost": 2.0,
+   "costResource": "Resource Caps",
+   "spread": 10.0,
+   "knockback": 100.0
   },
   "resource": "Resource Caps"
  },
  "a5821cd4-48c9-4b1e-96aa-1ef4e0d64a50": {
   "color": "#ffffff",
+  "type": {
+   "name": "WEAPONS",
+   "order": 3,
+   "isMain": true
+  },
+  "description": null,
   "powerLevel": [
    1,
    1
@@ -2327,11 +3261,24 @@
     0,
     0
    ]
+  },
+  "weapon": {
+   "damage": 1.0,
+   "damageType": "Resource White",
+   "fireRate": 5.0,
+   "costResource": "Resource White",
+   "spread": 10.0
   },
   "resource": "Resource White"
  },
  "a672acfa-1043-4e45-87fc-e02a7c339e62": {
   "color": "#00d8ff",
+  "type": {
+   "name": "GADGETS",
+   "order": 4,
+   "isMain": true
+  },
+  "description": "Prints drones that electrocute\nnearby enemies",
   "powerLevel": [
    1,
    1
@@ -2367,10 +3314,17 @@
     0
    ]
   },
+  "weapon": null,
   "resource": "Resource Electron"
  },
  "a8821721-eb57-4934-81d4-4c29427b3a26": {
   "color": "#ffffff",
+  "type": {
+   "name": "WEAPONS",
+   "order": 3,
+   "isMain": true
+  },
+  "description": null,
   "powerLevel": [
    1,
    1
@@ -2405,11 +3359,24 @@
     0,
     0
    ]
+  },
+  "weapon": {
+   "damage": 2.0,
+   "damageType": "Resource White",
+   "fireRate": 0.7,
+   "costResource": "Resource White",
+   "knockback": 1500.0
   },
   "resource": "Resource White"
  },
  "aabbf1de-33e5-4f1d-8cb2-2ad35c95251f": {
   "color": "#ffffff",
+  "type": {
+   "name": "WEAPONS",
+   "order": 3,
+   "isMain": true
+  },
+  "description": null,
   "powerLevel": [
    1,
    1
@@ -2444,11 +3411,22 @@
     0,
     0
    ]
+  },
+  "weapon": {
+   "fireRate": 0.2,
+   "costResource": "Resource Caps",
+   "burstSize": 4.0
   },
   "resource": "Resource White"
  },
  "ae453f20-1aa1-4ea2-af9a-ca2756325454": {
   "color": "#ffffff",
+  "type": {
+   "name": "WEAPONS",
+   "order": 3,
+   "isMain": true
+  },
+  "description": null,
   "powerLevel": [
    1,
    1
@@ -2483,11 +3461,24 @@
     0,
     0
    ]
+  },
+  "weapon": {
+   "damage": 1.0,
+   "damageType": "Resource White",
+   "fireRate": 7.0,
+   "costResource": "Resource White",
+   "spread": 7.0
   },
   "resource": "Resource White"
  },
  "b17ce454-50f0-45d8-b565-8c6440688407": {
   "color": "#ff00f0",
+  "type": {
+   "name": "WEAPONS",
+   "order": 3,
+   "isMain": true
+  },
+  "description": "Slow moving explosive projectiles",
   "powerLevel": [
    5,
    5
@@ -2522,20 +3513,42 @@
     0,
     0
    ]
+  },
+  "weapon": {
+   "damage": 1.0,
+   "damageType": "Resource Purple",
+   "fireRate": 5.0,
+   "cost": 1.0,
+   "costResource": "Resource Purple",
+   "spread": 10.0,
+   "knockback": 20.0
   },
   "resource": "Resource Purple"
  },
  "b3c4ae5d-b5ad-46a4-8030-240470591fca": {
   "color": "#ffffff",
+  "type": {
+   "name": "Embedded",
+   "order": 100,
+   "isMain": true
+  },
+  "description": null,
   "powerLevel": [
    1,
    1
   ],
   "powerCore": null,
+  "weapon": null,
   "resource": "Resource White"
  },
  "bbc0dd01-a91a-427c-977a-f1a546c3e4a0": {
   "color": "#ffffff",
+  "type": {
+   "name": "WEAPONS",
+   "order": 3,
+   "isMain": true
+  },
+  "description": null,
   "powerLevel": [
    1,
    1
@@ -2570,11 +3583,24 @@
     0,
     0
    ]
+  },
+  "weapon": {
+   "damage": 4.0,
+   "damageType": "Resource White",
+   "fireRate": 20.0,
+   "cost": 0.2,
+   "costResource": "Resource White"
   },
   "resource": "Resource White"
  },
  "bc282173-4c8b-4960-8742-9069f29d9fbb": {
   "color": "#ffffff",
+  "type": {
+   "name": "WEAPONS",
+   "order": 3,
+   "isMain": true
+  },
+  "description": null,
   "powerLevel": [
    1,
    1
@@ -2609,20 +3635,42 @@
     0,
     0
    ]
+  },
+  "weapon": {
+   "damage": 1.0,
+   "damageType": "Resource White",
+   "fireRate": 0.7,
+   "costResource": "Resource White",
+   "projectileCount": 6.0,
+   "spread": 20.0,
+   "knockback": 7000.0
   },
   "resource": "Resource White"
  },
  "bcc06d5e-5a27-4313-ae42-dd07877df2bb": {
   "color": "#ffffff",
+  "type": {
+   "name": "WEAPON MODS",
+   "order": 2,
+   "isMain": false
+  },
+  "description": "Adds 1 extra projectile to every shot\nbut also makes every shot cost more resource",
   "powerLevel": [
    1,
    1
   ],
   "powerCore": null,
+  "weapon": null,
   "resource": "Resource White"
  },
  "bd569afb-39b6-46c2-9c5a-57a282f073c4": {
   "color": "#ffffff",
+  "type": {
+   "name": "WEAPONS",
+   "order": 3,
+   "isMain": true
+  },
+  "description": null,
   "powerLevel": [
    1,
    1
@@ -2657,20 +3705,40 @@
     0,
     0
    ]
+  },
+  "weapon": {
+   "damage": 1.0,
+   "damageType": "Resource Caps",
+   "fireRate": 25.0,
+   "cost": 0.08,
+   "costResource": "Resource Caps"
   },
   "resource": "Resource White"
  },
  "bf8fb7e6-d7fe-4e10-a261-abf1843909a9": {
   "color": "#00d8ff",
+  "type": {
+   "name": "UPGRADES",
+   "order": 1,
+   "isMain": false
+  },
+  "description": "Forms a shield around the ship that absorbs incoming\ndamage but you lose <color=#009AB4>ELECTRON</color> every time this happens.\nthe greater the damage the more you loose.",
   "powerLevel": [
    1,
    1
   ],
   "powerCore": null,
+  "weapon": null,
   "resource": "Resource Electron"
  },
  "bfa5e950-37e2-484f-b39c-80c0dce4edc6": {
   "color": "#ffffff",
+  "type": {
+   "name": "WEAPONS",
+   "order": 3,
+   "isMain": true
+  },
+  "description": null,
   "powerLevel": [
    1,
    1
@@ -2705,47 +3773,87 @@
     0,
     0
    ]
+  },
+  "weapon": {
+   "damage": 3.0,
+   "damageType": "Resource Caps",
+   "fireRate": 25.0,
+   "costResource": "Resource Caps"
   },
   "resource": "Resource White"
  },
  "c0c721ff-3be0-4e4e-a2e1-dff7b1a11230": {
   "color": "#ff0000",
+  "type": {
+   "name": "UPGRADES",
+   "order": 1,
+   "isMain": false
+  },
+  "description": "slowly regenerates <color=#B03B3B>HEALTH</color>",
   "powerLevel": [
    1,
    1
   ],
   "powerCore": null,
+  "weapon": null,
   "resource": "Resource Health"
  },
  "c0d6e452-badd-4c88-b6a0-12494ed01fce": {
   "color": "#ffffff",
+  "type": {
+   "name": "Embedded",
+   "order": 100,
+   "isMain": true
+  },
+  "description": null,
   "powerLevel": [
    1,
    1
   ],
   "powerCore": null,
+  "weapon": null,
   "resource": "Resource White"
  },
  "c189627d-ac8f-436c-b833-b66eb22644f6": {
   "color": "#ffffff",
+  "type": {
+   "name": "Embedded",
+   "order": 100,
+   "isMain": true
+  },
+  "description": null,
   "powerLevel": [
    1,
    1
   ],
   "powerCore": null,
+  "weapon": null,
   "resource": "Resource White"
  },
  "c3450eb2-13e0-42de-a90e-13a052c7b431": {
   "color": "#ffffff",
+  "type": {
+   "name": "Embedded",
+   "order": 100,
+   "isMain": true
+  },
+  "description": null,
   "powerLevel": [
    1,
    1
   ],
   "powerCore": null,
+  "weapon": null,
   "resource": "Resource White"
  },
  "c742cdd3-284d-420a-9feb-399f820c15ce": {
   "color": "#ffffff",
+  "type": {
+   "name": "WEAPONS",
+   "order": 3,
+   "isMain": true
+  },
+  "description": null,
   "powerLevel": [
    1,
    1
@@ -2780,29 +3888,57 @@
     0,
     0
    ]
+  },
+  "weapon": {
+   "damage": 1.0,
+   "damageType": "Resource Health",
+   "fireRate": 7.0,
+   "costResource": "Resource White",
+   "spread": 0.1,
+   "knockback": 100.0
   },
   "resource": "Resource White"
  },
  "c792bc27-6cc0-4162-bf25-55720fdcc9d4": {
   "color": "#ff00f0",
+  "type": {
+   "name": "UPGRADES",
+   "order": 1,
+   "isMain": false
+  },
+  "description": "Forms a shield around the ship that absorbs incoming\ndamage but you lose <color=#B32AAC>GEL</color> every time this happens.\nthe greater the damage the more you loose.",
   "powerLevel": [
    1,
    1
   ],
   "powerCore": null,
+  "weapon": null,
   "resource": "Resource Purple"
  },
  "c8da87d5-997b-4d1c-aefb-5242051a10d7": {
   "color": "#49c500",
+  "type": {
+   "name": "BOOSTERS",
+   "order": 100,
+   "isMain": false
+  },
+  "description": "Upgrades nearby modules by\nboosting their stats",
   "powerLevel": [
    1,
    1
   ],
   "powerCore": null,
+  "weapon": null,
   "resource": null
  },
  "c9bd5e9a-485f-407e-af8b-1f9082ac67da": {
   "color": "#00d8ff",
+  "type": {
+   "name": "GADGETS",
+   "order": 4,
+   "isMain": true
+  },
+  "description": "Deploys a ring of electrical projectiles",
   "powerLevel": [
    2,
    5
@@ -2838,37 +3974,65 @@
     0
    ]
   },
+  "weapon": null,
   "resource": "Resource Electron"
  },
  "d346d114-bf89-483f-8112-8da882cf3f45": {
   "color": "#ffffff",
+  "type": {
+   "name": "Embedded",
+   "order": 100,
+   "isMain": true
+  },
+  "description": null,
   "powerLevel": [
    1,
    1
   ],
   "powerCore": null,
+  "weapon": null,
   "resource": "Resource White"
  },
  "d376a260-d9d5-42da-b2fb-fbe20e79f625": {
   "color": "#ffffff",
+  "type": {
+   "name": "Embedded",
+   "order": 100,
+   "isMain": true
+  },
+  "description": null,
   "powerLevel": [
    1,
    1
   ],
   "powerCore": null,
+  "weapon": null,
   "resource": "Resource White"
  },
  "d4e6117e-75d9-490e-bbc6-f6a683b2fd48": {
   "color": "#ff00f0",
+  "type": {
+   "name": "UPGRADES",
+   "order": 1,
+   "isMain": false
+  },
+  "description": "Increases maximum <color=#B32AAC>GEL</color> capacity",
   "powerLevel": [
    1,
    1
   ],
   "powerCore": null,
+  "weapon": null,
   "resource": "Resource Purple"
  },
  "d9377cc7-3bc4-44c9-af1c-a0647f62e96c": {
   "color": "#ffffff",
+  "type": {
+   "name": "WEAPONS",
+   "order": 3,
+   "isMain": true
+  },
+  "description": null,
   "powerLevel": [
    1,
    1
@@ -2903,20 +4067,39 @@
     0,
     0
    ]
+  },
+  "weapon": {
+   "fireRate": 4.0,
+   "cost": 1.0,
+   "costResource": "Resource White",
+   "spread": 10.0
   },
   "resource": "Resource White"
  },
  "d939827f-4fea-4f61-a7aa-df3baeab6dde": {
   "color": "#ffffff",
+  "type": {
+   "name": "Embedded",
+   "order": 100,
+   "isMain": true
+  },
+  "description": null,
   "powerLevel": [
    1,
    1
   ],
   "powerCore": null,
+  "weapon": null,
   "resource": "Resource White"
  },
  "d9b599dc-aa8d-41c0-a535-cf66d009c038": {
   "color": "#6a36ff",
+  "type": {
+   "name": "WEAPONS",
+   "order": 3,
+   "isMain": true
+  },
+  "description": "Explodes on impact and releases\na cluster of secondary explosives",
   "powerLevel": [
    5,
    5
@@ -2951,11 +4134,26 @@
     0,
     0
    ]
+  },
+  "weapon": {
+   "damage": 1.0,
+   "damageType": "Resource Tech",
+   "fireRate": 0.5,
+   "cost": 1.0,
+   "costResource": "Resource Tech",
+   "spread": 10.0,
+   "knockback": 300.0
   },
   "resource": "Resource Tech"
  },
  "dc23d157-0048-48a2-abe2-6a28c2638e5c": {
   "color": "#00d8ff",
+  "type": {
+   "name": "WEAPONS",
+   "order": 3,
+   "isMain": true
+  },
+  "description": "Zaps nearby enemies units when explodes",
   "powerLevel": [
    5,
    5
@@ -2990,29 +4188,57 @@
     0,
     0
    ]
+  },
+  "weapon": {
+   "damage": 3.0,
+   "damageType": "Resource Purple",
+   "fireRate": 5.0,
+   "cost": 3.0,
+   "costResource": "Resource Electron",
+   "spread": 20.0
   },
   "resource": "Resource Electron"
  },
  "dd62435c-887d-4531-9f0f-51f8a6ed09e3": {
   "color": "#ffffff",
+  "type": {
+   "name": "Embedded",
+   "order": 100,
+   "isMain": true
+  },
+  "description": null,
   "powerLevel": [
    1,
    1
   ],
   "powerCore": null,
+  "weapon": null,
   "resource": "Resource White"
  },
  "dd7c4547-8332-4167-b67d-7b5445b5d8a3": {
   "color": "#6a36ff",
+  "type": {
+   "name": "UPGRADES",
+   "order": 1,
+   "isMain": false
+  },
+  "description": "slowly regenerates <color=#5F46A7>TECH</color>",
   "powerLevel": [
    1,
    1
   ],
   "powerCore": null,
+  "weapon": null,
   "resource": "Resource Tech"
  },
  "ddd33d91-d543-4ff9-8610-6827b135ea6a": {
   "color": "#00d8ff",
+  "type": {
+   "name": "WEAPONS",
+   "order": 3,
+   "isMain": true
+  },
+  "description": "Orbs connected by electron arcs",
   "powerLevel": [
    5,
    5
@@ -3047,20 +4273,42 @@
     0,
     0
    ]
+  },
+  "weapon": {
+   "damage": 1.0,
+   "damageType": "Resource Electron",
+   "fireRate": 5.0,
+   "cost": 0.5,
+   "costResource": "Resource Electron",
+   "spread": 20.0,
+   "knockback": 20.0
   },
   "resource": "Resource Electron"
  },
  "df92003e-2ffa-467a-b8bc-0936515311ea": {
   "color": "#ffffff",
+  "type": {
+   "name": "WEAPON MODS",
+   "order": 2,
+   "isMain": false
+  },
+  "description": "Projectiles travel further",
   "powerLevel": [
    1,
    1
   ],
   "powerCore": null,
+  "weapon": null,
   "resource": "Resource White"
  },
  "e00d2bc2-548b-4356-9241-438bea5979cd": {
   "color": "#ffffff",
+  "type": {
+   "name": "WEAPONS",
+   "order": 3,
+   "isMain": true
+  },
+  "description": null,
   "powerLevel": [
    1,
    1
@@ -3095,11 +4343,24 @@
     0,
     0
    ]
+  },
+  "weapon": {
+   "damageType": "Resource White",
+   "fireRate": 0.7,
+   "cost": 3.0,
+   "costResource": "Resource White",
+   "knockback": 100.0
   },
   "resource": "Resource White"
  },
  "e070f3d8-c876-440d-a66e-7e9d8fd8b6ca": {
   "color": "#00d8ff",
+  "type": {
+   "name": "POWER",
+   "order": 0,
+   "isMain": false
+  },
+  "description": "Supplies POWER to nearby SLOTS expanding\nthe usable area of module clusters",
   "powerLevel": [
    1,
    1
@@ -3135,10 +4396,17 @@
     0
    ]
   },
+  "weapon": null,
   "resource": "Resource Electron"
  },
  "e0c6bc5b-9a68-4a11-a0cb-8fe5e7436672": {
   "color": "#ffffff",
+  "type": {
+   "name": "WEAPONS",
+   "order": 3,
+   "isMain": true
+  },
+  "description": "Piercing projectiles",
   "powerLevel": [
    2,
    4
@@ -3173,11 +4441,25 @@
     0,
     0
    ]
+  },
+  "weapon": {
+   "damage": 1.0,
+   "damageType": "Resource White",
+   "fireRate": 5.0,
+   "cost": 1.0,
+   "costResource": "Resource White",
+   "spread": 9.0
   },
   "resource": "Resource White"
  },
  "e1236293-1c9c-472d-ba4f-0246abf80e96": {
   "color": "#ffffff",
+  "type": {
+   "name": "WEAPONS",
+   "order": 3,
+   "isMain": true
+  },
+  "description": "Small homing missiles that lock on to enemies",
   "powerLevel": [
    2,
    4
@@ -3213,10 +4495,23 @@
     0
    ]
   },
+  "weapon": {
+   "damage": 1.0,
+   "fireRate": 2.0,
+   "cost": 3.0,
+   "costResource": "Resource White",
+   "spread": 20.0
+  },
   "resource": "Resource White"
  },
  "e2c3772b-9226-43b5-a9c7-6a6456aaeb24": {
   "color": "#ffffff",
+  "type": {
+   "name": "WEAPONS",
+   "order": 3,
+   "isMain": true
+  },
+  "description": null,
   "powerLevel": [
    1,
    1
@@ -3251,11 +4546,26 @@
     0,
     0
    ]
+  },
+  "weapon": {
+   "damage": 2.0,
+   "damageType": "Resource Health",
+   "fireRate": 10.0,
+   "cost": 1.0,
+   "costResource": "Resource White",
+   "spread": 0.1,
+   "knockback": 100.0
   },
   "resource": "Resource White"
  },
  "e581ddd9-034c-42c1-a501-fe435a52939f": {
   "color": "#ff00f0",
+  "type": {
+   "name": "WEAPONS",
+   "order": 3,
+   "isMain": true
+  },
+  "description": "Short range explosive shotgun",
   "powerLevel": [
    5,
    5
@@ -3290,11 +4600,27 @@
     0,
     0
    ]
+  },
+  "weapon": {
+   "damage": 1.0,
+   "damageType": "Resource Purple",
+   "fireRate": 4.0,
+   "cost": 1.0,
+   "costResource": "Resource Purple",
+   "projectileCount": 4.0,
+   "spread": 15.0,
+   "knockback": 20.0
   },
   "resource": "Resource Purple"
  },
  "eba0f80e-74fd-45e9-9319-0777c72e0cd6": {
   "color": "#ffffff",
+  "type": {
+   "name": "WEAPONS",
+   "order": 3,
+   "isMain": true
+  },
+  "description": null,
   "powerLevel": [
    1,
    1
@@ -3329,20 +4655,40 @@
     0,
     0
    ]
+  },
+  "weapon": {
+   "damageType": "Resource Tech",
+   "fireRate": 0.5,
+   "costResource": "Resource White",
+   "burstSize": 5.0,
+   "knockback": 1500.0
   },
   "resource": "Resource White"
  },
  "ed74decf-4507-46a1-a41b-9b17ca155d8e": {
   "color": "#ff0000",
+  "type": {
+   "name": "UPGRADES",
+   "order": 1,
+   "isMain": false
+  },
+  "description": "Increases maximum <color=#B03B3B>HEALTH</color>",
   "powerLevel": [
    1,
    1
   ],
   "powerCore": null,
+  "weapon": null,
   "resource": "Resource Health"
  },
  "eecde5fa-0f5d-45d2-bf40-59ed14bded7d": {
   "color": "#ffffff",
+  "type": {
+   "name": "WEAPONS",
+   "order": 3,
+   "isMain": true
+  },
+  "description": null,
   "powerLevel": [
    1,
    1
@@ -3377,20 +4723,40 @@
     0,
     0
    ]
+  },
+  "weapon": {
+   "damage": 1.0,
+   "damageType": "Resource White",
+   "fireRate": 7.0,
+   "costResource": "Resource White",
+   "spread": 10.0
   },
   "resource": "Resource White"
  },
  "f404b176-bec9-486c-9733-65ce4842fdd7": {
   "color": "#ffffff",
+  "type": {
+   "name": "Embedded",
+   "order": 100,
+   "isMain": true
+  },
+  "description": null,
   "powerLevel": [
    1,
    1
   ],
   "powerCore": null,
+  "weapon": null,
   "resource": "Resource White"
  },
  "f7168902-c6c4-426c-9da7-f1bfdcb2c2d5": {
   "color": "#ffffff",
+  "type": {
+   "name": "WEAPONS",
+   "order": 3,
+   "isMain": true
+  },
+  "description": null,
   "powerLevel": [
    1,
    1
@@ -3425,20 +4791,38 @@
     0,
     0
    ]
+  },
+  "weapon": {
+   "fireRate": 0.15,
+   "costResource": "Resource White",
+   "spread": 10.0
   },
   "resource": "Resource White"
  },
  "f951a44b-0494-466a-8a03-56ee3351db1e": {
   "color": "#ffffff",
+  "type": {
+   "name": "Embedded",
+   "order": 100,
+   "isMain": true
+  },
+  "description": null,
   "powerLevel": [
    1,
    1
   ],
   "powerCore": null,
+  "weapon": null,
   "resource": "Resource White"
  },
  "f9fdd750-2a66-4be2-9e9f-b4137d1b6f58": {
   "color": "#ffffff",
+  "type": {
+   "name": "WEAPONS",
+   "order": 3,
+   "isMain": true
+  },
+  "description": null,
   "powerLevel": [
    1,
    1
@@ -3474,19 +4858,39 @@
     0
    ]
   },
+  "weapon": {
+   "damage": 1.0,
+   "fireRate": 30.0,
+   "cost": 0.0333,
+   "costResource": "Resource Caps",
+   "spread": 15.0
+  },
   "resource": "Resource White"
  },
  "fa46fc36-1e37-4c91-a319-172285b9c3dd": {
   "color": "#ff7700",
+  "type": {
+   "name": "UPGRADES",
+   "order": 1,
+   "isMain": false
+  },
+  "description": "slowly regenerates <color=#B16623>CAPS</color>",
   "powerLevel": [
    1,
    1
   ],
   "powerCore": null,
+  "weapon": null,
   "resource": "Resource Caps"
  },
  "fc6c2229-bdbb-4c68-a470-c293db508654": {
   "color": "#00d8ff",
+  "type": {
+   "name": "WEAPONS",
+   "order": 3,
+   "isMain": true
+  },
+  "description": "Zaps nearby enemies until it runs out of charge",
   "powerLevel": [
    5,
    5
@@ -3521,6 +4925,15 @@
     0,
     0
    ]
+  },
+  "weapon": {
+   "damage": 1.0,
+   "damageType": "Resource Electron",
+   "fireRate": 5.0,
+   "cost": 3.0,
+   "costResource": "Resource Electron",
+   "spread": 20.0,
+   "knockback": 20.0
   },
   "resource": "Resource Electron"
  }

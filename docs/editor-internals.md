@@ -109,7 +109,10 @@ node; the `state_referenced_locally` autofixer warning is intentionally silenced
 These JSON files under `src/lib/save/` are extracted from the installed game and checked in:
 
 - `asset-names.json` — id → display name/category. `python scripts/extract-asset-names.py [Punk_Data]`.
-- `module-caps.json` — module GUID → capacity effects, recharge effects, and slot level deltas. Two steps:
+- `module-caps.json` — module GUID → **every** decoded `ModuleEffect` plus slot level deltas. The
+  eight C# effect subclasses all reduce to one shape (a `FloatSeries` magnitude, usually a resource,
+  a few scalars), so `EFFECT_KINDS` in the step-2 script maps each type onto it; an effect type added
+  by a game update prints an "unknown effect" warning instead of vanishing. Two steps:
   `python scripts/extract-module-caps.py [Punk_Data]` then `bun scripts/extract-module-caps.ts`. The
   intermediate `scripts/module-effects-raw.json` is gitignored.
 - `resource-icons.json` — resource id → data-URI PNG of its HUD icon. `python
@@ -118,7 +121,8 @@ These JSON files under `src/lib/save/` are extracted from the installed game and
 - `item-icons.json` — ingredient/consumable/module id → data-URI PNG of its item art, at **native
   size**. `python scripts/extract-item-icons.py [Punk_Data]`. Rendered by
   `components/ItemIcon.svelte`.
-- `module-info.json` — module id → `{ color, resource, powerLevel: [min,max], powerCore }`. `python
+- `module-info.json` — module id → `{ color, resource, type, description, powerLevel: [min,max],
+  powerCore, weapon }`. `python
   scripts/extract-module-info.py [Punk_Data]`. Drives module tinting in the UI and supplies the
   defaults `addModule` needs — see the module-colour section in game-code.md.
 
@@ -142,6 +146,46 @@ load, no layout pass), and `iconStyle(uri, scale)` emits `width`/`height` in px 
 The consequence upstream: **the extraction scripts must emit sprites at native size.** The old
 `ITEM_MAX = 64` long-edge cap in `extract-item-icons.py` resampled by a fractional factor and broke
 the grid before the browser ever saw it; it was removed.
+
+## Game rich text: parse it, don't strip it
+
+Module descriptions are authored as TextMesh Pro markup — `slowly regenerates
+<color=#B32AAC>GEL</color>` — and the colours carry meaning: they are the resource colours, so the
+tag is how the player sees which resource a module touches. Printing the raw string leaks markup;
+stripping it loses the signal.
+
+`$lib/save/rich-text.ts` parses it into a flat run list (a stack of active styles, since every tag
+TMP allows here is inline styling) and `components/RichText.svelte` renders it. It is built as a
+**tag table**, not a pile of regex replacements, because the game is in development and updates will
+add tags:
+
+- Supporting a new tag = one entry in `TAGS`.
+- An **unknown tag is consumed, not printed** — the same thing TMP does — so new markup degrades to
+  plain text rather than showing `<size=120%>` to the player.
+- Only `<color>` appears in the current build; `b`/`i`/`u`/`s`/`br`/`space` are supported because
+  they cost nothing and are the tags most likely to turn up next.
+
+## Modules in the UI
+
+`components/ModuleList.svelte` renders a list of modules grouped by category, and both places that
+show modules use it: the vault section and the add-module modal (`ModulePicker.svelte`). The
+per-row controls differ, so the list takes an `actions` snippet — the vault passes connection
+toggles / power cores / remove, the picker passes an Add button.
+
+- **Categories come from the game**, not a list in the editor: `ModuleData.moduleType` points at a
+  `ModuleType` asset whose `displayName` is the shop category and whose `orderInShop` is the order.
+  `moduleCategory(id)` reads it. Today that is WEAPONS, GADGETS, UPGRADES (the ship modules), WEAPON
+  MODS, plus the single-module POWER / BOOSTERS / Embedded. A renamed or added category carries
+  through on the next extraction with no code change.
+- **The power-core field is hidden for modules that have no core** (`usesPowerCore(id)`, i.e.
+  `powerCore != null`). That is exactly UPGRADES and WEAPON MODS, which also have a `powerLevel`
+  range of `[1,1]` — the field could only ever read 1 there.
+- **Stat lines** (`$lib/save/module-stats.ts`) are the "+2 max Fuel" / "0.2 per shot" numbers. They
+  come from two places: `WeaponData` for weapon modules (damage, fire rate, per-shot cost) and the
+  decoded `ModuleEffect` list for everything else. Effects are evaluated at the module's *own* asset
+  level — the unboosted figure — whereas the ship-resource totals evaluate them at their boosted
+  grid level. A stat line with a `resource` renders that resource's HUD icon in place of its name,
+  which is what the game does too (the written name stays as `sr-only` text).
 
 ## In-browser end-to-end testing
 
