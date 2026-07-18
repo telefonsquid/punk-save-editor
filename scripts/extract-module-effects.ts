@@ -1,5 +1,5 @@
 /**
- * Step 2 of regenerating src/lib/save/module-effects.json: decodes the Odin
+ * Step 2 of regenerating src/lib/game/module-effects.json: decodes the Odin
  * binary payloads dumped by extract-module-effects.py into every effect a
  * module carries.
  *
@@ -17,8 +17,8 @@
  */
 import { readFileSync, writeFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
-import { OdinBinaryReader, isNode } from '../src/lib/save/odin';
-import type { OdinValue } from '../src/lib/save/odin';
+import { OdinBinaryReader, isNode } from '../src/lib/game/odin';
+import type { OdinValue } from '../src/lib/game/odin';
 
 const here = fileURLToPath(new URL('.', import.meta.url));
 const raw = JSON.parse(readFileSync(`${here}/module-effects-raw.json`, 'utf8'));
@@ -178,7 +178,7 @@ for (const [id, st] of Object.entries(raw.slotTypes as Record<string, { levelDel
 }
 
 writeFileSync(
-	`${here}/../src/lib/save/module-effects.json`,
+	`${here}/../src/lib/game/module-effects.json`,
 	JSON.stringify({ modules, slotLevelDeltas }, null, 1)
 );
 

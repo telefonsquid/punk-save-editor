@@ -5,16 +5,22 @@
 	import ItemIcon from '$lib/components/ItemIcon.svelte';
 	import ModuleList from '$lib/components/ModuleList.svelte';
 	import ModulePicker from '$lib/components/ModulePicker.svelte';
+	import { fmt1, fmtRate, formatDuration } from '$lib/format';
+	import {
+		assets,
+		assetsByCategory,
+		displayName,
+		equippableModules,
+		resourceLabel,
+		usesPowerCore
+	} from '$lib/game/data';
 	import { isDownloadDir, pickSaveDir, supportsInPlaceSave, type SaveDir } from '$lib/save/io';
+	import { shipResourceCaps, shipResourceRegen, shipResources } from '$lib/save/ship';
 	import {
 		addConsumable,
 		addIngredient,
 		addModule,
-		assets,
-		assetsByCategory,
 		CONNECTION_SIDES,
-		displayName,
-		equippableModules,
 		getConsumables,
 		getModules,
 		getResources,
@@ -26,13 +32,8 @@
 		OPAQUE_FILES,
 		removeModule,
 		reorderConsumables,
-		resourceLabel,
-		usesPowerCore,
 		runStats,
 		saveSlot,
-		shipResourceCaps,
-		shipResourceRegen,
-		shipResources,
 		type ConnectionKey,
 		type ModuleView,
 		type ResourcePair,
@@ -288,21 +289,6 @@
 		};
 	}
 
-	/** Displays a float with at most one decimal. Only the *display* is rounded —
-	 * the tree keeps whatever precision the game wrote (and whatever the user
-	 * types), so saving never quietly truncates a value that wasn't edited. */
-	function fmt1(v: number): string {
-		return Number.isInteger(v) ? String(v) : v.toFixed(1);
-	}
-
-	/** Recharge rates in the game's own "0.0#" format: one decimal, a second only
-	 * if it carries information. Tech regen is +0.06/s — at fmt1 that reads
-	 * "+0.1/s", which rounds away most of what the number says. */
-	function fmtRate(v: number): string {
-		const r = Math.round(v * 100) / 100;
-		return r.toFixed(Math.round(r * 100) % 10 === 0 ? 1 : 2);
-	}
-
 	async function openRawFile(name: string, opened: boolean) {
 		if (!opened || !slot || loadedFiles.has(name) || rawLoading) return;
 		rawLoading = name;
@@ -315,12 +301,6 @@
 		} finally {
 			rawLoading = null;
 		}
-	}
-
-	function formatDuration(seconds: number): string {
-		const h = Math.floor(seconds / 3600);
-		const m = Math.floor((seconds % 3600) / 60);
-		return `${h}h ${String(m).padStart(2, '0')}m`;
 	}
 
 </script>

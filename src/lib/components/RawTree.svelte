@@ -2,7 +2,7 @@
 	import RawTree from './RawTree.svelte';
 	import { META_KEYS } from '$lib/save/odin';
 	import type { OdinNode, OdinPrimitiveArray, OdinRef, OdinValue } from '$lib/save/odin';
-	import { assets } from '$lib/save/slot';
+	import { assets } from '$lib/game/data';
 
 	interface Props {
 		/** Object or array holding the value, so scalar edits can be written back. */

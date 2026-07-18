@@ -52,7 +52,7 @@ from UnityPy.helpers.TypeTreeGenerator import TypeTreeGenerator
 DEFAULT_GAME_DATA = Path(r"C:/data/apps/Steam/steamapps/common/PUNK Playtest/Punk_Data")
 REPO = Path(__file__).parent.parent
 # Where the generated JSON the app imports lives.
-DATA_DIR = REPO / "src/lib/save"
+DATA_DIR = REPO / "src/lib/game"
 
 # C# class -> the category the editor uses. A game update that adds e.g. a new
 # ModuleData subclass shows up as an "unrecognised class" warning on the next
@@ -283,7 +283,7 @@ def hex_color(pptr) -> str | None:
 def png_data_uri(img) -> str:
     """A PIL image as the data-URI PNG the app inlines. Never resample the
     image first: the editor scales sprites by exact integer factors from their
-    native size (see src/lib/save/pixel-icon.ts)."""
+    native size (see src/lib/game/pixel-icon.ts)."""
     buf = io.BytesIO()
     img.save(buf, "PNG")
     return "data:image/png;base64," + base64.b64encode(buf.getvalue()).decode()

@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { parseRichText } from '$lib/save/rich-text';
+	import { parseRichText } from '$lib/game/rich-text';
 
 	let { text }: { text: string | null | undefined } = $props();
 

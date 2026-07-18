@@ -10,13 +10,14 @@
  * A `resource` on a line means the UI draws that resource's HUD icon instead of
  * spelling its name out — the game labels these with icons too.
  */
+import { fmtStat } from '$lib/format';
 import {
 	moduleEffects,
 	moduleInfo,
 	moduleLevel,
 	seriesAt,
 	type ModuleEffectInfo
-} from './slot';
+} from './data';
 
 export interface StatLine {
 	label: string;
@@ -25,12 +26,6 @@ export interface StatLine {
 	resource?: string | null;
 	/** Trailing text after the resource icon ("per shot"). */
 	suffix?: string;
-}
-
-/** Compact number: no trailing `.0`, at most two decimals. */
-export function fmtStat(v: number): string {
-	const r = Math.round(v * 100) / 100;
-	return Number.isInteger(r) ? String(r) : r.toFixed(2).replace(/0$/, '');
 }
 
 function signed(v: number): string {

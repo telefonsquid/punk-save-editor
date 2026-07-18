@@ -11,8 +11,8 @@
 	import ItemIcon from './ItemIcon.svelte';
 	import ResourceIcon from './ResourceIcon.svelte';
 	import RichText from './RichText.svelte';
-	import { assets, displayName, moduleInfo, resourceLabel } from '$lib/save/slot';
-	import { moduleStats } from '$lib/save/module-stats';
+	import { assets, displayName, moduleInfo, resourceLabel } from '$lib/game/data';
+	import { moduleStats } from '$lib/game/module-stats';
 
 	let {
 		items,

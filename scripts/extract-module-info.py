@@ -1,4 +1,4 @@
-"""Regenerates src/lib/save/module-info.json from the installed game.
+"""Regenerates src/lib/game/module-info.json from the installed game.
 
 Things the editor needs about a module that aren't in the save file:
 

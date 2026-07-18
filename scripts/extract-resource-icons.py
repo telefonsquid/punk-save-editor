@@ -1,4 +1,4 @@
-"""Regenerates src/lib/save/resource-icons.json from the installed game.
+"""Regenerates src/lib/game/resource-icons.json from the installed game.
 
 Each `Resource` ScriptableObject has a `Sprite icon` (the little HUD glyph for
 health/fuel/etc.). This resolves every resource's icon to a PNG and writes an

@@ -8,11 +8,11 @@
  * renumbered enum leaking ordinals. Errors (exit 1) are relationships the app
  * relies on; warnings are known-lopsided game data worth eyeballing.
  */
-import assetNames from '../src/lib/save/asset-names.json';
-import itemIcons from '../src/lib/save/item-icons.json';
-import moduleEffects from '../src/lib/save/module-effects.json';
-import moduleInfo from '../src/lib/save/module-info.json';
-import resourceIcons from '../src/lib/save/resource-icons.json';
+import assetNames from '../src/lib/game/asset-names.json';
+import itemIcons from '../src/lib/game/item-icons.json';
+import moduleEffects from '../src/lib/game/module-effects.json';
+import moduleInfo from '../src/lib/game/module-info.json';
+import resourceIcons from '../src/lib/game/resource-icons.json';
 
 interface AssetEntry {
 	category: string;

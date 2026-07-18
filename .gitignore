@@ -29,3 +29,6 @@ vite.config.ts.timestamp-*
 
 # Python venv for the asset-extraction scripts (see docs/game-code.md)
 /.venv
+
+# Python bytecode (extraction scripts)
+/scripts/__pycache__

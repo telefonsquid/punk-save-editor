@@ -1,4 +1,4 @@
-"""Step 1 of regenerating src/lib/save/module-effects.json from the installed game.
+"""Step 1 of regenerating src/lib/game/module-effects.json from the installed game.
 
 Dumps every ModuleData asset's Odin serializationData (the game stores module
 effects with Odin Inspector's SerializedScriptableObject, so they are not in

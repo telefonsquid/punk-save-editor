@@ -1,6 +1,6 @@
 <script lang="ts">
 	import ModuleList, { type ModuleItem } from './ModuleList.svelte';
-	import { displayName, moduleCategory } from '$lib/save/slot';
+	import { displayName, moduleCategory } from '$lib/game/data';
 
 	let {
 		open = $bindable(false),

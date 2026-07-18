@@ -2,16 +2,17 @@
  * High-level access to a PUNK save slot: loads the LZF+Odin files into
  * editable trees and writes them back. Only the files the editor changes
  * are rewritten; a one-time `.bak` backup of each is created beside it.
+ *
+ * This module is about *save trees* — what the game wrote to disk. Static
+ * game knowledge (asset names, module effects, colours) lives in
+ * `$lib/game/data`; the ship-grid math over the `entities` file in `./ship`.
  */
 
+import { moduleInfo } from '$lib/game/data';
 import type { SaveDir } from './io';
 import { lzfCompress, lzfDecompress } from './lzf';
 import { EntryType, META_KEYS, OdinBinaryReader, OdinBinaryWriter, isNode } from './odin';
 import type { OdinNode, OdinValue, TypeInfo } from './odin';
-import assetNames from './asset-names.json';
-import itemIcons from './item-icons.json';
-import moduleCaps from './module-effects.json';
-import moduleInfoJson from './module-info.json';
 
 export interface SaveSlot {
 	dir: SaveDir;
@@ -35,64 +36,6 @@ export const ODIN_FILES = [
 
 /** Save files that exist but cannot be edited as an Odin tree. */
 export const OPAQUE_FILES = ['world', 'fow', 'map', 'scanner'] as const;
-
-export interface AssetInfo {
-	category: string;
-	assetName: string;
-	displayName: string | null;
-	description?: string;
-	maxCount?: number;
-	level?: number;
-}
-
-export const assets = assetNames as Record<string, AssetInfo>;
-
-/**
- * Player-facing names for resources whose asset id is an internal codename.
- *
- * `Resource` assets carry no `displayName`, so the fallback is the id with its
- * `Resource ` prefix stripped — which leaves three of them reading as the colour
- * the artist happened to pick rather than as the thing the player knows. These
- * are the names the game itself uses in the HUD. The **ids are save-file keys
- * and must never change**; this is display only.
- */
-const RESOURCE_LABELS: Record<string, string> = {
-	'Resource Money': 'Money',
-	'Resource White': 'Stamina',
-	'Resource Purple': 'Gel'
-};
-
-/** Player-facing name for a resource id (see RESOURCE_LABELS). */
-export function resourceLabel(id: string): string {
-	return RESOURCE_LABELS[id] ?? id.replace(/^Resource /, '');
-}
-
-/** Best human-readable name for a module/consumable/ingredient/resource id. */
-export function displayName(id: string | null): string {
-	if (!id) return '(none)';
-	const a = assets[id];
-	// Resources have no displayName of their own — route them through the
-	// resource labels so every surface agrees on "Money"/"Stamina"/"Gel".
-	if (a?.category === 'Resource') return resourceLabel(id);
-	return a?.displayName || a?.assetName || id;
-}
-
-export function assetsByCategory(category: string): { id: string; info: AssetInfo }[] {
-	return Object.entries(assets)
-		.filter(([, info]) => info.category === category)
-		.map(([id, info]) => ({ id, info }))
-		.sort((a, b) => displayName(a.id).localeCompare(displayName(b.id)));
-}
-
-/**
- * The modules the player can actually equip — the game's `ModuleData.Equippable`
- * check is a displayName AND an icon. Named modules without an icon are
- * embedded enemy parts and never appear in the shop or the vault.
- */
-export function equippableModules(): { id: string; info: AssetInfo }[] {
-	const icons = itemIcons as Record<string, string>;
-	return assetsByCategory('Module').filter(({ id, info }) => info.displayName && icons[id]);
-}
 
 async function loadOdin(dir: SaveDir, file: string): Promise<OdinNode> {
 	const value = OdinBinaryReader.parse(lzfDecompress(await dir.read(file)));
@@ -157,6 +100,18 @@ export function pushScalar(listNode: OdinValue, value: OdinValue, e: EntryType):
 	const info = (types['$0'] ??= { e: EntryType.StartOfArray, elem: [] });
 	(info.elem ??= [])[arr.length] = { e } as TypeInfo;
 	arr.push(value);
+}
+
+/** Returns the pairs array of a serialized Dictionary<K,V> node. Unlike
+ * List<T> its position shifts by one when the comparer node precedes it, so
+ * it is found as the first array-valued member instead of by name. */
+export function dictPairs(dict: unknown): OdinNode[] {
+	const dictNode = dict as OdinValue;
+	if (!isNode(dictNode)) throw new Error('expected a Dictionary node');
+	for (const [key, value] of Object.entries(dictNode)) {
+		if (!META_KEYS.has(key) && Array.isArray(value)) return value as OdinNode[];
+	}
+	throw new Error('Dictionary node has no pairs array');
 }
 
 /** Typed views over the tree — mutations go straight into the parsed nodes. */
@@ -251,169 +206,8 @@ export function reorderConsumables(vault: OdinNode, from: number, to: number): v
 }
 
 // ---------------------------------------------------------------------------
-// Ship resources (entities file) — current values live in the ship entity's
-// Unit memento; the max is not saved anywhere but recomputed by the game from
-// the installed grid modules' ModifyResourceCapacity effects, which we mirror
-// here from module-caps.json (extracted out of the game assets).
+// Vault modules
 // ---------------------------------------------------------------------------
-
-/** Returns the pairs array of a serialized Dictionary<K,V> node. Unlike
- * List<T> its position shifts by one when the comparer node precedes it, so
- * it is found as the first array-valued member instead of by name. */
-export function dictPairs(dict: unknown): OdinNode[] {
-	const dictNode = dict as OdinValue;
-	if (!isNode(dictNode)) throw new Error('expected a Dictionary node');
-	for (const [key, value] of Object.entries(dictNode)) {
-		if (!META_KEYS.has(key) && Array.isArray(value)) return value as OdinNode[];
-	}
-	throw new Error('Dictionary node has no pairs array');
-}
-
-function shipMemento(entities: OdinNode, type: string): OdinNode | null {
-	const ents = entities.$0;
-	if (!Array.isArray(ents)) return null;
-	const ship = ents.find((e) => isNode(e) && e.entityId === 'Ship');
-	if (!isNode(ship)) return null;
-	const mementos = (ship.componentMementos as OdinNode)?.$0;
-	if (!Array.isArray(mementos)) return null;
-	const m = mementos.find((c) => isNode(c) && (c.$type as string)?.startsWith(type));
-	return isNode(m) ? m : null;
-}
-
-/** The ship's current resource values ({$k, $v} pairs, mutable in place). */
-export function shipResources(entities: OdinNode): ResourcePair[] {
-	const unit = shipMemento(entities, 'Unit+Data+Memento');
-	if (!unit) return [];
-	return dictPairs(unit.resourceValues) as unknown as ResourcePair[];
-}
-
-/** A `FloatSeries` magnitude: `base (+|*) change` per level above the first. */
-export interface Series {
-	base: number;
-	method: string;
-	change: number;
-}
-
-/**
- * One decoded `ModuleEffect` (see scripts/extract-module-caps.ts, which flattens
- * all eight C# subclasses onto this shape). `kind` is `capacity`, `regen`,
- * `drain`, `shield`, `weaponProperty`, `explosion`, `burn` or `discharge`.
- */
-export interface ModuleEffectInfo {
-	kind: string;
-	resource: string | null;
-	series: Series | null;
-	cost?: { amount: number; resource: string | null };
-	extra?: Record<string, number | boolean | string>;
-}
-
-interface ModuleCapsEntry {
-	level: number;
-	canBeBoosted: boolean;
-	effects: ModuleEffectInfo[];
-}
-const capModules = moduleCaps.modules as unknown as Record<string, ModuleCapsEntry>;
-const slotLevelDeltas = moduleCaps.slotLevelDeltas as Record<string, number>;
-
-/** The effects of a module id, in the order the game declares them. */
-export function moduleEffects(id: string | null | undefined): ModuleEffectInfo[] {
-	return (id ? capModules[id]?.effects : null) ?? [];
-}
-
-/** The level a module's effects are evaluated at when nothing boosts it. */
-export function moduleLevel(id: string | null | undefined): number {
-	return (id ? capModules[id]?.level : null) ?? 1;
-}
-
-/** `FloatSeries.GetElement`: the effect's magnitude at a zero-based level index. */
-export function seriesAt(e: Series, idx: number): number {
-	return e.method === 'mul' ? e.base * Math.pow(e.change, idx) : e.base + e.change * idx;
-}
-
-/**
- * Sums one kind of module effect across every module installed on the ship grid,
- * each evaluated at its effective level (asset level + LevelUp slots + neighbour
- * level-boost fields — this is what a booster module does). Power/connectivity is
- * not simulated, so modules parked unpowered on the grid still count: an upper
- * bound, exact for valid layouts.
- */
-function sumGridEffects(entities: OdinNode, kind: string): Map<string, number> {
-	const totals = new Map<string, number>();
-	const gridOwner = shipMemento(entities, 'ModuleGridOwner');
-	const gridValue = (gridOwner?.gridMemento ?? null) as OdinValue;
-	const grid = isNode(gridValue) ? gridValue : null;
-	if (!grid) return totals;
-	const modules = dictPairs(grid.modules);
-	const vec = (v: unknown) => ({ x: (v as OdinNode).$0 as number, y: (v as OdinNode).$1 as number });
-	const key = (x: number, y: number) => `${x},${y}`;
-
-	const levelDeltas = new Map<string, number>();
-	for (const pair of dictPairs(grid.slotTypes)) {
-		const delta = slotLevelDeltas[pair.$v as string];
-		if (!delta) continue;
-		const { x, y } = vec(pair.$k);
-		levelDeltas.set(key(x, y), (levelDeltas.get(key(x, y)) ?? 0) + delta);
-	}
-	for (const pair of modules) {
-		const field = (pair.$v as OdinNode).levelModificationField as OdinValue;
-		if (!isNode(field)) continue;
-		const data = field.fieldData as OdinValue;
-		const inner = isNode(data) ? (data.$0 as OdinValue) : null;
-		const bools = isPrimitiveArray(inner) ? inner.data : null;
-		if (!bools) continue;
-		const { x, y } = vec(pair.$k);
-		const w = field.width as number;
-		const h = field.height as number;
-		// mirrors ModuleEffectField.GetPositionsRelative (including its y*height indexing)
-		for (let fx = 0; fx < w; fx++) {
-			for (let fy = 0; fy < h; fy++) {
-				if (!bools[fy * h + fx]) continue;
-				const k = key(x + fx - Math.floor(w / 2), y + fy - Math.floor(h / 2));
-				levelDeltas.set(k, (levelDeltas.get(k) ?? 0) + 1);
-			}
-		}
-	}
-
-	for (const pair of modules) {
-		const memento = pair.$v as OdinNode;
-		const info = capModules[memento.moduleDataId as string];
-		if (!info) continue;
-		const { x, y } = vec(pair.$k);
-		let level = info.level;
-		if (info.canBeBoosted) level += levelDeltas.get(key(x, y)) ?? 0;
-		const idx = Math.max(0, level - 1);
-		for (const e of info.effects) {
-			if (e.kind !== kind || !e.resource || !e.series) continue;
-			totals.set(e.resource, (totals.get(e.resource) ?? 0) + seriesAt(e.series, idx));
-		}
-	}
-	return totals;
-}
-
-/** Max capacity per resource id, from the grid's ModifyResourceCapacity effects. */
-export function shipResourceCaps(entities: OdinNode): Map<string, number> {
-	return sumGridEffects(entities, 'capacity');
-}
-
-/**
- * Recharge rate per second per resource id, from the grid's
- * `ResourceAutoChargeEffect`s. Stamina looks like it has an intrinsic base rate,
- * but it doesn't: the always-installed `SHIP` module carries a flat
- * `Resource White +20/s` effect (and is the one module that can't be boosted).
- * Everything else comes from regen modules, which a neighbouring booster raises
- * by lifting their effective level — the same mechanism as capacities.
- *
- * This is the steady-state rate. The game also gates recharging behind
- * `Resource.rechargeDelay` after the last drain, so the observed rate right
- * after taking damage is zero for a moment.
- */
-export function shipResourceRegen(entities: OdinNode): Map<string, number> {
-	return sumGridEffects(entities, 'regen');
-}
-
-function isPrimitiveArray(v: OdinValue | null | undefined): v is import('./odin').OdinPrimitiveArray {
-	return typeof v === 'object' && v !== null && '$primitiveArray' in v;
-}
 
 export interface ModuleView {
 	moduleDataId: string | null;
@@ -438,68 +232,6 @@ export const CONNECTION_SIDES = [
 ] as const;
 
 export type ConnectionKey = (typeof CONNECTION_SIDES)[number]['key'];
-
-/**
- * Per-module data that isn't in the save file, extracted from the game assets
- * (scripts/extract-module-info.py):
- * - `color`/`resource`: every ModuleData shares its ColorAsset with the Resource
- *   it belongs to, which is what tints it in the game's own UI (a DANDELION is
- *   `#6a36ff` because it is a `Resource Tech` module).
- * - `powerLevel`: the asset's `[min, max]` range. It is the *maximum* number of
- *   power cores the module can accept when expanding its grid, so a higher value
- *   is strictly better for the player.
- * - `powerCore`: the bool grid the game derives from the module's power-core
- *   sprite. Needed to build a usable module from scratch.
- */
-export interface ModuleInfo {
-	color: string | null;
-	type: { name: string; order: number; isMain: boolean } | null;
-	description: string | null;
-	powerLevel: [number, number];
-	powerCore: { width: number; height: number; data: number[] } | null;
-	weapon: WeaponStats | null;
-	resource: string | null;
-}
-
-/** The numbers the game prints on a weapon card (`WeaponData`). */
-export interface WeaponStats {
-	damage?: number;
-	damageType?: string;
-	fireRate?: number;
-	cost?: number;
-	costResource?: string;
-	burstSize?: number;
-	projectileCount?: number;
-	spread?: number;
-	knockback?: number;
-}
-
-export const moduleInfos = moduleInfoJson as unknown as Record<string, ModuleInfo>;
-
-export function moduleInfo(id: string | null | undefined): ModuleInfo | null {
-	return id ? (moduleInfos[id] ?? null) : null;
-}
-
-/**
- * The module's shop category, straight from its `ModuleType` asset — the game's
- * own grouping, so a game update that adds or renames one carries through
- * without touching the editor. `POWER`/`BOOSTERS`/`Embedded` are single-module
- * categories the player never shops for; the rest are WEAPONS, GADGETS,
- * WEAPON MODS and UPGRADES (the ship modules).
- */
-export function moduleCategory(id: string | null | undefined): string {
-	return moduleInfo(id)?.type?.name ?? 'OTHER';
-}
-
-/**
- * Whether a module takes part in the power-core mechanic. Weapons and gadgets
- * carry a core sprite and a `powerLevel` range worth editing; ship modules
- * (UPGRADES) and weapon mods have neither, so the editor hides the field for
- * them rather than showing a number that can only ever be 1.
- */
-export function usesPowerCore(id: string | null | undefined): boolean {
-	return !!moduleInfo(id)?.powerCore;
-}
 
 const MODULE_MEMENTO_TYPE = 'Module+Memento, Punk.Main';
 const EFFECT_FIELD_TYPE = 'ModuleEffectField, Punk.Main';

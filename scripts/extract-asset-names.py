@@ -1,4 +1,4 @@
-"""Regenerates src/lib/save/asset-names.json from the installed game.
+"""Regenerates src/lib/game/asset-names.json from the installed game.
 
 id -> {category, assetName, displayName, ...} for every PUNK ScriptableObject
 that carries a string id (modules, consumables, ingredients, resources, weapon

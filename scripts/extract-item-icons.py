@@ -1,4 +1,4 @@
-"""Regenerates src/lib/save/item-icons.json from the installed game.
+"""Regenerates src/lib/game/item-icons.json from the installed game.
 
 Ingredients, consumables and modules each carry a Sprite icon (the item art
 shown in the vault/shop): `Ingredient.iconBig`/`iconSmall`, `Consumable.icon`,
