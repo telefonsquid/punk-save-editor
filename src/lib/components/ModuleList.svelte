@@ -11,7 +11,7 @@
 	import ItemIcon from './ItemIcon.svelte';
 	import ResourceIcon from './ResourceIcon.svelte';
 	import RichText from './RichText.svelte';
-	import { assets, displayName, moduleInfo, resourceLabel } from '$lib/game/data';
+	import { assets, displayName, moduleInfo } from '$lib/game/data';
 	import { moduleStats } from '$lib/game/module-stats';
 
 	let {
@@ -68,8 +68,7 @@
 							</span>
 							{#if info?.resource}
 								<!-- The resource this module belongs to, as its HUD icon. -->
-								<ResourceIcon id={info.resource} />
-								<span class="sr-only">{resourceLabel(info.resource)}</span>
+								<ResourceIcon id={info.resource} labeled />
 							{/if}
 							{#if item.id && assets[item.id]?.level}
 								<span class="text-xs text-zinc-600">tier {assets[item.id].level}</span>
@@ -87,8 +86,7 @@
 										{stat.label}
 										<span class="font-semibold text-zinc-300">{stat.value}</span>
 										{#if stat.resource}
-											<ResourceIcon id={stat.resource} />
-											<span class="sr-only">{resourceLabel(stat.resource)}</span>
+											<ResourceIcon id={stat.resource} labeled />
 										{/if}
 										{#if stat.suffix}{stat.suffix}{/if}
 									</span>
