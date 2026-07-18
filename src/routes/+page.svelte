@@ -24,9 +24,11 @@
 		OPAQUE_FILES,
 		removeModule,
 		reorderConsumables,
+		resourceLabel,
 		runStats,
 		saveSlot,
 		shipResourceCaps,
+		shipResourceRegen,
 		shipResources,
 		type ConnectionKey,
 		type ModuleView,
@@ -72,13 +74,20 @@
 		if (version < 0 || !slot || !loadedFiles.has('entities')) return null;
 		const entities = slot.files.entities;
 		const caps = shipResourceCaps(entities);
+		const regen = shipResourceRegen(entities);
 		const rows = shipResources(entities).map((pair) => ({
 			pair,
 			id: pair.$k,
 			value: pair.$v,
 			max: caps.get(pair.$k)
 		}));
-		return { rows };
+		// Read-only: regen comes entirely from the grid, so it changes when modules
+		// do, not by typing a number here.
+		const regenRows = [...regen]
+			.filter(([, rate]) => rate > 0)
+			.sort((a, b) => b[1] - a[1])
+			.map(([id, rate]) => ({ id, rate }));
+		return { rows, regenRows };
 	});
 
 	const stats = $derived(views?.stats ?? null);
@@ -276,15 +285,19 @@
 		};
 	}
 
-	function shipResourceLabel(id: string): string {
-		return id.replace(/^Resource /, '');
-	}
-
 	/** Displays a float with at most one decimal. Only the *display* is rounded —
 	 * the tree keeps whatever precision the game wrote (and whatever the user
 	 * types), so saving never quietly truncates a value that wasn't edited. */
 	function fmt1(v: number): string {
 		return Number.isInteger(v) ? String(v) : v.toFixed(1);
+	}
+
+	/** Recharge rates in the game's own "0.0#" format: one decimal, a second only
+	 * if it carries information. Tech regen is +0.06/s — at fmt1 that reads
+	 * "+0.1/s", which rounds away most of what the number says. */
+	function fmtRate(v: number): string {
+		const r = Math.round(v * 100) / 100;
+		return r.toFixed(Math.round(r * 100) % 10 === 0 ? 1 : 2);
 	}
 
 	async function openRawFile(name: string, opened: boolean) {
@@ -402,8 +415,8 @@
 							{@const outOfRange = row.value < 0 || (row.max !== undefined && row.value > row.max)}
 							<label class="mb-2 flex items-center justify-between gap-4">
 								<span class="flex items-center gap-2">
-									<ResourceIcon id={row.id} class="h-8 w-8 shrink-0" />
-									{shipResourceLabel(row.id)}
+									<ResourceIcon id={row.id} />
+									{resourceLabel(row.id)}
 									{#if outOfRange}
 										<span class="text-xs text-red-400">out of range — may crash the game</span>
 									{/if}
@@ -432,6 +445,30 @@
 				{/if}
 			</section>
 
+			{#if shipView && shipView.regenRows.length > 0}
+				<section class="mb-6 rounded-lg border border-zinc-800 bg-zinc-900/50 p-5">
+					<h2 class="mb-4 text-sm font-bold tracking-widest text-fuchsia-400 uppercase">
+						Regeneration
+					</h2>
+					<div class="grid gap-x-8 md:grid-cols-2">
+						{#each shipView.regenRows as row (row.id)}
+							<div class="mb-2 flex items-center justify-between gap-4">
+								<span class="flex items-center gap-2">
+									<ResourceIcon id={row.id} />
+									{resourceLabel(row.id)}
+								</span>
+								<span class="text-right tabular-nums text-lime-400">+{fmtRate(row.rate)}/s</span>
+							</div>
+						{/each}
+					</div>
+					<p class="mt-2 text-xs text-zinc-600">
+						Read-only — recharge comes from the regen modules on the ship grid, each counted at its
+						boosted level, so it changes when you change the grid. Stamina's baseline is the SHIP
+						module's own +20/s. The game holds recharge for a short delay after a resource drops.
+					</p>
+				</section>
+			{/if}
+
 			<div class="grid gap-6 md:grid-cols-2" oninput={markCurated} onchange={refreshViews}>
 				<section class="rounded-lg border border-zinc-800 bg-zinc-900/50 p-5">
 					<h2 class="mb-4 text-sm font-bold tracking-widest text-fuchsia-400 uppercase">
@@ -440,7 +477,7 @@
 					{#each resources as pair (pair.$k)}
 						<label class="mb-2 flex items-center justify-between gap-4">
 							<span class="flex items-center gap-2">
-								<ResourceIcon id={pair.$k} class="h-8 w-8 shrink-0" />
+								<ResourceIcon id={pair.$k} />
 								{displayName(pair.$k)}
 							</span>
 							<input
@@ -457,7 +494,7 @@
 					{#each allIngredients as { id } (id)}
 						<label class="mb-2 flex items-center justify-between gap-4">
 							<span class="flex items-center gap-2">
-								<ItemIcon {id} class="h-8 w-8 shrink-0" />
+								<ItemIcon {id} />
 								{displayName(id)}
 							</span>
 							<input
@@ -536,7 +573,7 @@
 									>
 										⠿
 									</button>
-									<ItemIcon id={c.consumableId} class="h-10 w-10 shrink-0" />
+									<ItemIcon id={c.consumableId} />
 									{displayName(c.consumableId)}
 									{#if c.consumableId && assets[c.consumableId]?.maxCount}
 										<span class="text-xs text-zinc-500">max {assets[c.consumableId].maxCount}</span>
@@ -567,7 +604,7 @@
 										}
 									}}
 								>
-									<ItemIcon {id} class="h-7 w-7 shrink-0" />
+									<ItemIcon {id} />
 									Add {displayName(id)}
 								</button>
 							{/each}
@@ -603,14 +640,14 @@
 													class="h-9 w-1 shrink-0 rounded-full"
 													style:background-color={row.info?.color ?? '#52525b'}
 												></span>
-												<ItemIcon id={row.id} class="h-10 w-10 shrink-0" />
+												<ItemIcon id={row.id} />
 												<div>
 													<span style:color={row.info?.color ?? undefined}>
 														{displayName(row.id)}
 													</span>
 													{#if row.info?.resource}
 														<span class="ml-1 text-xs text-zinc-500">
-															{shipResourceLabel(row.info.resource)}
+															{resourceLabel(row.info.resource)}
 														</span>
 													{/if}
 													{#if row.id && assets[row.id]?.description}

@@ -10,7 +10,8 @@
      "method": "add",
      "change": 0
     }
-   ]
+   ],
+   "regen": []
   },
   "83539b7a-0b19-4309-931f-06dbb79ecebd": {
    "level": 1,
@@ -22,7 +23,8 @@
      "method": "add",
      "change": 0
     }
-   ]
+   ],
+   "regen": []
   },
   "6cbe3f36-859a-4a1f-9ec6-fe44534af139": {
    "level": 1,
@@ -34,7 +36,8 @@
      "method": "add",
      "change": 0
     }
-   ]
+   ],
+   "regen": []
   },
   "a672acfa-1043-4e45-87fc-e02a7c339e62": {
    "level": 1,
@@ -46,7 +49,8 @@
      "method": "add",
      "change": 0
     }
-   ]
+   ],
+   "regen": []
   },
   "884b1ff5-8188-4c0f-b2f2-99e048dd3003": {
    "level": 1,
@@ -58,7 +62,8 @@
      "method": "add",
      "change": 0
     }
-   ]
+   ],
+   "regen": []
   },
   "3d558c77-fbfc-4f45-8ac0-d9bdc0aad9da": {
    "level": 1,
@@ -70,7 +75,8 @@
      "method": "add",
      "change": 0
     }
-   ]
+   ],
+   "regen": []
   },
   "62a78ee1-a2ed-404a-b73e-6025725dc988": {
    "level": 1,
@@ -82,7 +88,8 @@
      "method": "add",
      "change": 0
     }
-   ]
+   ],
+   "regen": []
   },
   "c9bd5e9a-485f-407e-af8b-1f9082ac67da": {
    "level": 1,
@@ -94,7 +101,8 @@
      "method": "add",
      "change": 0
     }
-   ]
+   ],
+   "regen": []
   },
   "7da95b26-e06b-4508-893b-60bde596d98c": {
    "level": 1,
@@ -106,7 +114,8 @@
      "method": "add",
      "change": 0
     }
-   ]
+   ],
+   "regen": []
   },
   "5e037c2a-994e-44fb-b94f-049dde1a22b7": {
    "level": 1,
@@ -118,7 +127,8 @@
      "method": "add",
      "change": 0
     }
-   ]
+   ],
+   "regen": []
   },
   "14ef55b4-2260-4a73-b0f1-8a081f841b31": {
    "level": 1,
@@ -130,7 +140,8 @@
      "method": "add",
      "change": 0
     }
-   ]
+   ],
+   "regen": []
   },
   "7efd6648-e13f-4f6e-8208-05cf41e63c47": {
    "level": 1,
@@ -142,12 +153,14 @@
      "method": "add",
      "change": 0
     }
-   ]
+   ],
+   "regen": []
   },
   "a2d09b85-8a79-449c-9dad-61a3dbf9607a": {
    "level": 1,
    "canBeBoosted": true,
-   "caps": []
+   "caps": [],
+   "regen": []
   },
   "28228fa7-5770-4380-b454-f75cd2bbca53": {
    "level": 1,
@@ -159,12 +172,14 @@
      "method": "add",
      "change": 0.5
     }
-   ]
+   ],
+   "regen": []
   },
   "035350a1-11f2-411b-b16e-d38f5f80155a": {
    "level": 1,
    "canBeBoosted": true,
-   "caps": []
+   "caps": [],
+   "regen": []
   },
   "8598ed65-8b4b-4f59-8aef-58cbb137fc8d": {
    "level": 1,
@@ -176,7 +191,8 @@
      "method": "add",
      "change": 0
     }
-   ]
+   ],
+   "regen": []
   },
   "869b8723-9f5b-4cb2-9e3d-bd9881f29b20": {
    "level": 1,
@@ -188,27 +204,32 @@
      "method": "add",
      "change": 0.5
     }
-   ]
+   ],
+   "regen": []
   },
   "bcc06d5e-5a27-4313-ae42-dd07877df2bb": {
    "level": 1,
    "canBeBoosted": false,
-   "caps": []
+   "caps": [],
+   "regen": []
   },
   "699decaa-30d6-4b73-970c-d0bc606f83a9": {
    "level": 1,
    "canBeBoosted": true,
-   "caps": []
+   "caps": [],
+   "regen": []
   },
   "351d0570-5119-4dc9-8c4a-04ebe9d65eeb": {
    "level": 1,
    "canBeBoosted": true,
-   "caps": []
+   "caps": [],
+   "regen": []
   },
   "2e9bd982-221c-48a2-8cad-deecd40bbd7f": {
    "level": 1,
    "canBeBoosted": true,
-   "caps": []
+   "caps": [],
+   "regen": []
   },
   "199b8db0-b3db-4d84-91ad-ab46a32341c4": {
    "level": 1,
@@ -220,12 +241,14 @@
      "method": "add",
      "change": 0
     }
-   ]
+   ],
+   "regen": []
   },
   "df92003e-2ffa-467a-b8bc-0936515311ea": {
    "level": 1,
    "canBeBoosted": true,
-   "caps": []
+   "caps": [],
+   "regen": []
   },
   "123b8db0-b3db-4d14-91ad-ab46a34341c4": {
    "level": 1,
@@ -237,12 +260,14 @@
      "method": "add",
      "change": 0
     }
-   ]
+   ],
+   "regen": []
   },
   "1e76dca3-2972-4d83-95ec-81519216c698": {
    "level": 1,
    "canBeBoosted": true,
-   "caps": []
+   "caps": [],
+   "regen": []
   },
   "5682bca7-51a4-48b8-bc45-067d1ebaba47": {
    "level": 1,
@@ -254,7 +279,8 @@
      "method": "add",
      "change": 0
     }
-   ]
+   ],
+   "regen": []
   },
   "2def7b71-17c8-40e2-935d-ccdce9270514": {
    "level": 1,
@@ -266,7 +292,8 @@
      "method": "add",
      "change": 0
     }
-   ]
+   ],
+   "regen": []
   },
   "391f2d91-7db8-4000-8884-9c9f9c3f0a53": {
    "level": 1,
@@ -278,7 +305,8 @@
      "method": "add",
      "change": 0
     }
-   ]
+   ],
+   "regen": []
   },
   "3afed7a6-53bc-4f49-8e9b-f938b5f74d96": {
    "level": 1,
@@ -290,7 +318,8 @@
      "method": "add",
      "change": 0
     }
-   ]
+   ],
+   "regen": []
   },
   "f404b176-bec9-486c-9733-65ce4842fdd7": {
    "level": 1,
@@ -305,6 +334,20 @@
     {
      "resource": "Resource White",
      "base": 6,
+     "method": "add",
+     "change": 0
+    }
+   ],
+   "regen": [
+    {
+     "resource": "Resource White",
+     "base": 4,
+     "method": "add",
+     "change": 0
+    },
+    {
+     "resource": "Resource Health",
+     "base": 2,
      "method": "add",
      "change": 0
     }
@@ -326,6 +369,14 @@
      "method": "add",
      "change": 0
     }
+   ],
+   "regen": [
+    {
+     "resource": "Resource Caps",
+     "base": 2.5,
+     "method": "add",
+     "change": 0
+    }
    ]
   },
   "050f8469-3cdd-4b25-8cd0-f699e6f7331e": {
@@ -338,7 +389,8 @@
      "method": "add",
      "change": 0
     }
-   ]
+   ],
+   "regen": []
   },
   "2c0da9bc-8259-43a1-9bcc-c9d64f655e90": {
    "level": 1,
@@ -356,7 +408,8 @@
      "method": "add",
      "change": 0
     }
-   ]
+   ],
+   "regen": []
   },
   "723ec0b9-de75-4cea-a7dd-d6ab3d4fd7b3": {
    "level": 1,
@@ -368,7 +421,8 @@
      "method": "add",
      "change": 0
     }
-   ]
+   ],
+   "regen": []
   },
   "4080312a-edd9-42ab-a485-b95709fddf08": {
    "level": 1,
@@ -380,7 +434,8 @@
      "method": "add",
      "change": 0
     }
-   ]
+   ],
+   "regen": []
   },
   "d376a260-d9d5-42da-b2fb-fbe20e79f625": {
    "level": 1,
@@ -398,7 +453,8 @@
      "method": "add",
      "change": 0
     }
-   ]
+   ],
+   "regen": []
   },
   "52eaa02f-6030-4552-9a8b-447a0c41b9e3": {
    "level": 1,
@@ -410,7 +466,8 @@
      "method": "add",
      "change": 0
     }
-   ]
+   ],
+   "regen": []
   },
   "d346d114-bf89-483f-8112-8da882cf3f45": {
    "level": 1,
@@ -428,6 +485,20 @@
      "method": "add",
      "change": 0
     }
+   ],
+   "regen": [
+    {
+     "resource": "Resource Tech",
+     "base": 1,
+     "method": "add",
+     "change": 0
+    },
+    {
+     "resource": "Resource White",
+     "base": 2,
+     "method": "add",
+     "change": 0
+    }
    ]
   },
   "459adb5c-e25e-4ef6-be48-caf44b1b08c9": {
@@ -440,7 +511,8 @@
      "method": "add",
      "change": 0
     }
-   ]
+   ],
+   "regen": []
   },
   "52c8c054-f8d5-40d6-b2e7-17e9d9ccbfd5": {
    "level": 1,
@@ -458,7 +530,8 @@
      "method": "add",
      "change": 0
     }
-   ]
+   ],
+   "regen": []
   },
   "71019be4-fe93-4624-afcb-a1814ef5f388": {
    "level": 1,
@@ -467,6 +540,14 @@
     {
      "resource": "Resource Health",
      "base": 1600,
+     "method": "add",
+     "change": 0
+    }
+   ],
+   "regen": [
+    {
+     "resource": "Resource Health",
+     "base": 5,
      "method": "add",
      "change": 0
     }
@@ -482,6 +563,14 @@
      "method": "add",
      "change": 0
     }
+   ],
+   "regen": [
+    {
+     "resource": "Resource Health",
+     "base": 10,
+     "method": "add",
+     "change": 0
+    }
    ]
   },
   "7e911e2c-8298-4fee-a6e2-bf9890fcbb56": {
@@ -491,6 +580,14 @@
     {
      "resource": "Resource Health",
      "base": 400,
+     "method": "add",
+     "change": 0
+    }
+   ],
+   "regen": [
+    {
+     "resource": "Resource Health",
+     "base": 10,
      "method": "add",
      "change": 0
     }
@@ -506,7 +603,8 @@
      "method": "add",
      "change": 0
     }
-   ]
+   ],
+   "regen": []
   },
   "1b2a128e-d45b-476a-bc42-bc31f0c83375": {
    "level": 1,
@@ -518,7 +616,8 @@
      "method": "add",
      "change": 0
     }
-   ]
+   ],
+   "regen": []
   },
   "1294da98-b85b-4bc4-af5d-e512170a6545": {
    "level": 1,
@@ -530,7 +629,8 @@
      "method": "add",
      "change": 0
     }
-   ]
+   ],
+   "regen": []
   },
   "c0d6e452-badd-4c88-b6a0-12494ed01fce": {
    "level": 1,
@@ -542,7 +642,8 @@
      "method": "add",
      "change": 0
     }
-   ]
+   ],
+   "regen": []
   },
   "50f36e9d-63df-4ee3-8301-96b0f2b4262b": {
    "level": 1,
@@ -560,6 +661,14 @@
      "method": "add",
      "change": 0
     }
+   ],
+   "regen": [
+    {
+     "resource": "Resource Caps",
+     "base": 1.5,
+     "method": "add",
+     "change": 0
+    }
    ]
   },
   "1731e6e4-c087-477f-b292-4b9199dce7ef": {
@@ -572,7 +681,8 @@
      "method": "add",
      "change": 0
     }
-   ]
+   ],
+   "regen": []
   },
   "c189627d-ac8f-436c-b833-b66eb22644f6": {
    "level": 1,
@@ -584,7 +694,8 @@
      "method": "add",
      "change": 0
     }
-   ]
+   ],
+   "regen": []
   },
   "6e09adec-e4b4-46f7-bb33-50abb52815c4": {
    "level": 1,
@@ -596,7 +707,8 @@
      "method": "add",
      "change": 0
     }
-   ]
+   ],
+   "regen": []
   },
   "4c8788a4-157f-4527-aad7-f6cce9d98b6e": {
    "level": 1,
@@ -608,7 +720,8 @@
      "method": "add",
      "change": 0
     }
-   ]
+   ],
+   "regen": []
   },
   "c3450eb2-13e0-42de-a90e-13a052c7b431": {
    "level": 1,
@@ -620,7 +733,8 @@
      "method": "add",
      "change": 0
     }
-   ]
+   ],
+   "regen": []
   },
   "f951a44b-0494-466a-8a03-56ee3351db1e": {
    "level": 1,
@@ -644,6 +758,20 @@
      "method": "add",
      "change": 1
     }
+   ],
+   "regen": [
+    {
+     "resource": "Resource White",
+     "base": 4,
+     "method": "add",
+     "change": 0
+    },
+    {
+     "resource": "Resource Tech",
+     "base": 5,
+     "method": "add",
+     "change": 1
+    }
    ]
   },
   "4e7e3e86-f3ce-4ecd-86f4-29520d8b85af": {
@@ -656,7 +784,8 @@
      "method": "add",
      "change": 0
     }
-   ]
+   ],
+   "regen": []
   },
   "a30f009c-4bbb-4f11-a411-6f8cdb26ceee": {
    "level": 1,
@@ -665,6 +794,14 @@
     {
      "resource": "Resource Health",
      "base": 20,
+     "method": "add",
+     "change": 0
+    }
+   ],
+   "regen": [
+    {
+     "resource": "Resource Health",
+     "base": 0.33000001311302185,
      "method": "add",
      "change": 0
     }
@@ -686,7 +823,8 @@
      "method": "add",
      "change": 0
     }
-   ]
+   ],
+   "regen": []
   },
   "7bc63223-bc7e-45fe-bae6-66f4ab86b51d": {
    "level": 1,
@@ -704,7 +842,8 @@
      "method": "add",
      "change": 0
     }
-   ]
+   ],
+   "regen": []
   },
   "d939827f-4fea-4f61-a7aa-df3baeab6dde": {
    "level": 1,
@@ -716,6 +855,14 @@
      "method": "add",
      "change": 0
     },
+    {
+     "resource": "Resource White",
+     "base": 15,
+     "method": "add",
+     "change": 0
+    }
+   ],
+   "regen": [
     {
      "resource": "Resource White",
      "base": 15,
@@ -740,6 +887,14 @@
      "method": "add",
      "change": 0
     }
+   ],
+   "regen": [
+    {
+     "resource": "Resource White",
+     "base": 1,
+     "method": "add",
+     "change": 0
+    }
    ]
   },
   "00063348-e7eb-492c-bad7-e4a89b18a2ae": {
@@ -755,6 +910,14 @@
     {
      "resource": "Resource White",
      "base": 5,
+     "method": "add",
+     "change": 0
+    }
+   ],
+   "regen": [
+    {
+     "resource": "Resource White",
+     "base": 1,
      "method": "add",
      "change": 0
     }
@@ -776,6 +939,20 @@
      "method": "add",
      "change": 0
     }
+   ],
+   "regen": [
+    {
+     "resource": "Resource Health",
+     "base": 3,
+     "method": "add",
+     "change": 0
+    },
+    {
+     "resource": "Resource Caps",
+     "base": 5,
+     "method": "add",
+     "change": 0
+    }
    ]
   },
   "269b634c-3091-4298-838f-af525562dc6b": {
@@ -785,6 +962,14 @@
     {
      "resource": "Resource Health",
      "base": 40,
+     "method": "add",
+     "change": 0
+    }
+   ],
+   "regen": [
+    {
+     "resource": "Resource Health",
+     "base": 3,
      "method": "add",
      "change": 0
     }
@@ -800,6 +985,14 @@
      "method": "add",
      "change": 0
     }
+   ],
+   "regen": [
+    {
+     "resource": "Resource Health",
+     "base": 3,
+     "method": "add",
+     "change": 0
+    }
    ]
   },
   "b3c4ae5d-b5ad-46a4-8030-240470591fca": {
@@ -812,197 +1005,236 @@
      "method": "add",
      "change": 0
     }
-   ]
+   ],
+   "regen": []
   },
   "a8821721-eb57-4934-81d4-4c29427b3a26": {
    "level": 1,
    "canBeBoosted": false,
-   "caps": []
+   "caps": [],
+   "regen": []
   },
   "2cf20dad-69f5-43db-b4fd-a021be584b5f": {
    "level": 1,
    "canBeBoosted": false,
-   "caps": []
+   "caps": [],
+   "regen": []
   },
   "a5821cd4-48c9-4b1e-96aa-1ef4e0d64a50": {
    "level": 1,
    "canBeBoosted": false,
-   "caps": []
+   "caps": [],
+   "regen": []
   },
   "2b2dbb4d-69e8-40ff-a212-a52efdf9c587": {
    "level": 1,
    "canBeBoosted": false,
-   "caps": []
+   "caps": [],
+   "regen": []
   },
   "73cf7441-4ef5-49e5-b26f-4d8394bd67dd": {
    "level": 1,
    "canBeBoosted": false,
-   "caps": []
+   "caps": [],
+   "regen": []
   },
   "7fe9d646-5dd6-43b8-80d2-03ee41bcec67": {
    "level": 1,
    "canBeBoosted": false,
-   "caps": []
+   "caps": [],
+   "regen": []
   },
   "ae453f20-1aa1-4ea2-af9a-ca2756325454": {
    "level": 1,
    "canBeBoosted": false,
-   "caps": []
+   "caps": [],
+   "regen": []
   },
   "47f8634f-15fe-407b-b15d-329319d52aaf": {
    "level": 1,
    "canBeBoosted": false,
-   "caps": []
+   "caps": [],
+   "regen": []
   },
   "aabbf1de-33e5-4f1d-8cb2-2ad35c95251f": {
    "level": 1,
    "canBeBoosted": false,
-   "caps": []
+   "caps": [],
+   "regen": []
   },
   "60030afe-a08a-4c61-9bd4-dc4e5ae2e189": {
    "level": 1,
    "canBeBoosted": false,
-   "caps": []
+   "caps": [],
+   "regen": []
   },
   "1a8a22e0-f893-4acd-b247-b547d9034cc5": {
    "level": 1,
    "canBeBoosted": false,
-   "caps": []
+   "caps": [],
+   "regen": []
   },
   "d9377cc7-3bc4-44c9-af1c-a0647f62e96c": {
    "level": 1,
    "canBeBoosted": false,
-   "caps": []
+   "caps": [],
+   "regen": []
   },
   "46c8e93d-67fe-4a04-a910-bbf16521971a": {
    "level": 1,
    "canBeBoosted": false,
-   "caps": []
+   "caps": [],
+   "regen": []
   },
   "eba0f80e-74fd-45e9-9319-0777c72e0cd6": {
    "level": 1,
    "canBeBoosted": false,
-   "caps": []
+   "caps": [],
+   "regen": []
   },
   "f7168902-c6c4-426c-9da7-f1bfdcb2c2d5": {
    "level": 1,
    "canBeBoosted": false,
-   "caps": []
+   "caps": [],
+   "regen": []
   },
   "4b333163-e8aa-48f0-aa93-184e2dfade3f": {
    "level": 1,
    "canBeBoosted": false,
-   "caps": []
+   "caps": [],
+   "regen": []
   },
   "7cb9173d-4229-48b8-b079-73dea8d339e5": {
    "level": 1,
    "canBeBoosted": false,
-   "caps": []
+   "caps": [],
+   "regen": []
   },
   "bbc0dd01-a91a-427c-977a-f1a546c3e4a0": {
    "level": 1,
    "canBeBoosted": false,
-   "caps": []
+   "caps": [],
+   "regen": []
   },
   "63fedd1a-0b62-4c1d-89b8-473b53dd38c7": {
    "level": 1,
    "canBeBoosted": false,
-   "caps": []
+   "caps": [],
+   "regen": []
   },
   "693125a0-a1b3-4508-b3eb-f523081e26ac": {
    "level": 1,
    "canBeBoosted": false,
-   "caps": []
+   "caps": [],
+   "regen": []
   },
   "a42354fe-a50e-4a2a-a264-28eb728a7b9e": {
    "level": 1,
    "canBeBoosted": false,
-   "caps": []
+   "caps": [],
+   "regen": []
   },
   "4eba9754-339c-4587-98a8-d159fda13ad4": {
    "level": 1,
    "canBeBoosted": false,
-   "caps": []
+   "caps": [],
+   "regen": []
   },
   "39a2df66-c89d-4226-b7c6-4848da16479f": {
    "level": 1,
    "canBeBoosted": false,
-   "caps": []
+   "caps": [],
+   "regen": []
   },
   "957fc473-fd1a-44c1-817e-0b1857250193": {
    "level": 1,
    "canBeBoosted": false,
-   "caps": []
+   "caps": [],
+   "regen": []
   },
   "517aaf64-71a1-4878-bba3-d7f9b995a6aa": {
    "level": 1,
    "canBeBoosted": false,
-   "caps": []
+   "caps": [],
+   "regen": []
   },
   "69278b56-c542-4cd5-b33f-95887000e0db": {
    "level": 1,
    "canBeBoosted": false,
-   "caps": []
+   "caps": [],
+   "regen": []
   },
   "57149378-6837-4e76-a6d9-b6f3b3f3435d": {
    "level": 1,
    "canBeBoosted": false,
-   "caps": []
+   "caps": [],
+   "regen": []
   },
   "e00d2bc2-548b-4356-9241-438bea5979cd": {
    "level": 1,
    "canBeBoosted": false,
-   "caps": []
+   "caps": [],
+   "regen": []
   },
   "bc282173-4c8b-4960-8742-9069f29d9fbb": {
    "level": 1,
    "canBeBoosted": false,
-   "caps": []
+   "caps": [],
+   "regen": []
   },
   "bd569afb-39b6-46c2-9c5a-57a282f073c4": {
    "level": 1,
    "canBeBoosted": false,
-   "caps": []
+   "caps": [],
+   "regen": []
   },
   "3c22cfb1-32d8-4bfc-ab5b-4271b3398d92": {
    "level": 1,
    "canBeBoosted": false,
-   "caps": []
+   "caps": [],
+   "regen": []
   },
   "bfa5e950-37e2-484f-b39c-80c0dce4edc6": {
    "level": 1,
    "canBeBoosted": false,
-   "caps": []
+   "caps": [],
+   "regen": []
   },
   "938ea129-d605-4e3e-81eb-f8fbfba79f85": {
    "level": 1,
    "canBeBoosted": false,
-   "caps": []
+   "caps": [],
+   "regen": []
   },
   "f9fdd750-2a66-4be2-9e9f-b4137d1b6f58": {
    "level": 1,
    "canBeBoosted": false,
-   "caps": []
+   "caps": [],
+   "regen": []
   },
   "e2c3772b-9226-43b5-a9c7-6a6456aaeb24": {
    "level": 1,
    "canBeBoosted": false,
-   "caps": []
+   "caps": [],
+   "regen": []
   },
   "351a78e1-2f55-467c-8198-5317fbd7c7a1": {
    "level": 1,
    "canBeBoosted": false,
-   "caps": []
+   "caps": [],
+   "regen": []
   },
   "eecde5fa-0f5d-45d2-bf40-59ed14bded7d": {
    "level": 1,
    "canBeBoosted": false,
-   "caps": []
+   "caps": [],
+   "regen": []
   },
   "c742cdd3-284d-420a-9feb-399f820c15ce": {
    "level": 1,
    "canBeBoosted": false,
-   "caps": []
+   "caps": [],
+   "regen": []
   },
   "0081b7d8-cd9a-409b-abcb-fee408247d9b": {
    "level": 1,
@@ -1014,17 +1246,34 @@
      "method": "add",
      "change": 0
     }
+   ],
+   "regen": [
+    {
+     "resource": "Resource Health",
+     "base": 2,
+     "method": "add",
+     "change": 0
+    }
    ]
   },
   "c8da87d5-997b-4d1c-aefb-5242051a10d7": {
    "level": 1,
    "canBeBoosted": false,
-   "caps": []
+   "caps": [],
+   "regen": []
   },
   "e070f3d8-c876-440d-a66e-7e9d8fd8b6ca": {
    "level": 1,
    "canBeBoosted": true,
-   "caps": []
+   "caps": [],
+   "regen": [
+    {
+     "resource": "Resource Electron",
+     "base": 0.07999999821186066,
+     "method": "add",
+     "change": 0.05000000074505806
+    }
+   ]
   },
   "97b5d6c6-fdee-4e07-9f1c-e7eb71018ab8": {
    "level": 1,
@@ -1036,7 +1285,8 @@
      "method": "add",
      "change": 1
     }
-   ]
+   ],
+   "regen": []
   },
   "446fc56b-ec1f-480f-ac9f-d356458f7a45": {
    "level": 1,
@@ -1048,7 +1298,8 @@
      "method": "add",
      "change": 2
     }
-   ]
+   ],
+   "regen": []
   },
   "4618af6d-c054-4157-a4d0-ae0cdf093f33": {
    "level": 1,
@@ -1060,7 +1311,8 @@
      "method": "add",
      "change": 1
     }
-   ]
+   ],
+   "regen": []
   },
   "ed74decf-4507-46a1-a41b-9b17ca155d8e": {
    "level": 1,
@@ -1072,7 +1324,8 @@
      "method": "add",
      "change": 1
     }
-   ]
+   ],
+   "regen": []
   },
   "d4e6117e-75d9-490e-bbc6-f6a683b2fd48": {
    "level": 1,
@@ -1084,7 +1337,8 @@
      "method": "add",
      "change": 1
     }
-   ]
+   ],
+   "regen": []
   },
   "9ebbe694-85cd-46de-ba7a-2bfd5934e50c": {
    "level": 1,
@@ -1096,7 +1350,8 @@
      "method": "add",
      "change": 1
     }
-   ]
+   ],
+   "regen": []
   },
   "4193938c-ea4f-4fb3-8f06-1147eb33bf42": {
    "level": 1,
@@ -1108,32 +1363,73 @@
      "method": "add",
      "change": 1
     }
-   ]
+   ],
+   "regen": []
   },
   "fa46fc36-1e37-4c91-a319-172285b9c3dd": {
    "level": 1,
    "canBeBoosted": true,
-   "caps": []
+   "caps": [],
+   "regen": [
+    {
+     "resource": "Resource Caps",
+     "base": 0.15000000596046448,
+     "method": "add",
+     "change": 0.05000000074505806
+    }
+   ]
   },
   "c0c721ff-3be0-4e4e-a2e1-dff7b1a11230": {
    "level": 1,
    "canBeBoosted": true,
-   "caps": []
+   "caps": [],
+   "regen": [
+    {
+     "resource": "Resource Health",
+     "base": 0.15000000596046448,
+     "method": "add",
+     "change": 0.05000000074505806
+    }
+   ]
   },
   "1a00aa71-b1e5-4a5c-806c-5d8d30a1353a": {
    "level": 1,
    "canBeBoosted": true,
-   "caps": []
+   "caps": [],
+   "regen": [
+    {
+     "resource": "Resource Purple",
+     "base": 0.15000000596046448,
+     "method": "add",
+     "change": 0.05000000074505806
+    }
+   ]
   },
   "8351e3d0-20bf-4f6d-a97a-2322dd76b596": {
    "level": 1,
    "canBeBoosted": true,
-   "caps": []
+   "caps": [],
+   "regen": [
+    {
+     "resource": "Resource White",
+     "base": 6,
+     "method": "add",
+     "change": 2
+    }
+   ]
   },
   "dd7c4547-8332-4167-b67d-7b5445b5d8a3": {
    "level": 1,
    "canBeBoosted": true,
-   "caps": []
+   "caps": [],
+   "regen": [
+    {
+     "resource": "Resource Tech",
+     "base": 0.019999999552965164,
+     "method": "add",
+     "change": 0.009999999776482582
+    }
+   ]
   },
   "48a433fa-b05d-42e7-b273-b95046c4cef8": {
    "level": 1,
@@ -1145,7 +1441,8 @@
      "method": "add",
      "change": 1
     }
-   ]
+   ],
+   "regen": []
   },
   "bf8fb7e6-d7fe-4e10-a261-abf1843909a9": {
    "level": 1,
@@ -1157,7 +1454,8 @@
      "method": "add",
      "change": 1
     }
-   ]
+   ],
+   "regen": []
   },
   "c792bc27-6cc0-4162-bf25-55720fdcc9d4": {
    "level": 1,
@@ -1169,7 +1467,8 @@
      "method": "add",
      "change": 1
     }
-   ]
+   ],
+   "regen": []
   },
   "04e1c99f-6b61-4008-9b0b-e4ab7c6aa4c0": {
    "level": 1,
@@ -1181,7 +1480,8 @@
      "method": "add",
      "change": 1
     }
-   ]
+   ],
+   "regen": []
   },
   "1fc77425-8190-43d6-ac92-1e3a71008cae": {
    "level": 1,
@@ -1205,6 +1505,14 @@
      "method": "add",
      "change": 0
     }
+   ],
+   "regen": [
+    {
+     "resource": "Resource White",
+     "base": 20,
+     "method": "add",
+     "change": 0
+    }
    ]
   },
   "10b13ed7-aacd-4774-9bf0-5362223b7c7b": {
@@ -1217,7 +1525,8 @@
      "method": "add",
      "change": 0
     }
-   ]
+   ],
+   "regen": []
   },
   "443ec472-0026-4dce-a549-8f00e83c3501": {
    "level": 1,
@@ -1229,7 +1538,8 @@
      "method": "add",
      "change": 0
     }
-   ]
+   ],
+   "regen": []
   },
   "a4c2162a-319a-45a3-b5cb-073aaef4bbf6": {
    "level": 1,
@@ -1241,7 +1551,8 @@
      "method": "add",
      "change": 0
     }
-   ]
+   ],
+   "regen": []
   },
   "8034fe08-d0c0-4bdc-8415-80d69d72e712": {
    "level": 3,
@@ -1253,7 +1564,8 @@
      "method": "add",
      "change": 0
     }
-   ]
+   ],
+   "regen": []
   },
   "dc23d157-0048-48a2-abe2-6a28c2638e5c": {
    "level": 1,
@@ -1265,7 +1577,8 @@
      "method": "add",
      "change": 0
     }
-   ]
+   ],
+   "regen": []
   },
   "fc6c2229-bdbb-4c68-a470-c293db508654": {
    "level": 1,
@@ -1277,7 +1590,8 @@
      "method": "add",
      "change": 0
     }
-   ]
+   ],
+   "regen": []
   },
   "ddd33d91-d543-4ff9-8610-6827b135ea6a": {
    "level": 1,
@@ -1289,7 +1603,8 @@
      "method": "add",
      "change": 0
     }
-   ]
+   ],
+   "regen": []
   },
   "12fd6892-c826-412e-a894-ed8404a7be5f": {
    "level": 2,
@@ -1301,7 +1616,8 @@
      "method": "add",
      "change": 0
     }
-   ]
+   ],
+   "regen": []
   },
   "6b3bedaf-1928-4c0d-8096-060368ee7184": {
    "level": 2,
@@ -1313,7 +1629,8 @@
      "method": "add",
      "change": 0
     }
-   ]
+   ],
+   "regen": []
   },
   "e581ddd9-034c-42c1-a501-fe435a52939f": {
    "level": 2,
@@ -1325,7 +1642,8 @@
      "method": "add",
      "change": 0
     }
-   ]
+   ],
+   "regen": []
   },
   "b17ce454-50f0-45d8-b565-8c6440688407": {
    "level": 1,
@@ -1337,7 +1655,8 @@
      "method": "add",
      "change": 0
     }
-   ]
+   ],
+   "regen": []
   },
   "40bc74dc-e0cc-4d4a-ba4e-a58c55c4086a": {
    "level": 2,
@@ -1349,7 +1668,8 @@
      "method": "add",
      "change": 0
     }
-   ]
+   ],
+   "regen": []
   },
   "2df1b51f-37ff-4750-a09a-8b9a10ca80a1": {
    "level": 1,
@@ -1361,7 +1681,8 @@
      "method": "add",
      "change": 0
     }
-   ]
+   ],
+   "regen": []
   },
   "d9b599dc-aa8d-41c0-a535-cf66d009c038": {
    "level": 3,
@@ -1373,7 +1694,8 @@
      "method": "add",
      "change": 0
     }
-   ]
+   ],
+   "regen": []
   },
   "e0c6bc5b-9a68-4a11-a0cb-8fe5e7436672": {
    "level": 1,
@@ -1385,7 +1707,8 @@
      "method": "add",
      "change": 0
     }
-   ]
+   ],
+   "regen": []
   },
   "95988739-700c-4fe7-b44d-31514cdd86d7": {
    "level": 1,
@@ -1397,7 +1720,8 @@
      "method": "add",
      "change": 0
     }
-   ]
+   ],
+   "regen": []
   },
   "e1236293-1c9c-472d-ba4f-0246abf80e96": {
    "level": 1,
@@ -1409,7 +1733,8 @@
      "method": "add",
      "change": 0
     }
-   ]
+   ],
+   "regen": []
   },
   "501af82f-bdee-459e-8b1c-4281cf53f621": {
    "level": 2,
@@ -1421,7 +1746,8 @@
      "method": "add",
      "change": 0
     }
-   ]
+   ],
+   "regen": []
   },
   "9851b4de-4a77-40e4-94a0-d5d168f0573f": {
    "level": 1,
@@ -1433,7 +1759,8 @@
      "method": "add",
      "change": 0
     }
-   ]
+   ],
+   "regen": []
   },
   "307b0777-d4a2-4028-a5fb-66f28a299748": {
    "level": 1,
@@ -1445,7 +1772,8 @@
      "method": "add",
      "change": 0
     }
-   ]
+   ],
+   "regen": []
   },
   "63a7f89d-c198-49fe-ad6b-22e43cb48f52": {
    "level": 2,
@@ -1457,7 +1785,8 @@
      "method": "add",
      "change": 0
     }
-   ]
+   ],
+   "regen": []
   },
   "1fb76d64-e477-4e86-8954-6d5cfb262ca1": {
    "level": 2,
@@ -1469,7 +1798,8 @@
      "method": "add",
      "change": 0
     }
-   ]
+   ],
+   "regen": []
   }
  },
  "slotLevelDeltas": {

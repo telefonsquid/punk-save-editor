@@ -46,10 +46,33 @@ export interface AssetInfo {
 
 export const assets = assetNames as Record<string, AssetInfo>;
 
+/**
+ * Player-facing names for resources whose asset id is an internal codename.
+ *
+ * `Resource` assets carry no `displayName`, so the fallback is the id with its
+ * `Resource ` prefix stripped — which leaves three of them reading as the colour
+ * the artist happened to pick rather than as the thing the player knows. These
+ * are the names the game itself uses in the HUD. The **ids are save-file keys
+ * and must never change**; this is display only.
+ */
+const RESOURCE_LABELS: Record<string, string> = {
+	'Resource Money': 'Money',
+	'Resource White': 'Stamina',
+	'Resource Purple': 'Gel'
+};
+
+/** Player-facing name for a resource id (see RESOURCE_LABELS). */
+export function resourceLabel(id: string): string {
+	return RESOURCE_LABELS[id] ?? id.replace(/^Resource /, '');
+}
+
 /** Best human-readable name for a module/consumable/ingredient/resource id. */
 export function displayName(id: string | null): string {
 	if (!id) return '(none)';
 	const a = assets[id];
+	// Resources have no displayName of their own — route them through the
+	// resource labels so every surface agrees on "Money"/"Stamina"/"Gel".
+	if (a?.category === 'Resource') return resourceLabel(id);
 	return a?.displayName || a?.assetName || id;
 }
 
@@ -253,7 +276,8 @@ export function shipResources(entities: OdinNode): ResourcePair[] {
 	return dictPairs(unit.resourceValues) as unknown as ResourcePair[];
 }
 
-interface CapEffect {
+/** A `FloatSeries`-valued module effect (see scripts/extract-module-caps.ts). */
+interface SeriesEffect {
 	resource: string;
 	base: number;
 	method: string;
@@ -261,22 +285,31 @@ interface CapEffect {
 }
 const capModules = moduleCaps.modules as Record<
 	string,
-	{ level: number; canBeBoosted: boolean; caps: CapEffect[] }
+	{ level: number; canBeBoosted: boolean; caps: SeriesEffect[]; regen: SeriesEffect[] }
 >;
 const slotLevelDeltas = moduleCaps.slotLevelDeltas as Record<string, number>;
 
+/** `FloatSeries.GetElement`: the effect's magnitude at a zero-based level index. */
+function seriesAt(e: SeriesEffect, idx: number): number {
+	return e.method === 'mul' ? e.base * Math.pow(e.change, idx) : e.base + e.change * idx;
+}
+
 /**
- * Max capacity per resource id, summed over every module installed on the
- * ship grid at its effective level (asset level + LevelUp slots + neighbor
- * level-boost fields). Power/connectivity is not simulated, so modules parked
- * unpowered on the grid still count — an upper bound, exact for valid layouts.
+ * Sums one kind of module effect across every module installed on the ship grid,
+ * each evaluated at its effective level (asset level + LevelUp slots + neighbour
+ * level-boost fields — this is what a booster module does). Power/connectivity is
+ * not simulated, so modules parked unpowered on the grid still count: an upper
+ * bound, exact for valid layouts.
  */
-export function shipResourceCaps(entities: OdinNode): Map<string, number> {
-	const caps = new Map<string, number>();
+function sumGridEffects(
+	entities: OdinNode,
+	pick: (m: { caps: SeriesEffect[]; regen: SeriesEffect[] }) => SeriesEffect[]
+): Map<string, number> {
+	const totals = new Map<string, number>();
 	const gridOwner = shipMemento(entities, 'ModuleGridOwner');
 	const gridValue = (gridOwner?.gridMemento ?? null) as OdinValue;
 	const grid = isNode(gridValue) ? gridValue : null;
-	if (!grid) return caps;
+	if (!grid) return totals;
 	const modules = dictPairs(grid.modules);
 	const vec = (v: unknown) => ({ x: (v as OdinNode).$0 as number, y: (v as OdinNode).$1 as number });
 	const key = (x: number, y: number) => `${x},${y}`;
@@ -316,12 +349,32 @@ export function shipResourceCaps(entities: OdinNode): Map<string, number> {
 		let level = info.level;
 		if (info.canBeBoosted) level += levelDeltas.get(key(x, y)) ?? 0;
 		const idx = Math.max(0, level - 1);
-		for (const c of info.caps) {
-			const delta = c.method === 'mul' ? c.base * Math.pow(c.change, idx) : c.base + c.change * idx;
-			caps.set(c.resource, (caps.get(c.resource) ?? 0) + delta);
+		for (const e of pick(info)) {
+			totals.set(e.resource, (totals.get(e.resource) ?? 0) + seriesAt(e, idx));
 		}
 	}
-	return caps;
+	return totals;
+}
+
+/** Max capacity per resource id, from the grid's ModifyResourceCapacity effects. */
+export function shipResourceCaps(entities: OdinNode): Map<string, number> {
+	return sumGridEffects(entities, (m) => m.caps);
+}
+
+/**
+ * Recharge rate per second per resource id, from the grid's
+ * `ResourceAutoChargeEffect`s. Stamina looks like it has an intrinsic base rate,
+ * but it doesn't: the always-installed `SHIP` module carries a flat
+ * `Resource White +20/s` effect (and is the one module that can't be boosted).
+ * Everything else comes from regen modules, which a neighbouring booster raises
+ * by lifting their effective level — the same mechanism as capacities.
+ *
+ * This is the steady-state rate. The game also gates recharging behind
+ * `Resource.rechargeDelay` after the last drain, so the observed rate right
+ * after taking damage is zero for a moment.
+ */
+export function shipResourceRegen(entities: OdinNode): Map<string, number> {
+	return sumGridEffects(entities, (m) => m.regen);
 }
 
 function isPrimitiveArray(v: OdinValue | null | undefined): v is import('./odin').OdinPrimitiveArray {

@@ -149,12 +149,38 @@ the computed cap is an **upper bound**, exact for valid layouts. Reproducing pow
 porting `ModuleCluster.RefreshPoweredSlots` / `ModuleGrid.OnModulesChanged` — the plan if grid editing
 ever needs exactness.
 
+### Resource regeneration
+
+Recharge works through the **same grid + effective-level machinery as capacity**, just a different
+effect: `ResourceAutoChargeEffect { Resource resource; FloatSeries rechargeRate }` calls
+`unit.IncreaseRechargeRate(resource, rechargeRate.GetElement(Module.Level - 1))` from
+`OnRecalculateUnitStats`. So a **booster next to a regen module raises its rate** by raising its
+effective level — nothing regen-specific about it. `slot.ts:shipResourceRegen` shares the grid walk
+with `shipResourceCaps` (`sumGridEffects`).
+
+23 `ModuleData` assets carry a recharge effect. The named player-facing ones are `CAPS/HEALTH/GEL/
+TECH/STAMINA REGEN` and `POWER CORE`; the rest are unnamed `Module Embedded *` enemy parts.
+
+**Stamina's "base" regen is not a base value** — there is no intrinsic per-resource rate anywhere
+(`Resource` only has `rechargeDelay`, and `IncreaseRechargeRate` has exactly one caller). It comes
+from the always-installed **`SHIP` module**, which carries a flat `Resource White +20/s` and is the
+one module with `canBeBoosted = false`. Because it sits on the grid, the ordinary walk picks it up.
+
+`ResourceRecharger.Update` then gates charging: it only ticks once
+`Time.time > lastDecreaseTime + resource.rechargeDelay` and the tank isn't full. The editor reports
+the steady-state rate, not what you'd observe right after taking damage.
+
 ### Ids → human names
 
 Module/consumable/ingredient/resource ids in saves are Unity asset ids (GUIDs or `"Resource X"`
 strings). `scripts/extract-asset-names.py` dumps every identifiable asset's `id → {category,
 assetName, displayName, …}` into `src/lib/save/asset-names.json`, surfaced through
 `slot.ts:displayName()`. Regenerate it (and `module-caps.json`) whenever the game updates.
+
+`Resource` assets have **no `displayName`**, and three of their ids are artist codenames rather than
+player-facing words. `slot.ts:RESOURCE_LABELS` maps `Resource Money → Money`,
+`Resource White → Stamina`, `Resource Purple → Gel`; everything else just loses the `Resource `
+prefix. The ids remain the save-file keys.
 
 ### Resource icons
 

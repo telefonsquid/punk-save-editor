@@ -5,9 +5,10 @@ shown in the vault/shop): `Ingredient.iconBig`/`iconSmall`, `Consumable.icon`,
 `ModuleData.icon`. This resolves each to a PNG and writes an id -> data-URI map
 the editor imports so it can show the real item picture next to every entry.
 
-Item art is larger than the resource HUD glyphs, so each sprite is capped to
-ITEM_MAX px on its long edge (nearest-neighbour, to keep the pixel-art crisp)
-before it is inlined as base64 — keeps the JSON small enough to check in.
+Sprites are inlined at their **native pixel size**. Do not resample them here:
+the editor displays every icon at an exact integer multiple of its natural size
+so the pixel grid stays intact, and a resize step upstream (the old long-edge
+cap) silently scaled sprites by a non-integer factor and broke that.
 
 Usage:
     python -m venv venv
@@ -22,7 +23,6 @@ import sys
 from pathlib import Path
 
 import UnityPy
-from PIL import Image
 from UnityPy.helpers.TypeTreeGenerator import TypeTreeGenerator
 
 GAME_DATA = Path(
@@ -32,7 +32,6 @@ GAME_DATA = Path(
 )
 OUT = Path(__file__).parent.parent / "src/lib/save/item-icons.json"
 UNITY_VERSION = "6000.3.4f1"
-ITEM_MAX = 64  # cap the long edge; item art is bigger than the HUD glyphs
 
 
 def pick_icon(d: dict):
@@ -75,12 +74,6 @@ for obj in env.objects:
     except Exception as e:
         print(f"  {ident}: could not read icon ({e})")
         continue
-    if max(img.width, img.height) > ITEM_MAX:
-        scale = ITEM_MAX / max(img.width, img.height)
-        img = img.resize(
-            (max(1, round(img.width * scale)), max(1, round(img.height * scale))),
-            Image.NEAREST,
-        )
     buf = io.BytesIO()
     img.save(buf, "PNG")
     data_uris[ident] = "data:image/png;base64," + base64.b64encode(buf.getvalue()).decode()

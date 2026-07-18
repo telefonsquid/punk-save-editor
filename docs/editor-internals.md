@@ -84,8 +84,14 @@ node; the `state_referenced_locally` autofixer warning is intentionally silenced
 - `Dictionary<K,V>` → **`dictPairs(node)`** returns the `{$k,$v}` array. Do **not** hard-code `$0`/`$1`;
   the pairs array's anonymous index shifts depending on whether the `comparer` was emitted inline or as
   a `$ref` (see save-format.md).
-- Ship resources: `shipResources(entities)` (current `{$k,$v}` pairs, mutate in place) and
-  `shipResourceCaps(entities)` (`Map<resourceId, max>` from the grid — see game-code.md).
+- Ship resources: `shipResources(entities)` (current `{$k,$v}` pairs, mutate in place),
+  `shipResourceCaps(entities)` (`Map<resourceId, max>`) and `shipResourceRegen(entities)`
+  (`Map<resourceId, perSecond>`). The last two are one grid walk (`sumGridEffects`) over two
+  different `FloatSeries` effects — see game-code.md.
+- Resource display names: `resourceLabel(id)` / `displayName(id)`. `Resource` assets carry no
+  `displayName`, so three of them would read as a colour codename; `RESOURCE_LABELS` in slot.ts maps
+  `Resource Money`/`White`/`Purple` to **Money / Stamina / Gel**. The **ids are save-file keys** — only
+  the label changes.
 - Consumables: the vault holds a **fixed run of 8 slots**, empty ones carrying a `null` id (the game's
   `Vault()` seeds 8 and `RestoreFromMemento` rebuilds one slot per memento entry). `addConsumable`
   mirrors `Vault.Add` — it fills the first empty slot rather than growing the list. `reorderConsumables`
@@ -103,15 +109,15 @@ node; the `state_referenced_locally` autofixer warning is intentionally silenced
 These JSON files under `src/lib/save/` are extracted from the installed game and checked in:
 
 - `asset-names.json` — id → display name/category. `python scripts/extract-asset-names.py [Punk_Data]`.
-- `module-caps.json` — module GUID → capacity effects + slot level deltas. Two steps:
+- `module-caps.json` — module GUID → capacity effects, recharge effects, and slot level deltas. Two steps:
   `python scripts/extract-module-caps.py [Punk_Data]` then `bun scripts/extract-module-caps.ts`. The
   intermediate `scripts/module-effects-raw.json` is gitignored.
 - `resource-icons.json` — resource id → data-URI PNG of its HUD icon. `python
   scripts/extract-resource-icons.py [Punk_Data]`. Rendered by `components/ResourceIcon.svelte`
   (pixelated). Extracted game art *is* committed here — see the copyright note in game-code.md.
-- `item-icons.json` — ingredient/consumable/module id → data-URI PNG of its item art (long edge
-  capped to 64 px). `python scripts/extract-item-icons.py [Punk_Data]`. Rendered by
-  `components/ItemIcon.svelte` (pixelated).
+- `item-icons.json` — ingredient/consumable/module id → data-URI PNG of its item art, at **native
+  size**. `python scripts/extract-item-icons.py [Punk_Data]`. Rendered by
+  `components/ItemIcon.svelte`.
 - `module-info.json` — module id → `{ color, resource, powerLevel: [min,max], powerCore }`. `python
   scripts/extract-module-info.py [Punk_Data]`. Drives module tinting in the UI and supplies the
   defaults `addModule` needs — see the module-colour section in game-code.md.
@@ -119,6 +125,23 @@ These JSON files under `src/lib/save/` are extracted from the installed game and
 All need the Python venv with UnityPy. The scripts expect it at `/.venv` (gitignored):
 `python -m venv .venv && .venv/Scripts/pip install UnityPy TypeTreeGeneratorAPI Pillow`. Don't keep it
 in the scratchpad — the OS temp cleaner deletes package files out from under it.
+
+## The pixel-art rule: integer scaling only
+
+**Every ripped sprite is displayed at an exact integer multiple of its natural size, never in a fixed
+CSS box.** The art is hand-drawn pixel art — most item icons are 24x24, the HUD glyphs 8-13 px. At a
+fractional scale a source pixel covers a non-integer number of screen pixels, so edges shimmer and
+single-pixel details drop out; a square `h-8 w-8` box also squashes the non-square glyphs (they are
+mostly 13x12, 8x12).
+
+`$lib/save/pixel-icon.ts` implements it: `pngSize()` reads the natural dimensions straight out of the
+PNG's IHDR chunk (big-endian u32s at byte offsets 16 and 20, so the first 24 bytes suffice — no image
+load, no layout pass), and `iconStyle(uri, scale)` emits `width`/`height` in px plus
+`image-rendering: pixelated`. `ItemIcon`/`ResourceIcon` take a `scale` prop defaulting to **2x**.
+
+The consequence upstream: **the extraction scripts must emit sprites at native size.** The old
+`ITEM_MAX = 64` long-edge cap in `extract-item-icons.py` resampled by a fractional factor and broke
+the grid before the browser ever saw it; it was removed.
 
 ## In-browser end-to-end testing
 
