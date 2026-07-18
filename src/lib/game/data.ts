@@ -306,12 +306,17 @@ export function categoryRank(name: string, shopOrder: number): number {
 }
 
 /**
- * Whether a module takes part in the power-core mechanic. Weapons and gadgets
- * carry a core sprite and a `powerLevel` range worth editing; ship modules
- * (UPGRADES) and weapon mods have neither, so the editor hides the field for
- * them rather than showing a number that can only ever be 1.
+ * Whether a module takes part in the power-core mechanic *as a consumer*.
+ * Weapons and gadgets carry a core sprite and a `powerLevel` range worth
+ * editing; ship modules (UPGRADES) and weapon mods have neither, so the editor
+ * hides the field for them rather than showing a number that can only ever be 1.
+ *
+ * The POWER category is excluded despite carrying a `powerCores` shape: those
+ * modules *are* the cores, and the shape is the area they supply rather than an
+ * amount they draw. A core count on a core has nothing to count.
  */
 export function usesPowerCore(id: string | null | undefined): boolean {
+	if (moduleCategory(id) === 'POWER') return false;
 	return (moduleInfo(id)?.powerCores.length ?? 0) > 0;
 }
 

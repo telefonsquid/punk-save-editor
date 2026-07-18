@@ -14,7 +14,7 @@
 	// Ingredients that exist in the game data but are unused in the current build
 	// (never obtainable in a run) — hidden from the editor to avoid confusion,
 	// but kept in the asset data so they reappear if a future build uses them.
-	const DISABLED_INGREDIENTS = new Set(['Bond', 'Ex', 'Face']);
+	const DISABLED_INGREDIENTS = new Set(['Bond', 'Ex', 'Face', 'strange_ball']);
 	const allIngredients = assetsByCategory('Ingredient').filter(
 		({ id }) => !DISABLED_INGREDIENTS.has(id)
 	);

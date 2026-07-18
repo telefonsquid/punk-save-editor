@@ -111,6 +111,11 @@ node; the `state_referenced_locally` autofixer warning is intentionally silenced
   then drops the three that pass that check but still cannot be owned: the `Embedded` category (SHIP,
   Crawler — they belong to an entity, not a vault) and any module with no effects, no weapon and no
   effect field, which is RED EYE alone, an unfinished asset that would do nothing in a grid slot.
+- Ingredients: `DISABLED_INGREDIENTS` in `ResourcesPanel.svelte` hides the four the current build
+  never hands out — Bond, Ex, Face and Strange Ball. They stay in `asset-names.json` (extraction
+  reports what the game data holds, not what the game uses), so a build that starts granting one
+  brings it back by deleting a string. Everything else is listed whether owned or not, since raising
+  a count from zero is how you get one.
 - Consumables: the vault holds a **fixed run of 8 slots**, empty ones carrying a `null` id (the game's
   `Vault()` seeds 8 and `RestoreFromMemento` rebuilds one slot per memento entry). `addConsumable`
   mirrors `Vault.Add` — it fills the first empty slot rather than growing the list. `reorderConsumables`
@@ -220,8 +225,10 @@ toggles / power cores / remove, the picker passes an Add button.
   MODS, plus the single-module POWER / BOOSTERS / Embedded. A renamed or added category carries
   through on the next extraction with no code change.
 - **The power-core field is hidden for modules that have no core** (`usesPowerCore(id)`, i.e. a
-  non-empty `powerCores`). That is exactly UPGRADES and WEAPON MODS, which also have a `powerLevel`
-  range of `[1,1]` — the field could only ever read 1 there.
+  non-empty `powerCores`). That is UPGRADES and WEAPON MODS, which also have a `powerLevel` range of
+  `[1,1]` — the field could only ever read 1 there. POWER is hidden too, for the opposite reason: its
+  `powerCores` shape is the area a core *supplies*, not an amount it draws, so a core count on a core
+  counts nothing.
 - **POWER and BOOSTERS are pinned to the top** of every grouped module list (`categoryRank`). Both
   categories act on their *neighbours* rather than on themselves, which makes them the modules whose
   placement matters most; the game's own shop order splits them (POWER first, BOOSTERS last).

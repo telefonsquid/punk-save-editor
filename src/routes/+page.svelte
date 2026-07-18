@@ -79,9 +79,13 @@
 			     keystroke, so in-progress decimal typing isn't clobbered. -->
 			<div class="grid gap-6 md:grid-cols-2" oninput={editor.markCurated} onchange={editor.refresh}>
 				<ResourcesPanel {editor} />
-				<RunStatsPanel {editor} />
 				<ConsumablesPanel {editor} />
 				<ModulesPanel {editor} />
+				<!-- Last of the curated sections: run stats are read-mostly trivia
+				     (kills, time, floor) next to a vault the player came here to
+				     edit, so they get the bottom of the column rather than a slot
+				     between the two lists that are actually worked in. -->
+				<RunStatsPanel {editor} />
 			</div>
 
 			<RawFilesPanel {editor} />
