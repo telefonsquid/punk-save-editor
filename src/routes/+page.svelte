@@ -7,8 +7,10 @@
 	import {
 		addConsumable,
 		addIngredient,
+		addModule,
 		assets,
 		assetsByCategory,
+		CONNECTION_SIDES,
 		displayName,
 		getConsumables,
 		getModules,
@@ -17,13 +19,17 @@
 		ingredientIds,
 		loadFile,
 		loadSlot,
+		moduleInfo,
 		ODIN_FILES,
 		OPAQUE_FILES,
+		removeModule,
 		reorderConsumables,
 		runStats,
 		saveSlot,
 		shipResourceCaps,
 		shipResources,
+		type ConnectionKey,
+		type ModuleView,
 		type ResourcePair,
 		type SaveSlot
 	} from '$lib/save/slot';
@@ -91,6 +97,9 @@
 		({ id }) => !DISABLED_INGREDIENTS.has(id)
 	);
 	const allConsumables = assetsByCategory('Consumable');
+	// Only modules the game considers equippable (ModuleData.Equippable: an icon
+	// plus a display name) can be offered — the rest are embedded enemy parts.
+	const allModules = assetsByCategory('Module').filter(({ info }) => info.displayName);
 
 	// Only the filled slots are shown; empty ("(none)") slots are surfaced as
 	// add buttons instead. Reordering acts on this filtered list.
@@ -100,6 +109,24 @@
 	);
 	// Index (into filledConsumables) of the row currently being dragged.
 	let dragIndex = $state<number | null>(null);
+	// Module id chosen in the "add a module" picker (a plain string, not save data).
+	let moduleToAdd = $state('');
+
+	// A derived recompute reuses the underlying module nodes, so the keyed
+	// {#each} would not notice an edited connection if the template read the node
+	// directly. Snapshot every scalar the rows render into fresh objects.
+	const moduleRows = $derived(
+		modules.map((m, index) => ({
+			module: m,
+			index,
+			id: m.moduleDataId,
+			powerLevel: m.powerLevel,
+			info: moduleInfo(m.moduleDataId),
+			connections: Object.fromEntries(
+				CONNECTION_SIDES.map(({ key }) => [key, m[key]])
+			) as Record<ConnectionKey, boolean>
+		}))
+	);
 
 	// The vault only stores ingredients the player actually owns, but the UI
 	// shows every ingredient (owned or not) so counts can be raised from zero.
@@ -109,6 +136,28 @@
 		ingIds.forEach((id, i) => (m[id] = ingCounts[i]));
 		return m;
 	});
+
+	/** Flips one grid connection of a module in the raw tree. */
+	function toggleConnection(m: ModuleView, key: ConnectionKey) {
+		m[key] = !m[key];
+		markCurated();
+		refreshViews();
+	}
+
+	function addModuleToVault() {
+		if (!slot || !moduleToAdd) return;
+		addModule(slot.vault, moduleToAdd);
+		moduleToAdd = '';
+		markCurated();
+		refreshViews();
+	}
+
+	function removeModuleAt(index: number) {
+		if (!slot) return;
+		removeModule(slot.vault, index);
+		markCurated();
+		refreshViews();
+	}
 
 	/** Finish a consumable drag: move the dragged row to slot `to`. */
 	function dropConsumable(to: number) {
@@ -231,7 +280,10 @@
 		return id.replace(/^Resource /, '');
 	}
 
-	function fmtCap(v: number): string {
+	/** Displays a float with at most one decimal. Only the *display* is rounded —
+	 * the tree keeps whatever precision the game wrote (and whatever the user
+	 * types), so saving never quietly truncates a value that wasn't edited. */
+	function fmt1(v: number): string {
 		return Number.isInteger(v) ? String(v) : v.toFixed(1);
 	}
 
@@ -255,20 +307,6 @@
 		return `${h}h ${String(m).padStart(2, '0')}m`;
 	}
 
-	function connections(m: {
-		northConnection: boolean;
-		eastConnection: boolean;
-		southConnection: boolean;
-		westConnection: boolean;
-	}): string {
-		const parts = [
-			m.northConnection && 'N',
-			m.eastConnection && 'E',
-			m.southConnection && 'S',
-			m.westConnection && 'W'
-		].filter(Boolean);
-		return parts.length ? parts.join('·') : 'none';
-	}
 </script>
 
 <svelte:head><title>PUNK Save Editor</title></svelte:head>
@@ -364,7 +402,7 @@
 							{@const outOfRange = row.value < 0 || (row.max !== undefined && row.value > row.max)}
 							<label class="mb-2 flex items-center justify-between gap-4">
 								<span class="flex items-center gap-2">
-									<ResourceIcon id={row.id} class="h-5 w-5 shrink-0" />
+									<ResourceIcon id={row.id} class="h-8 w-8 shrink-0" />
 									{shipResourceLabel(row.id)}
 									{#if outOfRange}
 										<span class="text-xs text-red-400">out of range — may crash the game</span>
@@ -377,11 +415,11 @@
 										min="0"
 										max={row.max !== undefined ? row.max : undefined}
 										class="w-32 rounded border-zinc-700 bg-zinc-900 text-right"
-										value={row.value}
+										value={fmt1(row.value)}
 										oninput={shipResInput(row.pair, row.max)}
 									/>
 									<span class="w-14 text-sm text-zinc-500">
-										/ {row.max !== undefined ? fmtCap(row.max) : '?'}
+										/ {row.max !== undefined ? fmt1(row.max) : '?'}
 									</span>
 								</span>
 							</label>
@@ -402,13 +440,14 @@
 					{#each resources as pair (pair.$k)}
 						<label class="mb-2 flex items-center justify-between gap-4">
 							<span class="flex items-center gap-2">
-								<ResourceIcon id={pair.$k} class="h-5 w-5 shrink-0" />
+								<ResourceIcon id={pair.$k} class="h-8 w-8 shrink-0" />
 								{displayName(pair.$k)}
 							</span>
 							<input
 								type="number"
+								step="any"
 								class="w-32 rounded border-zinc-700 bg-zinc-900 text-right"
-								value={pair.$v}
+								value={fmt1(pair.$v)}
 								oninput={numInput(pair, '$v')}
 							/>
 						</label>
@@ -418,7 +457,7 @@
 					{#each allIngredients as { id } (id)}
 						<label class="mb-2 flex items-center justify-between gap-4">
 							<span class="flex items-center gap-2">
-								<ItemIcon {id} class="h-6 w-6 shrink-0" />
+								<ItemIcon {id} class="h-8 w-8 shrink-0" />
 								{displayName(id)}
 							</span>
 							<input
@@ -464,7 +503,7 @@
 								type="number"
 								step="any"
 								class="w-32 rounded border-zinc-700 bg-zinc-900 text-right"
-								value={stats.totalRunTime}
+								value={fmt1(stats.totalRunTime)}
 								oninput={numInput(stats, 'totalRunTime')}
 							/>
 						</label>
@@ -497,7 +536,7 @@
 									>
 										⠿
 									</button>
-									<ItemIcon id={c.consumableId} class="h-6 w-6 shrink-0" />
+									<ItemIcon id={c.consumableId} class="h-10 w-10 shrink-0" />
 									{displayName(c.consumableId)}
 									{#if c.consumableId && assets[c.consumableId]?.maxCount}
 										<span class="text-xs text-zinc-500">max {assets[c.consumableId].maxCount}</span>
@@ -528,7 +567,7 @@
 										}
 									}}
 								>
-									<ItemIcon {id} class="h-5 w-5 shrink-0" />
+									<ItemIcon {id} class="h-7 w-7 shrink-0" />
 									Add {displayName(id)}
 								</button>
 							{/each}
@@ -540,7 +579,7 @@
 					<h2 class="mb-4 text-sm font-bold tracking-widest text-fuchsia-400 uppercase">
 						Vault · Modules
 					</h2>
-					{#if modules.length === 0}
+					{#if moduleRows.length === 0}
 						<p class="text-sm text-zinc-500">Vault has no modules.</p>
 					{:else}
 						<table class="w-full text-sm">
@@ -549,43 +588,108 @@
 									<th class="py-2 pr-4">Module</th>
 									<th class="py-2 pr-4">Tier</th>
 									<th class="py-2 pr-4">Connections</th>
-									<th class="py-2 text-right">Power level</th>
+									<th class="py-2 pr-4 text-right">Max power cores</th>
+									<th class="py-2"><span class="sr-only">Remove</span></th>
 								</tr>
 							</thead>
 							<tbody>
-								{#each modules as m, i (i)}
+								{#each moduleRows as row (row.index)}
 									<tr class="border-b border-zinc-800/50">
 										<td class="py-2 pr-4">
 											<div class="flex items-center gap-2">
-												<ItemIcon id={m.moduleDataId} class="h-7 w-7 shrink-0" />
+												<!-- Modules share a ColorAsset with the resource they belong
+												     to, which is what tints them in the game itself. -->
+												<span
+													class="h-9 w-1 shrink-0 rounded-full"
+													style:background-color={row.info?.color ?? '#52525b'}
+												></span>
+												<ItemIcon id={row.id} class="h-10 w-10 shrink-0" />
 												<div>
-													{displayName(m.moduleDataId)}
-													{#if m.moduleDataId && assets[m.moduleDataId]?.description}
+													<span style:color={row.info?.color ?? undefined}>
+														{displayName(row.id)}
+													</span>
+													{#if row.info?.resource}
+														<span class="ml-1 text-xs text-zinc-500">
+															{shipResourceLabel(row.info.resource)}
+														</span>
+													{/if}
+													{#if row.id && assets[row.id]?.description}
 														<div class="max-w-md truncate text-xs text-zinc-500">
-															{assets[m.moduleDataId].description}
+															{assets[row.id].description}
 														</div>
 													{/if}
 												</div>
 											</div>
 										</td>
 										<td class="py-2 pr-4 text-zinc-400">
-											{m.moduleDataId ? (assets[m.moduleDataId]?.level ?? '—') : '—'}
+											{row.id ? (assets[row.id]?.level ?? '—') : '—'}
 										</td>
-										<td class="py-2 pr-4 text-zinc-400">{connections(m)}</td>
-										<td class="py-2 text-right">
+										<td class="py-2 pr-4">
+											<div class="flex gap-1">
+												{#each CONNECTION_SIDES as side (side.key)}
+													<button
+														type="button"
+														class="h-7 w-7 rounded border text-xs font-semibold {row.connections[
+															side.key
+														]
+															? 'border-lime-400 bg-lime-400/20 text-lime-300'
+															: 'border-zinc-700 text-zinc-600 hover:border-zinc-500'}"
+														aria-pressed={row.connections[side.key]}
+														aria-label="{side.label} connection of {displayName(row.id)}"
+														onclick={() => toggleConnection(row.module, side.key)}
+													>
+														{side.label}
+													</button>
+												{/each}
+											</div>
+										</td>
+										<td class="py-2 pr-4 text-right">
 											<input
 												type="number"
 												min="0"
 												class="w-24 rounded border-zinc-700 bg-zinc-900 text-right"
-												value={m.powerLevel}
-												oninput={numInput(m, 'powerLevel')}
+												value={row.powerLevel}
+												oninput={numInput(row.module, 'powerLevel')}
 											/>
+										</td>
+										<td class="py-2 text-right">
+											<button
+												type="button"
+												class="rounded border border-zinc-700 px-2 py-1 text-xs text-zinc-500 hover:border-red-500 hover:text-red-400"
+												aria-label="Remove {displayName(row.id)} from the vault"
+												onclick={() => removeModuleAt(row.index)}
+											>
+												Remove
+											</button>
 										</td>
 									</tr>
 								{/each}
 							</tbody>
 						</table>
 					{/if}
+					<div class="mt-4 flex flex-wrap items-center gap-2 border-t border-zinc-800 pt-3">
+						<select
+							class="rounded border-zinc-700 bg-zinc-900 py-1 text-sm"
+							aria-label="Module to add to the vault"
+							bind:value={moduleToAdd}
+						>
+							<option value="">Add a module…</option>
+							{#each allModules as { id } (id)}
+								<option value={id}>{displayName(id)}</option>
+							{/each}
+						</select>
+						<button
+							type="button"
+							class="rounded border border-zinc-700 px-3 py-1 text-sm font-semibold hover:border-lime-400 hover:text-lime-400 disabled:opacity-40"
+							disabled={!moduleToAdd}
+							onclick={addModuleToVault}
+						>
+							Add to vault
+						</button>
+						<span class="text-xs text-zinc-600">
+							Added with all four connections and the module's highest power-core capacity.
+						</span>
+					</div>
 				</section>
 			</div>
 

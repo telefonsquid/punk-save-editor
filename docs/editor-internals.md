@@ -91,6 +91,12 @@ node; the `state_referenced_locally` autofixer warning is intentionally silenced
   mirrors `Vault.Add` — it fills the first empty slot rather than growing the list. `reorderConsumables`
   reorders the filled slots and keeps the empties trailing, so the slot count is preserved. The UI hides
   the empty slots and offers an add button per absent consumable type instead.
+- Modules: `addModule(vault, id)` appends a `Module+Memento` mirroring `Module.CreateMemento` — all
+  four connections on, `powerLevel` at the asset's max, and the power core rebuilt from
+  `module-info.json` (without it a placed module would provide no core at all). New **reference** nodes
+  must claim an unused `$id`: Odin resolves internal references (`$ref`) through those ids, so reusing
+  one would silently repoint an existing reference. `maxOdinId(tree) + 1` supplies fresh ones (the
+  memento plus its two sub-nodes need three). `moduleInfo(id)` exposes the module's colour/resource.
 
 ## Generated data (regenerate on game update)
 
@@ -106,8 +112,13 @@ These JSON files under `src/lib/save/` are extracted from the installed game and
 - `item-icons.json` — ingredient/consumable/module id → data-URI PNG of its item art (long edge
   capped to 64 px). `python scripts/extract-item-icons.py [Punk_Data]`. Rendered by
   `components/ItemIcon.svelte` (pixelated).
+- `module-info.json` — module id → `{ color, resource, powerLevel: [min,max], powerCore }`. `python
+  scripts/extract-module-info.py [Punk_Data]`. Drives module tinting in the UI and supplies the
+  defaults `addModule` needs — see the module-colour section in game-code.md.
 
-All need the Python venv with UnityPy (see game-code.md).
+All need the Python venv with UnityPy. The scripts expect it at `/.venv` (gitignored):
+`python -m venv .venv && .venv/Scripts/pip install UnityPy TypeTreeGeneratorAPI Pillow`. Don't keep it
+in the scratchpad — the OS temp cleaner deletes package files out from under it.
 
 ## In-browser end-to-end testing
 

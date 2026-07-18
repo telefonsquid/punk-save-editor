@@ -10,6 +10,7 @@ import { EntryType, META_KEYS, OdinBinaryReader, OdinBinaryWriter, isNode } from
 import type { OdinNode, OdinValue, TypeInfo } from './odin';
 import assetNames from './asset-names.json';
 import moduleCaps from './module-caps.json';
+import moduleInfoJson from './module-info.json';
 
 export interface SaveSlot {
 	dir: SaveDir;
@@ -338,4 +339,123 @@ export interface ModuleView {
 
 export function getModules(vault: OdinNode): ModuleView[] {
 	return listItems(vault.modules as OdinValue) as unknown as ModuleView[];
+}
+
+/** The four grid edges a module can connect through, in the order the game's
+ * memento stores them. */
+export const CONNECTION_SIDES = [
+	{ key: 'northConnection', label: 'N' },
+	{ key: 'eastConnection', label: 'E' },
+	{ key: 'southConnection', label: 'S' },
+	{ key: 'westConnection', label: 'W' }
+] as const;
+
+export type ConnectionKey = (typeof CONNECTION_SIDES)[number]['key'];
+
+/**
+ * Per-module data that isn't in the save file, extracted from the game assets
+ * (scripts/extract-module-info.py):
+ * - `color`/`resource`: every ModuleData shares its ColorAsset with the Resource
+ *   it belongs to, which is what tints it in the game's own UI (a DANDELION is
+ *   `#6a36ff` because it is a `Resource Tech` module).
+ * - `powerLevel`: the asset's `[min, max]` range. It is the *maximum* number of
+ *   power cores the module can accept when expanding its grid, so a higher value
+ *   is strictly better for the player.
+ * - `powerCore`: the bool grid the game derives from the module's power-core
+ *   sprite. Needed to build a usable module from scratch.
+ */
+export interface ModuleInfo {
+	color: string | null;
+	powerLevel: [number, number];
+	powerCore: { width: number; height: number; data: number[] } | null;
+	resource: string | null;
+}
+
+export const moduleInfos = moduleInfoJson as unknown as Record<string, ModuleInfo>;
+
+export function moduleInfo(id: string | null | undefined): ModuleInfo | null {
+	return id ? (moduleInfos[id] ?? null) : null;
+}
+
+const MODULE_MEMENTO_TYPE = 'Module+Memento, Punk.Main';
+const EFFECT_FIELD_TYPE = 'ModuleEffectField, Punk.Main';
+const BOOL_ARRAY_TYPE = 'System.Boolean[], mscorlib';
+
+/**
+ * Highest `$id` used anywhere in a tree. A node the editor adds must claim an
+ * unused one: Odin resolves internal references (`$ref`) through these ids, so
+ * reusing one would silently repoint an existing reference at the new node.
+ */
+function maxOdinId(root: OdinValue): number {
+	let max = 0;
+	const stack: OdinValue[] = [root];
+	while (stack.length > 0) {
+		const value = stack.pop();
+		if (typeof value !== 'object' || value === null) continue;
+		if (Array.isArray(value)) {
+			stack.push(...value);
+			continue;
+		}
+		if (!isNode(value)) continue; // $ref/$ext/primitive array carry no ids
+		if (typeof value.$id === 'number' && value.$id > max) max = value.$id;
+		for (const [key, child] of Object.entries(value)) {
+			if (key === '$types') continue; // metadata, never holds nodes
+			stack.push(child as OdinValue);
+		}
+	}
+	return max;
+}
+
+/**
+ * Appends a module to the vault, mirroring what the game stores for one the
+ * player picked up (`Module.CreateMemento`). All four connections are enabled so
+ * it can be attached anywhere on the grid, and the power level defaults to the
+ * asset's maximum. The power core is rebuilt from the extracted sprite grid —
+ * without it the module would provide no core at all when placed.
+ */
+export function addModule(vault: OdinNode, moduleDataId: string): void {
+	const info = moduleInfo(moduleDataId);
+	const core = info?.powerCore ?? null;
+	// The memento and its two sub-nodes each need an id of their own.
+	const baseId = maxOdinId(vault) + 1;
+	const node: OdinNode = {
+		$type: MODULE_MEMENTO_TYPE,
+		$id: baseId,
+		moduleDataId,
+		northConnection: true,
+		eastConnection: true,
+		southConnection: true,
+		westConnection: true,
+		powerCore: core
+			? ({
+					$type: EFFECT_FIELD_TYPE,
+					$id: baseId + 1,
+					fieldData: {
+						$type: BOOL_ARRAY_TYPE,
+						$id: baseId + 2,
+						$0: {
+							$primitiveArray: true,
+							bytesPerElement: 1,
+							data: Uint8Array.from(core.data)
+						}
+					},
+					width: core.width,
+					height: core.height,
+					$types: {
+						width: { e: EntryType.UnnamedInt },
+						height: { e: EntryType.UnnamedInt }
+					}
+				} satisfies OdinNode)
+			: null,
+		levelModificationField: null,
+		powerLevel: info?.powerLevel?.[1] ?? 1,
+		$types: { powerLevel: { e: EntryType.UnnamedInt } }
+	};
+	listItems(vault.modules as OdinValue).push(node);
+}
+
+/** Removes the module at `index` from the vault's module list. */
+export function removeModule(vault: OdinNode, index: number): void {
+	const arr = listItems(vault.modules as OdinValue);
+	if (index >= 0 && index < arr.length) arr.splice(index, 1);
 }

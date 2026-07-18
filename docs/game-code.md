@@ -165,6 +165,27 @@ writes an `id → data-URI PNG` map to `src/lib/save/resource-icons.json`. They'
 px), so inlining them as base64 keeps the editor self-contained (the `ResourceIcon.svelte` component
 renders them with `image-rendering: pixelated`). Regenerate on game update.
 
+### Module colours → resources
+
+Every `ModuleData` has a `ColorAsset color`, and so does every `Resource` — and a module points at the
+**same ColorAsset object** as the resource it belongs to. So matching on the ColorAsset's `path_id`
+recovers which resource a module maps to, which is exactly what tints it in the game's own UI (a
+`DANDELION` is `#6a36ff` because it is a `Resource Tech` module). 144 of 145 modules map this way; the
+odd one out (`BOOSTER CORE`, green) has a ColorAsset no resource claims. Most modules map to
+`Resource White` (`#ffffff`), the neutral colour.
+
+`scripts/extract-module-info.py` writes this plus two things needed to *build* a module from scratch,
+to `src/lib/save/module-info.json`:
+
+- `powerLevel: [min, max]` from the asset's `MinMaxInt`. This is the **maximum number of power cores
+  the module can accept** when expanding its grid (`HoveredModuleInfo` renders it as
+  `ATTACHED POWER CORES: {connected} / {PowerLevel}`), so a *higher* value is better for the player.
+- `powerCore` — the bool grid the game derives from the module's power-core **sprite**.
+  `ModuleEffectField.Parse` reads `alpha > 0.5` per pixel and applies a *random* mirror/rotation each
+  time a core is drawn, so there is no canonical orientation; the script stores the base orientation,
+  which is one the game itself could have drawn. Every core in the game is symmetric, so it makes no
+  practical difference — the extracted 5×5 grid is byte-identical to the ones in a real save.
+
 ### Item icons
 
 Ingredients, consumables and modules carry their own item art: `Ingredient.iconBig`/`iconSmall`,

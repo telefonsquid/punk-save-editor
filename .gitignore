@@ -30,3 +30,6 @@ vite.config.ts.timestamp-*
 
 # Intermediate asset dump (extract-module-caps.py -> extract-module-caps.ts)
 /scripts/module-effects-raw.json
+
+# Python venv for the asset-extraction scripts (see docs/game-code.md)
+/.venv
