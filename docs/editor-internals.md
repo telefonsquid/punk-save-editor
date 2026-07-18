@@ -241,11 +241,22 @@ toggles / power cores / remove, the picker passes an Add button.
   which is why POWER CORE's five sprites offer 10 options and BOOSTER CORE's three offer 4.
   In the vault a pick writes the memento immediately; in the picker it is transient state keyed by
   module id, applied only when that row's Add is pressed, and dropped when the dialog closes.
-- **Hand-painted fields** sit behind a `Custom…` toggle and an explicit warning, because they leave
-  the set of shapes the game can produce. They work — see the hand-painted-shapes section of
-  game-code.md for exactly why, and for the square-and-odd invariants `effectFieldProblem` enforces
-  (non-square fields make the game's own `y * height + x` indexing read out of bounds and throw).
-  A field that fails validation is simply not written.
+- **Hand-painted fields** are a second band of options, kept visually apart from the rolled ones and
+  introduced by an explicit warning, because they leave the set of shapes the game can produce. They
+  work — see the hand-painted-shapes section of game-code.md for exactly why, and for the
+  square-and-odd invariants `effectFieldProblem` enforces (non-square fields make the game's own
+  `y * height + x` indexing read out of bounds and throw). A field that fails validation is never
+  written: the painter's Save button is disabled and the store refuses it too.
+- **Painted shapes are a library, not a one-off** (`$lib/editor/custom-fields.svelte.ts`): a module-
+  level `$state` array persisted to `localStorage` under `punk-save-editor:custom-fields`. The whole
+  point of painting one is reuse, so it belongs to the person rather than to a save — every chooser
+  in the app offers the same list, and deleting one removes it everywhere at once. Loading
+  re-validates and silently drops anything malformed; this is a cache, not user data owed a
+  migration, and a bad entry would otherwise walk straight into a save. Nothing here touches a save
+  file — a custom shape reaches one only by being picked, along the same path as a rolled shape.
+  Painting happens in its own modal (`CustomFieldDialog.svelte`) on a 1.75rem-per-cell canvas, which
+  is why `EffectFieldGrid` takes a `cell` size; the dialog is mounted only while open, since a
+  chooser exists per field per module row.
 - **Stat lines** (`$lib/game/module-stats.ts`) are the "+2 max Fuel" / "0.2 per shot" numbers. They
   come from two places: `WeaponData` for weapon modules (damage, fire rate, per-shot cost) and the
   decoded `ModuleEffect` list for everything else. Effects are evaluated at the module's *own* asset

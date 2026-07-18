@@ -19,12 +19,15 @@
 		color = '#22d3ee',
 		label,
 		selected = false,
+		cell = '0.625rem',
 		onselect,
 		oncell
 	}: {
 		field: EffectField;
 		color?: string | null;
 		label?: string;
+		/** Edge length of one cell. The painting canvas wants a much bigger target. */
+		cell?: string;
 		/** Marks this shape as the module's current one. */
 		selected?: boolean;
 		/** Makes the whole grid a button that chooses this shape. */
@@ -49,20 +52,24 @@
 </script>
 
 {#snippet cellGrid(interactive: boolean)}
-	{#each cells as cell, i (i)}
+	{#each cells as c, i (i)}
 		{#if interactive}
 			<button
 				type="button"
-				class="h-2.5 w-2.5 {cell.center ? 'ring-1 ring-zinc-400/70 ring-inset' : ''}"
-				style:background-color={cell.on ? fill : '#18181b'}
-				aria-pressed={cell.on}
+				class={c.center ? 'ring-1 ring-zinc-400/70 ring-inset' : ''}
+				style:width={cell}
+				style:height={cell}
+				style:background-color={c.on ? fill : '#18181b'}
+				aria-pressed={c.on}
 				aria-label="Column {(i % field.width) + 1}, row {Math.floor(i / field.width) + 1}"
 				onclick={() => oncell?.(i)}
 			></button>
 		{:else}
 			<span
-				class="h-2.5 w-2.5 {cell.center ? 'ring-1 ring-zinc-400/70 ring-inset' : ''}"
-				style:background-color={cell.on ? fill : '#18181b'}
+				class={c.center ? 'ring-1 ring-zinc-400/70 ring-inset' : ''}
+				style:width={cell}
+				style:height={cell}
+				style:background-color={c.on ? fill : '#18181b'}
 			></span>
 		{/if}
 	{/each}
@@ -74,7 +81,7 @@
 		class="inline-grid gap-px rounded-sm p-px {selected
 			? 'ring-2 ring-offset-1 ring-offset-zinc-900'
 			: 'opacity-60 hover:opacity-100'}"
-		style:grid-template-columns="repeat({field.width}, 0.625rem)"
+		style:grid-template-columns="repeat({field.width}, {cell})"
 		style:background-color="rgb(0 0 0 / 0.6)"
 		style:--tw-ring-color={fill}
 		aria-pressed={selected}
@@ -86,7 +93,7 @@
 {:else if oncell}
 	<div
 		class="inline-grid gap-px rounded-sm bg-black/60 p-px"
-		style:grid-template-columns="repeat({field.width}, 0.625rem)"
+		style:grid-template-columns="repeat({field.width}, {cell})"
 		role="group"
 		aria-label={describe}
 	>
@@ -95,7 +102,7 @@
 {:else}
 	<div
 		class="inline-grid gap-px rounded-sm bg-black/60 p-px"
-		style:grid-template-columns="repeat({field.width}, 0.625rem)"
+		style:grid-template-columns="repeat({field.width}, {cell})"
 		role="img"
 		aria-label={describe}
 	>

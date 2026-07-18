@@ -1,19 +1,15 @@
 <script lang="ts">
+	import CustomFieldDialog from './CustomFieldDialog.svelte';
 	import EffectFieldGrid from './EffectFieldGrid.svelte';
-	import {
-		blankEffectField,
-		CUSTOM_FIELD_SIZES,
-		effectFieldChoices,
-		effectFieldKey,
-		effectFieldProblem,
-		type EffectField
-	} from '$lib/game/data';
+	import { effectFieldChoices, effectFieldKey, type EffectField } from '$lib/game/data';
+	import { customFields } from '$lib/editor/custom-fields.svelte';
 
-	// Picks the shape a power core or booster projects. The options are every
-	// orientation the game itself could roll (see `effectFieldChoices`), so
-	// staying inside them keeps the module indistinguishable from a legitimately
-	// rolled one. Painting a shape by hand leaves that guarantee behind, which is
-	// why it sits behind its own toggle and a warning.
+	// Picks the shape a power core or booster projects. The options come in two
+	// bands: every orientation the game itself could roll (see
+	// `effectFieldChoices`), and the shapes the player has painted. The split is
+	// the point — staying in the first band keeps a module indistinguishable from
+	// a legitimately rolled one, and the second says plainly that you have left
+	// that behind.
 	let {
 		candidates,
 		value,
@@ -31,106 +27,96 @@
 		onchange: (field: EffectField) => void;
 	} = $props();
 
-	let painting = $state(false);
-	/** The hand-painted field, kept separate so toggling back and forth is lossless. */
-	let custom = $state<EffectField | null>(null);
+	let adding = $state(false);
 
 	const currentKey = $derived(value ? effectFieldKey(value) : null);
+	const rolled = $derived(effectFieldChoices(candidates));
+	const custom = $derived(customFields.list);
 
 	/**
-	 * The options offered: every orientation of every shape the asset can roll,
-	 * plus the current one when it is not among them — which is exactly the case
-	 * for a field painted by hand, and the only way back to it after clicking away.
+	 * A shape the module already has that is in neither band — a field painted on
+	 * another machine, or one whose saved entry has since been deleted. Without
+	 * this there would be no way back to it after clicking away.
 	 */
-	const options = $derived.by(() => {
-		const list = effectFieldChoices(candidates);
-		if (value && !list.some((f) => effectFieldKey(f) === currentKey)) list.unshift(value);
-		return list;
+	const orphan = $derived.by(() => {
+		if (!value) return null;
+		const known = [...rolled, ...custom].some((f) => effectFieldKey(f) === currentKey);
+		return known ? null : value;
 	});
-
-	const canvas = $derived(custom ?? value ?? blankEffectField(5));
-	const problem = $derived(effectFieldProblem(canvas));
-
-	function toggleCell(i: number) {
-		const data = [...canvas.data];
-		data[i] = data[i] ? 0 : 1;
-		const next = { width: canvas.width, height: canvas.height, data };
-		custom = next;
-		if (!effectFieldProblem(next)) onchange(next);
-	}
-
-	function resize(size: number) {
-		const next = blankEffectField(size);
-		custom = next;
-		onchange(next);
-	}
 </script>
 
 <div class="mt-1.5">
 	<div class="flex flex-wrap items-center gap-2">
-		{#each options as shape (effectFieldKey(shape))}
+		{#each rolled as shape (effectFieldKey(shape))}
 			<EffectFieldGrid
 				field={shape}
 				{color}
 				selected={effectFieldKey(shape) === currentKey}
 				label="{label} this pattern of slots"
-				onselect={() => {
-					painting = false;
-					onchange(shape);
-				}}
+				onselect={() => onchange(shape)}
 			/>
 		{/each}
+		{#if orphan}
+			<EffectFieldGrid
+				field={orphan}
+				{color}
+				selected
+				label="{label} this pattern of slots (custom)"
+				onselect={() => onchange(orphan)}
+			/>
+		{/if}
 		<span class="text-[0.65rem] tracking-wider text-zinc-500">
 			{label}
-			{#if options.length > 1}({options.length} shapes){/if}
+			{#if rolled.length > 1}({rolled.length} shapes){/if}
 		</span>
-		<button
-			type="button"
-			class="rounded border px-1.5 py-0.5 text-[0.65rem] tracking-wider {painting
-				? 'border-amber-500 text-amber-400'
-				: 'border-zinc-700 text-zinc-500 hover:border-zinc-500'}"
-			aria-pressed={painting}
-			onclick={() => (painting = !painting)}
-		>
-			Custom…
-		</button>
 	</div>
 
-	{#if painting}
-		<div class="mt-2 rounded border border-amber-700/60 bg-amber-950/20 p-2">
-			<p class="mb-2 text-[0.7rem] leading-snug text-amber-300/90">
-				<strong>Unsupported territory.</strong> The game only checks a field's shape when it builds one
-				from its sprite — a field loaded from a save is used exactly as written, so this works, but no
-				shape here has ever been through the game's own code. Keep a backup.
-			</p>
-			<div class="flex flex-wrap items-start gap-3">
+	<div class="mt-1.5 flex flex-wrap items-center gap-2">
+		{#each custom as shape (effectFieldKey(shape))}
+			{@const key = effectFieldKey(shape)}
+			<!-- The remove button sits over its own shape rather than in a separate
+			     list, so there is never a question which one it deletes. -->
+			<span class="relative inline-block">
 				<EffectFieldGrid
-					field={canvas}
+					field={shape}
 					{color}
-					label="Paint the {label.toLowerCase()} area"
-					oncell={toggleCell}
+					selected={key === currentKey}
+					label="{label} this custom pattern of slots"
+					onselect={() => onchange(shape)}
 				/>
-				<label class="flex items-center gap-1 text-[0.7rem] text-zinc-400">
-					Size
-					<select
-						class="rounded border-zinc-700 bg-zinc-950 px-1 py-0.5 text-[0.7rem]"
-						value={canvas.width}
-						onchange={(e) => resize(Number(e.currentTarget.value))}
-					>
-						{#each CUSTOM_FIELD_SIZES as size (size)}
-							<option value={size}>{size}×{size}</option>
-						{/each}
-					</select>
-				</label>
-			</div>
-			{#if problem}
-				<p class="mt-2 text-[0.7rem] text-red-400">This field {problem}, so it was not saved.</p>
-			{:else}
-				<p class="mt-2 text-[0.7rem] text-zinc-500">
-					Square and odd-sized, so the game reads it safely. Cells are relative to the ringed centre,
-					where the module sits.
-				</p>
-			{/if}
-		</div>
-	{/if}
+				<button
+					type="button"
+					class="absolute -top-1.5 -right-1.5 rounded-full border border-zinc-700 bg-zinc-900 px-1 text-[0.55rem] leading-none text-zinc-500 hover:border-red-500 hover:text-red-400"
+					aria-label="Delete this custom shape"
+					onclick={() => customFields.remove(key)}
+				>
+					×
+				</button>
+			</span>
+		{/each}
+		<button
+			type="button"
+			class="rounded border border-amber-800/70 px-1.5 py-0.5 text-[0.65rem] tracking-wider text-amber-500/80 hover:border-amber-500 hover:text-amber-400"
+			onclick={() => (adding = true)}
+		>
+			+ Add custom shape
+		</button>
+		{#if custom.length > 0}
+			<span class="text-[0.65rem] tracking-wider text-amber-700/80">CUSTOM</span>
+		{/if}
+	</div>
 </div>
+
+<!-- Mounted on demand: a chooser exists per field per module row, and every one
+     of those keeping a closed <dialog> in the document costs a few dozen
+     elements for nothing. -->
+{#if adding}
+	<CustomFieldDialog
+		bind:open={adding}
+		{color}
+		onadd={(field) => {
+			customFields.add(field);
+			onchange(field); // painting one and not getting it would be a second click for nothing
+		}}
+	/>
+{/if}

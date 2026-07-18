@@ -87,10 +87,11 @@ export function resourcesInHudOrder(ids: Iterable<string>): string[] {
  *
  * This is deliberately *not* `orderInHud` — that is the order the bars stack on
  * screen (Caps first, Health last), which reads as arbitrary in a list. Anything
- * missing here (Fuel, Money, and modules with no resource at all) sorts last.
+ * missing here (Money, and modules with no resource at all) sorts last.
  */
 const RESOURCE_ORDER = [
 	'Resource White',
+	'Resource Fuel',
 	'Resource Health',
 	'Resource Purple',
 	'Resource Caps',

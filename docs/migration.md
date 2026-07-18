@@ -62,6 +62,9 @@ current save, and commit the regenerated data.
   own — but a new decorative category would need adding.
 - **New resource** → sorts last in every module list until it is added to `RESOURCE_ORDER` in
   `src/lib/game/data.ts` (nothing breaks; the order just stops matching the game's progression).
+- **A player's painted shapes** live in `localStorage`, so they survive updates the extraction never
+  sees. If `effectFieldProblem` ever gets stricter, entries that no longer pass are dropped on load
+  rather than migrated — deliberate, but worth mentioning in a release note.
 - **Save-format changes** → `write(parse(x))` must stay byte-identical on every save file; if the
   Odin reader throws on a new save, see docs/save-format.md before touching the codec.
 - **MonoBehaviour header layout** (used by `punklib.script_class` to read `m_Script` from raw
