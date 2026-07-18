@@ -119,8 +119,14 @@ These JSON files under `src/lib/save/` are extracted from the installed game and
   scripts/extract-resource-icons.py [Punk_Data]`. Rendered by `components/ResourceIcon.svelte`
   (pixelated). Extracted game art *is* committed here — see the copyright note in game-code.md.
 - `item-icons.json` — ingredient/consumable/module id → data-URI PNG of its item art, at **native
-  size**. `python scripts/extract-item-icons.py [Punk_Data]`. Rendered by
-  `components/ItemIcon.svelte`.
+  size** and, for modules, **already tinted**. `python scripts/extract-item-icons.py [Punk_Data]`.
+  Rendered by `components/ItemIcon.svelte`. Module sprites on disk are white/grey stencils with black
+  outlines; `ModuleIconWidget.SetColor` multiplies them by the module's `ColorAsset` at runtime, so
+  the tint is baked in at extraction. Doing it here rather than with a CSS mask/blend keeps the
+  editor rendering plain `<img>`s — a filter over the *scaled* bitmap would soften exactly the pixel
+  edges the integer-scaling rule protects. 48 of the 119 icons carry a non-white tint; a module with
+  a white ColorAsset is left alone (that is its real colour), as is `Crawler`, whose sprite is
+  authored pre-coloured and has no ColorAsset.
 - `module-info.json` — module id → `{ color, resource, type, description, powerLevel: [min,max],
   powerCore, weapon }`. `python
   scripts/extract-module-info.py [Punk_Data]`. Drives module tinting in the UI and supplies the
