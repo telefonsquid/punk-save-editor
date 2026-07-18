@@ -222,14 +222,28 @@ player-facing words. `RESOURCE_LABELS` in `src/lib/game/data.ts` maps `Resource 
 `Resource White → Stamina`, `Resource Purple → Gel`; everything else just loses the `Resource `
 prefix. The ids remain the save-file keys.
 
-### Resource icons
+### Resource art (four sizes, not one)
 
-Each `Resource` ScriptableObject has a `Sprite icon` (the little HUD glyph for health/fuel/etc.).
+A `Resource` ScriptableObject carries its art at several sizes, and the game uses each in a different
+place:
+
+| field | key in the JSON | what it is |
+| --- | --- | --- |
+| `Sprite icon` | `icon` | the HUD glyph (8–13 px) — the editor's default |
+| `resourceBarTexture` | `bar` | one full-size unit of the HUD resource bar |
+| `resourceBarTextureCompact` | `barCompact` | the compact bar unit |
+| `resourceBarTextureMicro` | `barMicro` | the micro bar unit |
+
+The compact and micro textures are the **same sprite for every resource** (`Sprite HUD Resource
+Compact` / `Micro`); the game tells them apart by tinting with the resource's `ColorAsset`, which is
+why `color` is written alongside and `ResourceIcon.svelte` masks-and-tints those two variants.
+`Resource Money` has no large bar at all — money isn't a tank — so its `bar` key is simply absent.
+
 `scripts/extract-resource-icons.py` loads the whole `Punk_Data` folder into one UnityPy environment
-(so the cross-file sprite `PPtr` resolves), reads each icon to a PIL image via `sprite.image`, and
-writes an `id → data-URI PNG` map to `src/lib/game/resource-icons.json`. They're tiny pixel-art (~8–13
-px), so inlining them as base64 keeps the editor self-contained (the `ResourceIcon.svelte` component
-renders them with `image-rendering: pixelated`). Regenerate on game update.
+(so the cross-file `PPtr`s resolve), reads each to a PIL image via `.image`, and writes
+`id → { color, orderInHud, icon, bar, barCompact, barMicro }` to `src/lib/game/resource-icons.json`.
+They're tiny pixel-art, so inlining them as base64 keeps the editor self-contained. Regenerate on
+game update.
 
 ### Module colours → resources
 
@@ -246,11 +260,21 @@ to `src/lib/game/module-info.json`:
 - `powerLevel: [min, max]` from the asset's `MinMaxInt`. This is the **maximum number of power cores
   the module can accept** when expanding its grid (`HoveredModuleInfo` renders it as
   `ATTACHED POWER CORES: {connected} / {PowerLevel}`), so a *higher* value is better for the player.
-- `powerCore` — the bool grid the game derives from the module's power-core **sprite**.
-  `ModuleEffectField.Parse` reads `alpha > 0.5` per pixel and applies a *random* mirror/rotation each
-  time a core is drawn, so there is no canonical orientation; the script stores the base orientation,
-  which is one the game itself could have drawn. Every core in the game is symmetric, so it makes no
-  practical difference — the extracted 5×5 grid is byte-identical to the ones in a real save.
+- `powerCores` / `levelFields` — the bool grids the game derives from the module's effect-field
+  **sprites**. Both `ModuleData.powerCore` and `ModuleData.levelModificationField` are a
+  `SpriteDistribution`, and `Module`'s constructor calls `.Draw()`: most modules offer a single
+  shape, but POWER CORE rolls one of five patterns and BOOSTER CORE one of three — hence lists.
+  `ModuleEffectField.Parse` reads `alpha > 0.5` per pixel and additionally applies a *random*
+  mirror/rotation each time, so there is no canonical orientation; the script stores the base one,
+  which is an orientation the game itself could have drawn (most patterns are symmetric, but
+  `Pattern_PowerCore_2` is an L). The instance's rolled field is stored in its memento, so for a
+  module already in the save that is the authority and this data is only the candidate set.
+
+  The two kinds differ only in what they do to the cells they cover: a **power core** powers those
+  slots, a **level field** raises the level of the modules on them (`Module.LevelModificationField`,
+  summed by the grid walk in `src/lib/save/ship.ts`). A field must be odd on both axes so the module
+  sits in the middle cell — the game logs `"Power core has invalid size"` otherwise, and
+  `check-data.ts` errors on it.
 
 ### Item icons
 

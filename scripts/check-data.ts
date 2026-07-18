@@ -20,10 +20,17 @@ interface AssetEntry {
 }
 const assets = assetNames as Record<string, AssetEntry>;
 const icons = itemIcons as Record<string, string>;
-const resIcons = resourceIcons as Record<string, string>;
+const resIcons = resourceIcons as Record<string, { icon?: string; bar?: string }>;
+type Field = { width: number; height: number; data: number[] };
 const infos = moduleInfo as Record<
 	string,
-	{ resource: string | null; type: { name: string } | null; weapon: Record<string, unknown> | null }
+	{
+		resource: string | null;
+		type: { name: string } | null;
+		weapon: Record<string, unknown> | null;
+		powerCores: Field[];
+		levelFields: Field[];
+	}
 >;
 const effects = moduleEffects.modules as Record<
 	string,
@@ -68,12 +75,23 @@ for (const id of modules) {
 function checkResource(ref: string | null | undefined, where: string) {
 	if (!ref) return;
 	if (!resources.has(ref)) errors.push(`${where} references unknown resource '${ref}'`);
-	else if (!(ref in resIcons)) warnings.push(`resource '${ref}' (${where}) has no HUD icon`);
+	else if (!resIcons[ref]?.icon) warnings.push(`resource '${ref}' (${where}) has no HUD icon`);
 }
 for (const [id, info] of Object.entries(infos)) {
 	checkResource(info.resource, `module-info ${id}`);
 	checkResource(info.weapon?.damageType as string | undefined, `weapon of ${id}`);
 	checkResource(info.weapon?.costResource as string | undefined, `weapon of ${id}`);
+	// An effect field must be odd on both axes so the module sits in the middle
+	// cell — the game itself logs "Power core has invalid size" otherwise — and
+	// the bool grid has to match the dimensions it claims.
+	for (const field of [...info.powerCores, ...info.levelFields]) {
+		if (field.width % 2 === 0 || field.height % 2 === 0) {
+			errors.push(`effect field of ${id} is ${field.width}x${field.height}, must be odd-sized`);
+		}
+		if (field.data.length !== field.width * field.height) {
+			errors.push(`effect field of ${id} has ${field.data.length} cells, expected ${field.width * field.height}`);
+		}
+	}
 }
 const KNOWN_KINDS = new Set([
 	'capacity', 'regen', 'drain', 'shield', 'weaponProperty', 'explosion', 'burn', 'discharge'
@@ -116,7 +134,7 @@ const counts = Object.entries(
 console.log(`check-data: ${Object.keys(assets).length} assets (${counts})`);
 console.log(
 	`  ${modules.length} modules (${modules.length - unequippable} equippable), ` +
-		`${Object.keys(icons).length} item icons, ${Object.keys(resIcons).length} resource icons`
+		`${Object.keys(icons).length} item icons, ${Object.keys(resIcons).length} resource icon sets`
 );
 for (const w of warnings) console.warn(`  warning: ${w}`);
 for (const e of errors) console.error(`  ERROR: ${e}`);

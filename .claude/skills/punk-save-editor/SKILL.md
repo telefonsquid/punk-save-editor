@@ -76,7 +76,9 @@ bun run check:data  # cross-check the generated JSONs without re-extracting
   `module-stats.ts`, `rich-text.ts`, `pixel-icon.ts`, and the generated `*.json`.
 - `src/lib/editor/` — `state.svelte.ts` (EditorState), `inputs.ts` (raw-tree input handlers).
 - `src/lib/components/` — `Section`/`Button`/`NumberInput` primitives (restyle these for the
-  redesign), `panels/` (one per editor section), `ModuleList`/`ModulePicker`/`RichText`/icons/`RawTree`.
+  redesign), `panels/` (one per editor section), `ModuleList`/`ModulePicker`/`RichText`/`RawTree`,
+  `ResourceIcon` (all four resource art sizes)/`ItemIcon`/`EffectFieldGrid` (the area-of-effect
+  diagram the game draws on power cores and boosters).
 - `src/routes/+page.svelte` — composition only.
 - `scripts/` — `punklib.py` (shared extraction lib) + extractors; **`bun run extract`** regenerates
   everything and validates (`scripts/check-data.ts`). See docs/migration.md.

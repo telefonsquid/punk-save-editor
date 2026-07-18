@@ -1,17 +1,26 @@
 <script module lang="ts">
+	import type { EffectField } from '$lib/game/data';
+
 	export interface ModuleItem {
 		/** Stable key for the keyed each — a vault index, or the module id. */
 		key: string | number;
 		id: string | null;
+		/**
+		 * The effect fields to draw for this row. Omit it and the row falls back
+		 * to the asset's *candidate* shapes; a module that already exists in the
+		 * save passes the single shape it rolled (see `savedEffectField`).
+		 */
+		fields?: { powerCores: EffectField[]; levelFields: EffectField[] };
 	}
 </script>
 
 <script lang="ts">
 	import type { Snippet } from 'svelte';
+	import EffectFieldGrid from './EffectFieldGrid.svelte';
 	import ItemIcon from './ItemIcon.svelte';
 	import ResourceIcon from './ResourceIcon.svelte';
 	import RichText from './RichText.svelte';
-	import { assets, displayName, moduleInfo } from '$lib/game/data';
+	import { assets, categoryRank, displayName, moduleInfo } from '$lib/game/data';
 	import { moduleStats } from '$lib/game/module-stats';
 
 	let {
@@ -26,19 +35,38 @@
 	} = $props();
 
 	/**
-	 * Grouped by the module's own `ModuleType` asset, in the game's shop order, so
-	 * weapons/gadgets/ship modules/weapon mods stay separated the way the player
-	 * sees them in-game. A module whose type is missing lands in "OTHER".
+	 * Grouped by the module's own `ModuleType` asset, in the game's shop order —
+	 * except for the two core categories, which `categoryRank` pins to the top —
+	 * so weapons/gadgets/ship modules/weapon mods stay separated the way the
+	 * player sees them in-game. A module whose type is missing lands in "OTHER".
 	 */
 	const groups = $derived.by(() => {
-		const by: Record<string, { name: string; order: number; items: ModuleItem[] }> = {};
+		const by: Record<string, { name: string; rank: number; items: ModuleItem[] }> = {};
 		for (const item of items) {
 			const type = moduleInfo(item.id)?.type;
 			const name = type?.name ?? 'OTHER';
-			(by[name] ??= { name, order: type?.order ?? 99, items: [] }).items.push(item);
+			(by[name] ??= { name, rank: categoryRank(name, type?.order ?? 99), items: [] }).items.push(
+				item
+			);
 		}
-		return Object.values(by).sort((a, b) => a.order - b.order || a.name.localeCompare(b.name));
+		return Object.values(by).sort((a, b) => a.rank - b.rank || a.name.localeCompare(b.name));
 	});
+
+	/**
+	 * The effect-field diagrams to draw under a row, one entry per kind: its own
+	 * saved shapes when the caller passed them, else the asset's candidates.
+	 */
+	function fieldsOf(item: ModuleItem) {
+		const info = moduleInfo(item.id);
+		const fields = item.fields ?? {
+			powerCores: info?.powerCores ?? [],
+			levelFields: info?.levelFields ?? []
+		};
+		return [
+			{ label: 'POWERS', shapes: fields.powerCores },
+			{ label: 'BOOSTS', shapes: fields.levelFields }
+		].filter((kind) => kind.shapes.length > 0);
+	}
 </script>
 
 {#if items.length === 0}
@@ -79,6 +107,25 @@
 								<RichText text={info.description} />
 							</p>
 						{/if}
+						<!-- Power cores and boosters act on the slots *around* them, so the
+						     shape of that area is the most important thing about them —
+						     the game shows the same diagram on their card. More than one
+						     means the module rolls a random shape when it is built. -->
+						{#each fieldsOf(item) as kind (kind.label)}
+							<div class="mt-1.5 flex flex-wrap items-center gap-2">
+								{#each kind.shapes as shape, i (i)}
+									<EffectFieldGrid
+										field={shape}
+										color={info?.color}
+										label="{kind.label} the highlighted slots around it"
+									/>
+								{/each}
+								<span class="text-[0.65rem] tracking-wider text-zinc-500">
+									{kind.label}
+									{#if kind.shapes.length > 1}(one of {kind.shapes.length}){/if}
+								</span>
+							</div>
+						{/each}
 						{#if stats.length > 0}
 							<div class="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs">
 								{#each stats as stat, i (i)}

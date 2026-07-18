@@ -9,10 +9,11 @@ Things the editor needs about a module that aren't in the save file:
    resource a module maps to — which is what gives modules their colour in the
    game's own UI.
 2. **Defaults for a module the editor adds to the vault.** `Module.Memento`
-   stores a `powerLevel` and a `powerCore` field grid, neither of which can be
-   invented: the power level comes from the asset's `MinMaxInt powerLevel` and
-   the power core is a *sprite* the game converts to a bool grid
-   (`ModuleEffectField.Parse`: alpha > 0.5 per pixel).
+   stores a `powerLevel` and two field grids, none of which can be invented: the
+   power level comes from the asset's `MinMaxInt powerLevel`, and each field is
+   a *sprite* the game converts to a bool grid (`ModuleEffectField.Parse`:
+   alpha > 0.5 per pixel) — `powerCore` (the slots this module powers) and
+   `levelModificationField` (the neighbours a booster raises the level of).
 3. **Category, description and weapon stats.** `ModuleData.moduleType` points at
    a `ModuleType` asset whose `displayName` is the shop category ("Weapon",
    "Gadget", ...) and whose `orderInShop` is the order the game lists them in.
@@ -24,7 +25,9 @@ Things the editor needs about a module that aren't in the save file:
 `ModuleEffectField.Parse` also applies a random mirror/rotation when the game
 draws a core, so there is no single canonical orientation; this writes the base
 orientation, which is one of the orientations the game itself could have drawn.
-In practice every core in the game is symmetric, so it makes no difference.
+Most patterns are symmetric and unaffected, but not all (`Pattern_PowerCore_2`
+is an L), so an owned module's *saved* field is the authority — this data is
+only the set of candidates.
 
 Usage (or `bun run extract` for everything):
     .venv/Scripts/python scripts/extract-module-info.py [path-to-Punk_Data]
@@ -33,28 +36,30 @@ Usage (or `bun run extract` for everything):
 import punklib
 
 
-def power_core(distribution) -> dict | None:
-    """First item of a SpriteDistribution as a bool grid, base orientation.
+def effect_fields(distribution) -> list[dict]:
+    """Every shape in a SpriteDistribution as a bool grid, base orientation.
 
     Mirrors ModuleEffectField.Parse: a pixel with alpha > 0.5 is a filled cell.
     Unity's GetPixels is bottom-up while PIL is top-down, so the rows are
     flipped to match the indexing the game writes into the save.
+
+    It is a *distribution* because `Module`'s constructor calls `.Draw()`: most
+    modules offer a single shape, but POWER CORE draws one of five patterns and
+    BOOSTER CORE one of three, which is why this is a list. The shape a given
+    module instance rolled is stored in the save, so the editor shows that one
+    for an owned module and all the candidates for one it could add.
     """
-    items = getattr(distribution, "items", None)
-    if not items:
-        return None
-    try:
-        sprite = items[0].value.read()
-        img = sprite.image.convert("RGBA")
-    except Exception:
-        return None
-    w, h = img.size
-    px = img.load()
-    data = []
-    for y in range(h):
-        for x in range(w):
-            data.append(1 if px[x, h - 1 - y][3] > 127 else 0)
-    return {"width": w, "height": h, "data": data}
+    fields = []
+    for item in getattr(distribution, "items", None) or []:
+        try:
+            img = item.value.read().image.convert("RGBA")
+        except Exception:
+            continue
+        w, h = img.size
+        px = img.load()
+        data = [1 if px[x, h - 1 - y][3] > 127 else 0 for y in range(h) for x in range(w)]
+        fields.append({"width": w, "height": h, "data": data})
+    return fields
 
 
 def module_type(pptr) -> dict | None:
@@ -117,7 +122,8 @@ def run(assets: punklib.PunkAssets) -> None:
             "type": module_type(a.d.get("moduleType")),
             "description": a.d.get("description") or None,
             "powerLevel": [getattr(level, "Min", 1) or 1, getattr(level, "Max", 1) or 1],
-            "powerCore": power_core(a.d.get("powerCore")),
+            "powerCores": effect_fields(a.d.get("powerCore")),
+            "levelFields": effect_fields(a.d.get("levelModificationField")),
             "weapon": weapon_stats(a.d.get("weapon")),
             "resource": color_to_resource.get(punklib.path_id(a.d.get("color")) or 0),
         }
@@ -125,7 +131,8 @@ def run(assets: punklib.PunkAssets) -> None:
     punklib.write_json(punklib.DATA_DIR / "module-info.json", modules)
     matched = sum(1 for m in modules.values() if m["resource"])
     print(f"  {matched} mapped to a resource, {len(modules) - matched} unmapped")
-    print(f"  {sum(1 for m in modules.values() if m['powerCore'])} with a power core")
+    print(f"  {sum(1 for m in modules.values() if m['powerCores'])} with a power core")
+    print(f"  {sum(1 for m in modules.values() if m['levelFields'])} with a level-boost field")
     print(f"  {sum(1 for m in modules.values() if m['weapon'])} with weapon stats")
     kinds = sorted({m["type"]["name"] for m in modules.values() if m["type"]})
     print(f"  categories: {', '.join(kinds)}")

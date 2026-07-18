@@ -45,9 +45,11 @@
 	}
 </script>
 
+<!-- `m-auto` is what centres the dialog: the UA centres a modal with its own
+     `margin: auto`, which Tailwind's preflight reset zeroes out. -->
 <dialog
 	bind:this={dialog}
-	class="max-h-[85vh] w-[min(56rem,92vw)] rounded-lg border border-zinc-700 bg-zinc-900 p-0 text-zinc-200 backdrop:bg-black/70"
+	class="m-auto max-h-[85vh] w-[min(56rem,92vw)] rounded-lg border border-zinc-700 bg-zinc-900 p-0 text-zinc-200 backdrop:bg-black/70"
 	onclose={() => {
 		open = false;
 		query = ''; // a stale filter would hide most of the list on reopen

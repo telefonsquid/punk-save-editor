@@ -36,6 +36,8 @@ current save, and commit the regenerated data.
 | `unnamed weapon property #N — update TARGET_PROPERTY` | check-data | The `ModifyWeaponProperty.TargetProperty` C# enum grew or was reordered. Re-check the enum in the decompiled source and fix the `TARGET_PROPERTY` array. |
 | `references unknown resource` (ERROR) | check-data | An effect/weapon points at a resource the asset scan didn't find — usually means the scan itself needs attention. |
 | `has no HUD icon` / `has no item icon` | check-data | Art gap in the game data; the UI falls back to text. Fine unless it's something the player sees constantly. |
+| `effect field of X is WxH, must be odd-sized` (ERROR) | check-data | An effect-field sprite lost its odd dimensions, which breaks the centre cell. The game logs `"Power core has invalid size"` on the same condition, so the sprite itself is wrong — not the extractor. |
+| `no bar, barCompact…` | extract-resource-icons | A resource lost one of its four art sizes. Only `icon` really matters to the editor; Money never had a large `bar`. |
 
 ## Known blast radii (what an update can break, and where the guard is)
 
@@ -47,6 +49,9 @@ current save, and commit the regenerated data.
 - **Module sprite/tint changes** → tint is baked at extraction (Unity multiplies sprite × ColorAsset
   at runtime; we do the same in `extract-item-icons.py`). White-ColorAsset modules stay white on
   purpose; `Crawler` is authored pre-coloured and has no ColorAsset.
+- **New effect-field patterns** (a `SpriteDistribution` gaining shapes) → flows through: the
+  extractor writes every candidate and the UI labels them "one of N". A module that gains a
+  `levelModificationField` becomes a booster automatically, in both the diagram and `addModule`.
 - **`ModuleData.Equippable` semantics** (displayName AND icon) → mirrored by `equippableModules()`;
   check-data counts equippables so a sudden drop is visible.
 - **Save-format changes** → `write(parse(x))` must stay byte-identical on every save file; if the

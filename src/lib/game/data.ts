@@ -12,6 +12,7 @@ import assetNames from './asset-names.json';
 import itemIcons from './item-icons.json';
 import moduleEffectsJson from './module-effects.json';
 import moduleInfoJson from './module-info.json';
+import resourceIconsJson from './resource-icons.json';
 
 export interface AssetInfo {
 	category: string;
@@ -42,6 +43,42 @@ const RESOURCE_LABELS: Record<string, string> = {
 /** Player-facing name for a resource id (see RESOURCE_LABELS). */
 export function resourceLabel(id: string): string {
 	return RESOURCE_LABELS[id] ?? id.replace(/^Resource /, '');
+}
+
+/**
+ * The art a `Resource` carries, in the sizes the game uses it at
+ * (scripts/extract-resource-icons.py):
+ * - `icon` — the small HUD glyph, and what the editor shows next to a name.
+ * - `bar` — one full-size unit of the HUD resource bar. The only *large* art
+ *   that differs per resource, and absent for Money (which has no tank).
+ * - `barCompact` / `barMicro` — the smaller bar units. These sprites are
+ *   **shared by every resource**; the game distinguishes them by tinting with
+ *   `color`, so anything rendering them should tint too.
+ */
+export interface ResourceArt {
+	color: string | null;
+	orderInHud: number;
+	icon?: string;
+	bar?: string;
+	barCompact?: string;
+	barMicro?: string;
+}
+
+/** Every resource's art and colour, keyed by the save-file resource id. */
+export const resourceArt = resourceIconsJson as Record<string, ResourceArt>;
+
+/** The colour the game tints a resource (and its modules) with. */
+export function resourceColor(id: string | null | undefined): string | null {
+	return (id ? resourceArt[id]?.color : null) ?? null;
+}
+
+/** Resource ids in the game's own HUD order, for any list the player reads. */
+export function resourcesInHudOrder(ids: Iterable<string>): string[] {
+	return [...ids].sort(
+		(a, b) =>
+			(resourceArt[a]?.orderInHud ?? 99) - (resourceArt[b]?.orderInHud ?? 99) ||
+			resourceLabel(a).localeCompare(resourceLabel(b))
+	);
 }
 
 /** Best human-readable name for a module/consumable/ingredient/resource id. */
@@ -140,17 +177,38 @@ export function seriesAt(e: Series, idx: number): number {
  * - `powerLevel`: the asset's `[min, max]` range. It is the *maximum* number of
  *   power cores the module can accept when expanding its grid, so a higher value
  *   is strictly better for the player.
- * - `powerCore`: the bool grid the game derives from the module's power-core
- *   sprite. Needed to build a usable module from scratch.
+ * - `powerCores`/`levelFields`: the effect-field shapes the module can roll.
+ *   Needed to build a usable module from scratch, and drawn as the area-of-effect
+ *   diagram the game shows on a core.
  */
 export interface ModuleInfo {
 	color: string | null;
 	type: { name: string; order: number; isMain: boolean } | null;
 	description: string | null;
 	powerLevel: [number, number];
-	powerCore: { width: number; height: number; data: number[] } | null;
+	powerCores: EffectField[];
+	levelFields: EffectField[];
 	weapon: WeaponStats | null;
 	resource: string | null;
+}
+
+/**
+ * A `ModuleEffectField`: which grid cells around a module it acts on, as a
+ * `width × height` bool grid with the module itself at the centre cell.
+ *
+ * Two kinds exist, and both are drawn the same way (see EffectFieldGrid.svelte):
+ * a **power core** powers the slots it covers, a **level field** raises the
+ * level of the modules it covers (what a BOOSTER CORE does).
+ *
+ * The game rolls the shape — and a random mirror/rotation of it —
+ * per module instance and stores the result in the save, so a module already in
+ * the vault has one concrete field while the asset data holds the candidates.
+ */
+export interface EffectField {
+	width: number;
+	height: number;
+	/** Row-major, `data[y * width + x]`, 1 = covered. */
+	data: number[];
 }
 
 /** The numbers the game prints on a weapon card (`WeaponData`). */
@@ -184,11 +242,26 @@ export function moduleCategory(id: string | null | undefined): string {
 }
 
 /**
+ * Categories pinned above the rest in any grouped module list. POWER and
+ * BOOSTERS are the two cores: they occupy a slot to change what the *neighbouring*
+ * modules do, so where they sit on the grid matters more than anything else the
+ * player owns — they belong together at the top, not buried by the game's shop
+ * order (which puts POWER first and BOOSTERS dead last).
+ */
+const TOP_CATEGORIES = ['POWER', 'BOOSTERS'];
+
+/** Sort key for a module category — lower sorts first. */
+export function categoryRank(name: string, shopOrder: number): number {
+	const pinned = TOP_CATEGORIES.indexOf(name);
+	return pinned >= 0 ? pinned - TOP_CATEGORIES.length : shopOrder;
+}
+
+/**
  * Whether a module takes part in the power-core mechanic. Weapons and gadgets
  * carry a core sprite and a `powerLevel` range worth editing; ship modules
  * (UPGRADES) and weapon mods have neither, so the editor hides the field for
  * them rather than showing a number that can only ever be 1.
  */
 export function usesPowerCore(id: string | null | undefined): boolean {
-	return !!moduleInfo(id)?.powerCore;
+	return (moduleInfo(id)?.powerCores.length ?? 0) > 0;
 }

@@ -8,11 +8,11 @@
  * `$lib/game/data`; the ship-grid math over the `entities` file in `./ship`.
  */
 
-import { moduleInfo } from '$lib/game/data';
+import { moduleInfo, type EffectField } from '$lib/game/data';
 import type { SaveDir } from './io';
 import { lzfCompress, lzfDecompress } from './lzf';
 import { EntryType, META_KEYS, OdinBinaryReader, OdinBinaryWriter, isNode } from './odin';
-import type { OdinNode, OdinValue, TypeInfo } from './odin';
+import type { OdinNode, OdinPrimitiveArray, OdinValue, TypeInfo } from './odin';
 
 export interface SaveSlot {
 	dir: SaveDir;
@@ -216,6 +216,33 @@ export interface ModuleView {
 	southConnection: boolean;
 	westConnection: boolean;
 	powerLevel: number;
+	/** `ModuleEffectField` nodes — read with `savedEffectField`. */
+	powerCore: OdinValue;
+	levelModificationField: OdinValue;
+}
+
+function isPrimitiveArray(v: OdinValue | null | undefined): v is OdinPrimitiveArray {
+	return typeof v === 'object' && v !== null && '$primitiveArray' in v;
+}
+
+/**
+ * The concrete effect field a module rolled, as stored in its memento.
+ *
+ * The game picks the shape *and* a random mirror/rotation per module instance
+ * (`ModuleEffectField.Parse`) and saves the result, so this — not the asset's
+ * candidate list — is what an owned module actually projects onto the grid.
+ */
+export function savedEffectField(value: OdinValue): EffectField | null {
+	if (!isNode(value)) return null;
+	const array = value.fieldData as OdinValue;
+	const inner = isNode(array) ? (array.$0 as OdinValue) : null;
+	const bools = isPrimitiveArray(inner) ? inner.data : null;
+	if (!bools) return null;
+	return {
+		width: value.width as number,
+		height: value.height as number,
+		data: [...bools]
+	};
 }
 
 export function getModules(vault: OdinNode): ModuleView[] {
@@ -271,39 +298,50 @@ function maxOdinId(root: OdinValue): number {
  */
 export function addModule(vault: OdinNode, moduleDataId: string): void {
 	const info = moduleInfo(moduleDataId);
-	const core = info?.powerCore ?? null;
-	// The memento and its two sub-nodes each need an id of their own.
-	const baseId = maxOdinId(vault) + 1;
+	// Every node the editor adds claims ids after the highest one in the tree;
+	// each field costs two (the ModuleEffectField and its bool array).
+	let nextId = maxOdinId(vault) + 1;
+
+	/** One `ModuleEffectField` node, or null when the module projects none. */
+	const fieldNode = (field: EffectField | undefined): OdinValue => {
+		if (!field) return null;
+		const fieldId = nextId++;
+		const arrayId = nextId++;
+		return {
+			$type: EFFECT_FIELD_TYPE,
+			$id: fieldId,
+			fieldData: {
+				$type: BOOL_ARRAY_TYPE,
+				$id: arrayId,
+				$0: {
+					$primitiveArray: true,
+					bytesPerElement: 1,
+					data: Uint8Array.from(field.data)
+				}
+			},
+			width: field.width,
+			height: field.height,
+			$types: {
+				width: { e: EntryType.UnnamedInt },
+				height: { e: EntryType.UnnamedInt }
+			}
+		} satisfies OdinNode;
+	};
+
 	const node: OdinNode = {
 		$type: MODULE_MEMENTO_TYPE,
-		$id: baseId,
+		$id: nextId++,
 		moduleDataId,
 		northConnection: true,
 		eastConnection: true,
 		southConnection: true,
 		westConnection: true,
-		powerCore: core
-			? ({
-					$type: EFFECT_FIELD_TYPE,
-					$id: baseId + 1,
-					fieldData: {
-						$type: BOOL_ARRAY_TYPE,
-						$id: baseId + 2,
-						$0: {
-							$primitiveArray: true,
-							bytesPerElement: 1,
-							data: Uint8Array.from(core.data)
-						}
-					},
-					width: core.width,
-					height: core.height,
-					$types: {
-						width: { e: EntryType.UnnamedInt },
-						height: { e: EntryType.UnnamedInt }
-					}
-				} satisfies OdinNode)
-			: null,
-		levelModificationField: null,
+		// The game draws a random shape out of each distribution; the editor
+		// takes the first, which is one of the draws the game itself could make.
+		// A BOOSTER CORE without its level field would sit on the grid doing
+		// nothing at all, so both are built here.
+		powerCore: fieldNode(info?.powerCores[0]),
+		levelModificationField: fieldNode(info?.levelFields[0]),
 		powerLevel: info?.powerLevel?.[1] ?? 1,
 		$types: { powerLevel: { e: EntryType.UnnamedInt } }
 	};

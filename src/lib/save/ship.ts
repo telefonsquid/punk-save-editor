@@ -12,8 +12,8 @@
 
 import { moduleEffectsEntry, seriesAt, slotLevelDeltas } from '$lib/game/data';
 import { isNode } from './odin';
-import type { OdinNode, OdinPrimitiveArray, OdinValue } from './odin';
-import { dictPairs, type ResourcePair } from './slot';
+import type { OdinNode, OdinValue } from './odin';
+import { dictPairs, savedEffectField, type ResourcePair } from './slot';
 
 function shipMemento(entities: OdinNode, type: string): OdinNode | null {
 	const ents = entities.$0;
@@ -31,10 +31,6 @@ export function shipResources(entities: OdinNode): ResourcePair[] {
 	const unit = shipMemento(entities, 'Unit+Data+Memento');
 	if (!unit) return [];
 	return dictPairs(unit.resourceValues) as unknown as ResourcePair[];
-}
-
-function isPrimitiveArray(v: OdinValue | null | undefined): v is OdinPrimitiveArray {
-	return typeof v === 'object' && v !== null && '$primitiveArray' in v;
 }
 
 /**
@@ -60,15 +56,10 @@ function sumGridEffects(entities: OdinNode, kind: string): Map<string, number> {
 		levelDeltas.set(key(x, y), (levelDeltas.get(key(x, y)) ?? 0) + delta);
 	}
 	for (const pair of modules) {
-		const field = (pair.$v as OdinNode).levelModificationField as OdinValue;
-		if (!isNode(field)) continue;
-		const data = field.fieldData as OdinValue;
-		const inner = isNode(data) ? (data.$0 as OdinValue) : null;
-		const bools = isPrimitiveArray(inner) ? inner.data : null;
-		if (!bools) continue;
+		const field = savedEffectField((pair.$v as OdinNode).levelModificationField as OdinValue);
+		if (!field) continue;
 		const { x, y } = vec(pair.$k);
-		const w = field.width as number;
-		const h = field.height as number;
+		const { width: w, height: h, data: bools } = field;
 		// mirrors ModuleEffectField.GetPositionsRelative (including its y*height indexing)
 		for (let fx = 0; fx < w; fx++) {
 			for (let fy = 0; fy < h; fy++) {

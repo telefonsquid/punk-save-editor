@@ -5,14 +5,16 @@
 	import Section from '../Section.svelte';
 	import { shipResInput } from '$lib/editor/inputs';
 	import type { EditorState } from '$lib/editor/state.svelte';
-	import { fmt1 } from '$lib/format';
+	import { fmt1, fmtRate } from '$lib/format';
 	import { resourceLabel } from '$lib/game/data';
-	import { shipResourceCaps, shipResources } from '$lib/save/ship';
+	import { shipResourceCaps, shipResourceRegen, shipResources } from '$lib/save/ship';
 
 	let { editor }: { editor: EditorState } = $props();
 
-	// Ship resources live in the (lazily loaded) entities file; max values are
-	// derived from the installed grid modules, so recompute on every edit.
+	// Ship resources live in the (lazily loaded) entities file. Both the maximum
+	// and the recharge rate are derived from the installed grid modules — the
+	// game never stores either — so they recompute on every edit and belong on
+	// the same row as the value they bound.
 	// The rows snapshot $k/$v into fresh objects: the pairs themselves keep
 	// their identity across recomputes, so expressions reading them directly
 	// would not re-render inside the keyed each.
@@ -20,16 +22,18 @@
 		if (editor.version < 0 || !editor.slot || !editor.loadedFiles.has('entities')) return null;
 		const entities = editor.slot.files.entities;
 		const caps = shipResourceCaps(entities);
+		const regen = shipResourceRegen(entities);
 		return shipResources(entities).map((pair) => ({
 			pair,
 			id: pair.$k,
 			value: pair.$v,
-			max: caps.get(pair.$k)
+			max: caps.get(pair.$k),
+			regen: regen.get(pair.$k) ?? 0
 		}));
 	});
 </script>
 
-<Section title="Ship resources" onchange={editor.refresh}>
+<Section title="Ship resources" class="mb-6" onchange={editor.refresh}>
 	{#if !rows}
 		<p class="mb-3 text-sm text-zinc-400">
 			Current fuel, health, ammo etc. are stored with the ship in the
@@ -63,13 +67,20 @@
 						<span class="w-14 text-sm text-zinc-500">
 							/ {row.max !== undefined ? fmt1(row.max) : '?'}
 						</span>
+						<!-- Read-only: recharge is a property of the grid, not of the
+						     number in the tank, so it is shown beside it, not edited. -->
+						<span class="w-16 text-right text-sm tabular-nums text-lime-400">
+							{#if row.regen > 0}+{fmtRate(row.regen)}/s{/if}
+						</span>
 					</span>
 				</label>
 			{/each}
 		</div>
 		<p class="mt-2 text-xs text-zinc-600">
-			Max values are derived from the modules installed on the ship grid and update as you edit
-			them; edits are clamped to the max.
+			Maximums and recharge rates both come from the modules installed on the ship grid, each
+			counted at its boosted level, and update as you edit them; values are clamped to the max.
+			Stamina's baseline recharge is the SHIP module's own +20/s. The game holds recharge for a
+			short delay after a resource drops.
 		</p>
 	{/if}
 </Section>

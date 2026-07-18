@@ -3,7 +3,6 @@
 	import ConsumablesPanel from '$lib/components/panels/ConsumablesPanel.svelte';
 	import ModulesPanel from '$lib/components/panels/ModulesPanel.svelte';
 	import RawFilesPanel from '$lib/components/panels/RawFilesPanel.svelte';
-	import RegenPanel from '$lib/components/panels/RegenPanel.svelte';
 	import ResourcesPanel from '$lib/components/panels/ResourcesPanel.svelte';
 	import RunStatsPanel from '$lib/components/panels/RunStatsPanel.svelte';
 	import ShipResourcesPanel from '$lib/components/panels/ShipResourcesPanel.svelte';
@@ -74,7 +73,6 @@
 			</div>
 		{:else}
 			<ShipResourcesPanel {editor} />
-			<RegenPanel {editor} />
 
 			<!-- Curated vault/rundata sections: any input marks the files dirty,
 			     and the version bump happens on change (blur), not on every

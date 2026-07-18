@@ -12,6 +12,7 @@
 		CONNECTION_SIDES,
 		getModules,
 		removeModule,
+		savedEffectField,
 		type ConnectionKey,
 		type ModuleView
 	} from '$lib/save/slot';
@@ -32,6 +33,12 @@
 			index,
 			id: m.moduleDataId,
 			powerLevel: m.powerLevel,
+			// An owned module already rolled its shapes, so show those rather
+			// than every shape the asset could have produced.
+			fields: {
+				powerCores: [savedEffectField(m.powerCore)].filter((f) => f !== null),
+				levelFields: [savedEffectField(m.levelModificationField)].filter((f) => f !== null)
+			},
 			connections: Object.fromEntries(
 				CONNECTION_SIDES.map(({ key }) => [key, m[key]])
 			) as Record<ConnectionKey, boolean>
@@ -39,7 +46,9 @@
 	});
 	// The shared list only needs identity; `key` is the vault index, which the
 	// actions snippet uses to find the editable row back in `moduleRows`.
-	const moduleItems = $derived(moduleRows.map((row) => ({ key: row.index, id: row.id })));
+	const moduleItems = $derived(
+		moduleRows.map((row) => ({ key: row.index, id: row.id, fields: row.fields }))
+	);
 
 	/** Flips one grid connection of a module in the raw tree. */
 	function toggleConnection(m: ModuleView, key: ConnectionKey) {

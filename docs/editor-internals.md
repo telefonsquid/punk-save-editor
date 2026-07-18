@@ -114,11 +114,14 @@ node; the `state_referenced_locally` autofixer warning is intentionally silenced
   reorders the filled slots and keeps the empties trailing, so the slot count is preserved. The UI hides
   the empty slots and offers an add button per absent consumable type instead.
 - Modules: `addModule(vault, id)` appends a `Module+Memento` mirroring `Module.CreateMemento` — all
-  four connections on, `powerLevel` at the asset's max, and the power core rebuilt from
-  `module-info.json` (without it a placed module would provide no core at all). New **reference** nodes
-  must claim an unused `$id`: Odin resolves internal references (`$ref`) through those ids, so reusing
-  one would silently repoint an existing reference. `maxOdinId(tree) + 1` supplies fresh ones (the
-  memento plus its two sub-nodes need three). `moduleInfo(id)` exposes the module's colour/resource.
+  four connections on, `powerLevel` at the asset's max, and **both** effect fields rebuilt from
+  `module-info.json`: the `powerCore` (without it a placed module would provide no core) and the
+  `levelModificationField` (without it an added BOOSTER CORE would boost nothing). New **reference**
+  nodes must claim an unused `$id`: Odin resolves internal references (`$ref`) through those ids, so
+  reusing one would silently repoint an existing reference. `maxOdinId(tree) + 1` supplies fresh ones
+  (the memento plus two nodes per field). `savedEffectField(node)` reads a stored field back — the
+  module's *rolled* shape, which is what the vault list draws and what the grid walk in `ship.ts`
+  uses. `moduleInfo(id)` exposes the module's colour/resource.
 
 ## Generated data (regenerate on game update)
 
@@ -138,9 +141,12 @@ instead of being silently mis-filed.
   eight C# effect subclasses all reduce to one shape (a `FloatSeries` magnitude, usually a resource,
   a few scalars), so `EFFECT_KINDS` in `extract-module-effects.ts` maps each type onto it. The
   intermediate `scripts/module-effects-raw.json` is gitignored.
-- `resource-icons.json` — resource id → data-URI PNG of its HUD icon, rendered by
-  `ResourceIcon.svelte` (pixelated). Extracted game art *is* committed — see the note in
-  game-code.md.
+- `resource-icons.json` — resource id → `{ color, orderInHud, icon, bar, barCompact, barMicro }`.
+  A resource carries art at **four sizes**, all rendered by the one `ResourceIcon.svelte` (a
+  `variant` prop, pixelated): the small HUD `icon` the editor shows by default, the full-size `bar`
+  unit (the only large art that differs per resource; Money has none), and the compact/micro bar
+  units, which are *shared* sprites the game tints with the resource's `color` — so the component
+  masks and tints those two. Extracted game art *is* committed — see the note in game-code.md.
 - `item-icons.json` — ingredient/consumable/module id → data-URI PNG of its item art, at **native
   size** and, for modules, **already tinted**. Module sprites on disk are white/grey stencils with
   black outlines; `ModuleIconWidget.SetColor` multiplies them by the module's `ColorAsset` at
@@ -150,8 +156,10 @@ instead of being silently mis-filed.
   white ColorAsset is left alone (that is its real colour), as is `Crawler`, whose sprite is
   authored pre-coloured and has no ColorAsset.
 - `module-info.json` — module id → `{ color, resource, type, description, powerLevel: [min,max],
-  powerCore, weapon }`. Drives module tinting in the UI and supplies the defaults `addModule`
-  needs — see the module-colour section in game-code.md.
+  powerCores, levelFields, weapon }`. Drives module tinting in the UI and supplies the defaults
+  `addModule` needs — see the module-colour section in game-code.md. The two field lists are the
+  *candidate* shapes (`SpriteDistribution.Draw` picks one per module built: five for POWER CORE,
+  three for BOOSTER CORE, exactly one for everything else), drawn by `EffectFieldGrid.svelte`.
 
 All need the Python venv with UnityPy. The scripts expect it at `/.venv` (gitignored):
 `python -m venv .venv && .venv/Scripts/pip install UnityPy TypeTreeGeneratorAPI Pillow`. Don't keep it
@@ -204,9 +212,16 @@ toggles / power cores / remove, the picker passes an Add button.
   `moduleCategory(id)` reads it. Today that is WEAPONS, GADGETS, UPGRADES (the ship modules), WEAPON
   MODS, plus the single-module POWER / BOOSTERS / Embedded. A renamed or added category carries
   through on the next extraction with no code change.
-- **The power-core field is hidden for modules that have no core** (`usesPowerCore(id)`, i.e.
-  `powerCore != null`). That is exactly UPGRADES and WEAPON MODS, which also have a `powerLevel`
+- **The power-core field is hidden for modules that have no core** (`usesPowerCore(id)`, i.e. a
+  non-empty `powerCores`). That is exactly UPGRADES and WEAPON MODS, which also have a `powerLevel`
   range of `[1,1]` — the field could only ever read 1 there.
+- **POWER and BOOSTERS are pinned to the top** of every grouped module list (`categoryRank`). Both
+  categories act on their *neighbours* rather than on themselves, which makes them the modules whose
+  placement matters most; the game's own shop order splits them (POWER first, BOOSTERS last).
+- **Effect fields are drawn as diagrams**, the way the game does on a core's card
+  (`ModuleEffectFieldWidget`): `EffectFieldGrid.svelte` renders the bool grid in the module's own
+  colour and rings the centre cell. A vault row shows the shape its module actually rolled; a picker
+  row shows every shape the module could roll, labelled "one of N".
 - **Stat lines** (`$lib/game/module-stats.ts`) are the "+2 max Fuel" / "0.2 per shot" numbers. They
   come from two places: `WeaponData` for weapon modules (damage, fire rate, per-shot cost) and the
   decoded `ModuleEffect` list for everything else. Effects are evaluated at the module's *own* asset
