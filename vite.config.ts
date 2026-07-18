@@ -20,13 +20,7 @@ export default defineConfig({
 			},
 			adapter: adapter({
 				fallback: 'index.html'
-			}),
-			experimental: { remoteFunctions: true },
-			typescript: {
-				config: (config) => {
-					config.include.push('../drizzle.config.ts');
-				}
-			}
+			})
 		})
 	]
 });
