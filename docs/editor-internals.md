@@ -238,8 +238,9 @@ toggles / power cores / remove, the picker passes an Add button.
   arbitrary in a list. It also keeps each resource's modules adjacent and uniformly coloured.
 - **Effect fields are drawn as diagrams**, the way the game does on a core's card
   (`ModuleEffectFieldWidget`): `EffectFieldGrid.svelte` renders the bool grid in the module's own
-  colour and rings the centre cell. It does three jobs — static diagram, one selectable option, or a
-  paintable canvas — differing only in what wraps the cells.
+  colour. Every cell is drawn identically, the centre included — the game marks it no differently,
+  and a ring around it only broke up the shape. It does three jobs — static diagram, one selectable
+  option, or a paintable canvas — differing only in what wraps the cells.
 - **The shape is selectable** wherever a list passes `onfieldchange` (`EffectFieldChooser.svelte`).
   The options are `effectFieldChoices`: every *distinct* orientation of every shape the asset can
   roll. That is not a liberty — `ModuleEffectField.Parse` rolls a mirror per axis and a quarter-turn
@@ -259,8 +260,18 @@ toggles / power cores / remove, the picker passes an Add button.
   game's own health red, read from `resourceColor('Resource Health')` rather than hard-coded.
 - **The centre cell is not paintable.** It is where the module itself sits, not part of the area it
   projects, so `EffectFieldGrid` renders it as a span rather than a button when painting (and
-  `toggleCell` guards it anyway). A field with a dark centre would put the module outside its own
-  effect, which no sprite the game ships can produce.
+  `paintCell` guards it anyway). A field with a dark centre would put the module outside its own
+  effect, which no sprite the game ships can produce. It still *looks* like every other cell — only
+  its handlers differ.
+- **The canvas paints by dragging.** The cell you press down on decides the mode for the whole
+  stroke: press a dark cell and the stroke draws, press a lit one and it erases. That is why `oncell`
+  passes the value a cell should end up at rather than asking for a toggle — crossing a cell twice,
+  or crossing one already in the target state, then changes nothing, whereas a toggle-per-cell would
+  flicker the stroke against itself. `pointerdown`/`pointerenter` drive it (one code path for mouse,
+  touch and pen) with `pointerup` on the window ending the stroke wherever it is released; the grid
+  is `touch-none` so a finger paints instead of scrolling the dialog. A `click` still fires from
+  Enter or Space on a focused cell, so that path toggles — it is recognised by `detail === 0`, which
+  is what distinguishes a keyboard-synthesised click from a pointer one.
 - **Painted shapes are a library, not a one-off** (`$lib/editor/custom-fields.svelte.ts`): a module-
   level `$state` array persisted to `localStorage` under `punk-save-editor:custom-fields`. The whole
   point of painting one is reuse, so it belongs to the person rather than to a save — every chooser

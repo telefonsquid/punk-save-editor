@@ -3,10 +3,9 @@
 
 	// The area-of-effect diagram the game draws on a power core / booster card
 	// (ModuleEffectFieldWidget: a grid of `width` columns, one cell per bool,
-	// filled cells lit and the rest dark). The module itself sits in the centre
-	// cell, which is ringed here so the shape reads as "relative to me" — the
-	// game can afford to leave that implicit because the card sits next to the
-	// grid it applies to.
+	// filled cells lit and the rest dark). The centre cell is the module's own
+	// square; it is drawn exactly like every other cell, since the game marks it
+	// no differently and a ring around it only made the shape harder to read.
 	//
 	// `color` is the module's own colour, so a core reads as belonging to its
 	// resource the way every other module row does.
@@ -37,9 +36,30 @@
 		selected?: boolean;
 		/** Makes the whole grid a button that chooses this shape. */
 		onselect?: () => void;
-		/** Makes every cell a button that toggles it. */
-		oncell?: (index: number) => void;
+		/**
+		 * Makes every cell paintable. Called with the value the cell should end up
+		 * at rather than a plain "toggle", so that dragging across a run of cells
+		 * sets all of them the same way and re-entering one is a no-op.
+		 */
+		oncell?: (index: number, value: 0 | 1) => void;
 	} = $props();
+
+	// Drag-painting: the first cell you press decides the mode for the whole
+	// stroke — start on a dark cell and you draw, start on a lit one and you
+	// erase — which is what makes a stroke predictable when it crosses cells
+	// that are already in the target state.
+	let painting = $state<0 | 1 | null>(null);
+
+	function paint(i: number, value: 0 | 1) {
+		oncell?.(i, value);
+	}
+
+	function startPaint(i: number, on: boolean) {
+		const value = on ? 0 : 1;
+		painting = value;
+		paint(i, value);
+	}
+
 
 	const cells = $derived(
 		field.data.map((on, i) => ({
@@ -59,11 +79,14 @@
 	const rows = $derived(`repeat(${field.height}, 1fr)`);
 </script>
 
+<svelte:window onpointerup={() => (painting = null)} onpointercancel={() => (painting = null)} />
+
 {#snippet cellGrid(interactive: boolean)}
 	{#each cells as c, i (i)}
 		<!-- The centre is the module itself, not part of the area it projects, so
 		     it is never a button: a field whose centre is dark would place the
-		     module outside its own effect, which nothing in the game can produce. -->
+		     module outside its own effect, which nothing in the game can produce.
+		     It still looks like any other cell — only the handlers differ. -->
 		{#if interactive && !c.center}
 			<button
 				type="button"
@@ -71,11 +94,18 @@
 				style:background-color={c.on ? fill : '#18181b'}
 				aria-pressed={c.on}
 				aria-label="Column {(i % field.width) + 1}, row {Math.floor(i / field.width) + 1}"
-				onclick={() => oncell?.(i)}
+				onpointerdown={() => startPaint(i, c.on)}
+				onpointerenter={() => painting !== null && paint(i, painting)}
+				onclick={(e) => {
+					// Pointer presses are already handled above; a click with no
+					// pointer behind it (detail 0) is Enter or Space on a focused
+					// cell, which is the only path left that has to toggle.
+					if (e.detail === 0) paint(i, c.on ? 0 : 1);
+				}}
 			></button>
 		{:else}
 			<span
-				class="min-h-0 min-w-0 {c.center ? 'ring-1 ring-zinc-400/70 ring-inset' : ''}"
+				class="min-h-0 min-w-0"
 				style:background-color={c.on ? fill : '#18181b'}
 				title={interactive && c.center ? 'The module sits here' : undefined}
 			></span>
@@ -102,8 +132,10 @@
 		{@render cellGrid(false)}
 	</button>
 {:else if oncell}
+	<!-- `touch-none` keeps a finger stroke painting instead of scrolling the
+	     dialog, and `select-none` stops a mouse drag from selecting the grid. -->
 	<div
-		class="inline-grid gap-px bg-black/60 p-px"
+		class="inline-grid touch-none gap-px bg-black/60 p-px select-none"
 		style:width={size}
 		style:height={size}
 		style:grid-template-columns={columns}

@@ -37,10 +37,13 @@
 		else if (!open && dialog.open) dialog.close();
 	});
 
-	function toggleCell(i: number) {
+	// The grid says what a cell should become rather than asking for a toggle, so
+	// that dragging a stroke over cells that are already lit leaves them lit.
+	function paintCell(i: number, value: 0 | 1) {
 		if (i === (canvas.data.length - 1) / 2) return; // the centre cell is the module; it stays lit
+		if (canvas.data[i] === value) return;
 		const data = [...canvas.data];
-		data[i] = data[i] ? 0 : 1;
+		data[i] = value;
 		canvas = { ...canvas, data };
 	}
 
@@ -89,14 +92,14 @@
 				{color}
 				size="14rem"
 				label="Paint the area of effect"
-				oncell={toggleCell}
+				oncell={paintCell}
 			/>
 		</div>
 		{#if problem}
 			<p class="mt-3 text-xs text-red-400">This shape {problem}.</p>
 		{:else}
 			<p class="mt-3 text-xs text-zinc-500">
-				Cells are relative to the ringed centre, where the module sits. {lit}
+				Cells are relative to the centre, where the module sits. Drag to paint a run at once. {lit}
 				{lit === 1 ? 'cell' : 'cells'} lit.
 			</p>
 		{/if}
