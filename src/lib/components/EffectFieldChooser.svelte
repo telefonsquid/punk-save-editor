@@ -1,7 +1,12 @@
 <script lang="ts">
 	import CustomFieldDialog from './CustomFieldDialog.svelte';
 	import EffectFieldGrid from './EffectFieldGrid.svelte';
-	import { effectFieldChoices, effectFieldKey, type EffectField } from '$lib/game/data';
+	import {
+		effectFieldChoices,
+		effectFieldKey,
+		resourceColor,
+		type EffectField
+	} from '$lib/game/data';
 	import { customFields } from '$lib/editor/custom-fields.svelte';
 
 	// Picks the shape a power core or booster projects: every orientation the
@@ -29,6 +34,10 @@
 
 	let adding = $state(false);
 
+	// The game's own health red, taken from the resource rather than hard-coded,
+	// so the badge stays in step if the extraction ever picks up a new palette.
+	const markColor = resourceColor('Resource Health') ?? '#ff0000';
+
 	const currentKey = $derived(value ? effectFieldKey(value) : null);
 	const rolled = $derived(effectFieldChoices(candidates));
 	const custom = $derived(customFields.list);
@@ -50,7 +59,8 @@
      shape explains the mark. -->
 {#snippet userMark()}
 	<svg
-		class="pointer-events-none absolute -top-1.5 left-1/2 size-3 -translate-x-1/2 rounded-full bg-zinc-900 p-px text-amber-500"
+		class="pointer-events-none absolute -top-1.5 left-1/2 size-3 -translate-x-1/2 rounded-full bg-zinc-900 p-px"
+		style:color={markColor}
 		viewBox="0 0 16 16"
 		fill="currentColor"
 		aria-hidden="true"
@@ -103,12 +113,17 @@
 			{@render userMark()}
 			<button
 				type="button"
-				class="absolute -top-2 -right-2 flex size-4 items-center justify-center rounded-sm border border-zinc-700 bg-zinc-900 text-[0.7rem] leading-none text-zinc-500 hover:border-red-500 hover:text-red-400"
+				class="absolute -top-[0.4375rem] -right-[0.4375rem] flex size-3.5 items-center justify-center rounded-sm border border-zinc-700 bg-zinc-900 text-zinc-500 hover:border-red-500 hover:text-red-400"
 				title="Delete this custom shape"
 				aria-label="Delete this custom shape"
 				onclick={() => customFields.remove(key)}
 			>
-				×
+				<!-- A drawn cross rather than the × glyph: a glyph sits on the text
+				     baseline, which leaves it a pixel or two high in a box this small
+				     however the line box is centred. -->
+				<svg class="size-2" viewBox="0 0 8 8" fill="none" stroke="currentColor" stroke-width="1.5">
+					<path d="M1 1l6 6M7 1l-6 6" />
+				</svg>
 			</button>
 		</span>
 	{/each}

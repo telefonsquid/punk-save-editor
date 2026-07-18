@@ -248,7 +248,12 @@ toggles / power cores / remove, the picker passes an Add button.
   shapes lives in the painting modal. They work — see the hand-painted-shapes section of game-code.md for exactly why, and for the
   square-and-odd invariants `effectFieldProblem` enforces (non-square fields make the game's own
   `y * height + x` indexing read out of bounds and throw). A field that fails validation is never
-  written: the painter's Save button is disabled and the store refuses it too.
+  written: the painter's Add button is disabled and the store refuses it too. The user badge is the
+  game's own health red, read from `resourceColor('Resource Health')` rather than hard-coded.
+- **The centre cell is not paintable.** It is where the module itself sits, not part of the area it
+  projects, so `EffectFieldGrid` renders it as a span rather than a button when painting (and
+  `toggleCell` guards it anyway). A field with a dark centre would put the module outside its own
+  effect, which no sprite the game ships can produce.
 - **Painted shapes are a library, not a one-off** (`$lib/editor/custom-fields.svelte.ts`): a module-
   level `$state` array persisted to `localStorage` under `punk-save-editor:custom-fields`. The whole
   point of painting one is reuse, so it belongs to the person rather than to a save — every chooser
@@ -262,7 +267,8 @@ toggles / power cores / remove, the picker passes an Add button.
   edge length of the *whole* grid (`1fr` tracks, not a fixed cell), so a 3×3 and a 7×7 both render
   56×56 and a row of shapes stays a row of equal tiles — the odd sizes read as coarser or finer
   rather than smaller or larger. The "add custom shape" button is a `size-14` dashed tile for the
-  same reason, and slots in as the last item.
+  same reason, and slots in as the last item. Grids are square-cornered: a rounded diagram would
+  disagree with the square cells inside it.
 - **Stat lines** (`$lib/game/module-stats.ts`) are the "+2 max Fuel" / "0.2 per shot" numbers. They
   come from two places: `WeaponData` for weapon modules (damage, fire rate, per-shot cost) and the
   decoded `ModuleEffect` list for everything else. Effects are evaluated at the module's *own* asset

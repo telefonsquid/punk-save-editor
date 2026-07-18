@@ -38,6 +38,7 @@
 	});
 
 	function toggleCell(i: number) {
+		if (i === (canvas.data.length - 1) / 2) return; // the centre cell is the module; it stays lit
 		const data = [...canvas.data];
 		data[i] = data[i] ? 0 : 1;
 		canvas = { ...canvas, data };
@@ -116,7 +117,7 @@
 			disabled={!!problem}
 			onclick={save}
 		>
-			Save shape
+			Add shape
 		</button>
 	</div>
 </dialog>

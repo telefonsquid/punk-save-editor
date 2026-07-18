@@ -61,10 +61,13 @@
 
 {#snippet cellGrid(interactive: boolean)}
 	{#each cells as c, i (i)}
-		{#if interactive}
+		<!-- The centre is the module itself, not part of the area it projects, so
+		     it is never a button: a field whose centre is dark would place the
+		     module outside its own effect, which nothing in the game can produce. -->
+		{#if interactive && !c.center}
 			<button
 				type="button"
-				class="min-h-0 min-w-0 {c.center ? 'ring-1 ring-zinc-400/70 ring-inset' : ''}"
+				class="min-h-0 min-w-0"
 				style:background-color={c.on ? fill : '#18181b'}
 				aria-pressed={c.on}
 				aria-label="Column {(i % field.width) + 1}, row {Math.floor(i / field.width) + 1}"
@@ -74,6 +77,7 @@
 			<span
 				class="min-h-0 min-w-0 {c.center ? 'ring-1 ring-zinc-400/70 ring-inset' : ''}"
 				style:background-color={c.on ? fill : '#18181b'}
+				title={interactive && c.center ? 'The module sits here' : undefined}
 			></span>
 		{/if}
 	{/each}
@@ -82,7 +86,7 @@
 {#if onselect}
 	<button
 		type="button"
-		class="inline-grid gap-px rounded-sm p-px {selected
+		class="inline-grid gap-px p-px {selected
 			? 'ring-2 ring-offset-1 ring-offset-zinc-900'
 			: 'opacity-60 hover:opacity-100'}"
 		style:width={size}
@@ -99,7 +103,7 @@
 	</button>
 {:else if oncell}
 	<div
-		class="inline-grid gap-px rounded-sm bg-black/60 p-px"
+		class="inline-grid gap-px bg-black/60 p-px"
 		style:width={size}
 		style:height={size}
 		style:grid-template-columns={columns}
@@ -111,7 +115,7 @@
 	</div>
 {:else}
 	<div
-		class="inline-grid gap-px rounded-sm bg-black/60 p-px"
+		class="inline-grid gap-px bg-black/60 p-px"
 		style:width={size}
 		style:height={size}
 		style:grid-template-columns={columns}
