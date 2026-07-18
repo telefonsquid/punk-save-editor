@@ -24,7 +24,7 @@ vite.config.ts.timestamp-*
 /src-tauri/target
 /src-tauri/gen
 
-# Intermediate asset dump (extract-module-caps.py -> extract-module-caps.ts)
+# Intermediate asset dump (extract-module-effects.py -> extract-module-effects.ts)
 /scripts/module-effects-raw.json
 
 # Python venv for the asset-extraction scripts (see docs/game-code.md)

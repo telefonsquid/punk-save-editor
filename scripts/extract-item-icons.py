@@ -20,58 +20,22 @@ it at extraction rather than in CSS keeps the editor rendering plain `<img>`s
 with nearest-neighbour scaling — a CSS blend/mask would have to filter the
 scaled-up bitmap and would soften the pixel edges the rule above protects.
 
-Usage:
-    python -m venv venv
-    venv/Scripts/pip install UnityPy TypeTreeGeneratorAPI
-    venv/Scripts/python scripts/extract-item-icons.py [path-to-Punk_Data]
+Usage (or `bun run extract` for everything):
+    .venv/Scripts/python scripts/extract-item-icons.py [path-to-Punk_Data]
 """
 
-import base64
-import io
-import json
-import sys
-from pathlib import Path
-
-import UnityPy
 from PIL import Image
-from UnityPy.helpers.TypeTreeGenerator import TypeTreeGenerator
 
-GAME_DATA = Path(
-    sys.argv[1]
-    if len(sys.argv) > 1
-    else r"C:/data/apps/Steam/steamapps/common/PUNK Playtest/Punk_Data"
-)
-OUT = Path(__file__).parent.parent / "src/lib/save/item-icons.json"
-UNITY_VERSION = "6000.3.4f1"
+import punklib
 
 
-def pick_icon(d: dict):
+def pick_icon(a: punklib.Asset):
     """The sprite field for a module/consumable/ingredient asset, or None."""
-    if "moduleType" in d:  # ModuleData
-        return d.get("icon")
-    if "maxCount" in d and "icon" in d and "lowTreshold" not in d:  # Consumable
-        return d.get("icon")
-    if "iconBig" in d or "iconSmall" in d:  # Ingredient
-        return d.get("iconBig") or d.get("iconSmall")
+    if a.is_module or a.cls in punklib.CONSUMABLE_CLASSES:
+        return a.d.get("icon")
+    if a.cls == "Ingredient":
+        return a.d.get("iconBig") or a.d.get("iconSmall")
     return None
-
-
-def module_tint(d: dict) -> tuple[int, int, int] | None:
-    """The module's ColorAsset as 0-255 RGB, or None for a non-module asset."""
-    if "moduleType" not in d:
-        return None
-    pptr = d.get("color")
-    if pptr is None or not getattr(pptr, "m_PathID", None):
-        return None
-    try:
-        color = pptr.read().__dict__.get("color")
-    except Exception:
-        return None
-    if color is None:
-        return None
-    return tuple(
-        max(0, min(255, round((getattr(color, ch, 0.0) or 0.0) * 255))) for ch in ("r", "g", "b")
-    )
 
 
 def tinted(img: Image.Image, rgb: tuple[int, int, int]) -> Image.Image:
@@ -85,45 +49,26 @@ def tinted(img: Image.Image, rgb: tuple[int, int, int]) -> Image.Image:
     return Image.merge("RGBA", (*channels, a))
 
 
-gen = TypeTreeGenerator(UNITY_VERSION)
-gen.load_local_dll_folder(str(GAME_DATA / "Managed"))
+def run(assets: punklib.PunkAssets) -> None:
+    data_uris: dict[str, str] = {}
+    tinted_count = 0
+    for a in assets.assets():
+        icon = pick_icon(a)
+        if icon is None:
+            continue
+        try:
+            img = icon.read().image  # PIL.Image cropped to the sprite rect
+        except Exception as e:
+            print(f"  {a.id}: could not read icon ({e})")
+            continue
+        rgb = punklib.color_rgb(a.d.get("color")) if a.is_module else None
+        if rgb is not None and rgb != (255, 255, 255):
+            img = tinted(img, rgb)
+            tinted_count += 1
+        data_uris[a.id] = punklib.png_data_uri(img)
+    punklib.write_json(punklib.DATA_DIR / "item-icons.json", data_uris)
+    print(f"  {tinted_count} module icons tinted by their ColorAsset")
 
-# Load the whole data folder into one environment so cross-file sprite PPtrs
-# (the icon usually lives in a different .assets than the asset) resolve.
-env = UnityPy.load(str(GAME_DATA))
-env.typetree_generator = gen
 
-data_uris: dict[str, str] = {}
-tinted_count = 0
-
-for obj in env.objects:
-    if obj.type.name != "MonoBehaviour":
-        continue
-    try:
-        data = obj.read(check_read=False)
-    except Exception:
-        continue
-    d = data.__dict__
-    ident = d.get("id")
-    if not isinstance(ident, str) or not ident:
-        continue
-    icon = pick_icon(d)
-    if icon is None:
-        continue
-    try:
-        img = icon.read().image  # PIL.Image cropped to the sprite rect
-    except Exception as e:
-        print(f"  {ident}: could not read icon ({e})")
-        continue
-    rgb = module_tint(d)
-    if rgb is not None and rgb != (255, 255, 255):
-        img = tinted(img, rgb)
-        tinted_count += 1
-    buf = io.BytesIO()
-    img.save(buf, "PNG")
-    data_uris[ident] = "data:image/png;base64," + base64.b64encode(buf.getvalue()).decode()
-
-data_uris = dict(sorted(data_uris.items()))
-OUT.write_text(json.dumps(data_uris, indent=1), encoding="utf-8")
-print(f"wrote {len(data_uris)} item icons to {OUT} ({OUT.stat().st_size} bytes)")
-print(f"  {tinted_count} module icons tinted by their ColorAsset")
+if __name__ == "__main__":
+    run(punklib.PunkAssets(punklib.game_data_from_argv()))

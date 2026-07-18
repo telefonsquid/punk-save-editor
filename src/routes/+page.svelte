@@ -14,6 +14,7 @@
 		assetsByCategory,
 		CONNECTION_SIDES,
 		displayName,
+		equippableModules,
 		getConsumables,
 		getModules,
 		getResources,
@@ -108,9 +109,7 @@
 		({ id }) => !DISABLED_INGREDIENTS.has(id)
 	);
 	const allConsumables = assetsByCategory('Consumable');
-	// Only modules the game considers equippable (ModuleData.Equippable: an icon
-	// plus a display name) can be offered — the rest are embedded enemy parts.
-	const allModules = assetsByCategory('Module').filter(({ info }) => info.displayName);
+	const allModules = equippableModules();
 
 	// Only the filled slots are shown; empty ("(none)") slots are surfaced as
 	// add buttons instead. Reordering acts on this filtered list.

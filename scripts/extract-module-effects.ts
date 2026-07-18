@@ -1,6 +1,7 @@
 /**
- * Step 2 of regenerating src/lib/save/module-caps.json: decodes the Odin binary
- * payloads dumped by extract-module-caps.py into every effect a module carries.
+ * Step 2 of regenerating src/lib/save/module-effects.json: decodes the Odin
+ * binary payloads dumped by extract-module-effects.py into every effect a
+ * module carries.
  *
  * The eight `ModuleEffect` subclasses in the game are all the same shape: one
  * `FloatSeries` magnitude (baseValue / increaseMethod / change, evaluated at the
@@ -12,7 +13,7 @@
  * A new effect type in a game update shows up as an "unknown effect" warning
  * rather than silently vanishing; add it to EFFECT_KINDS.
  *
- *     bun scripts/extract-module-caps.ts
+ *     bun scripts/extract-module-effects.ts
  */
 import { readFileSync, writeFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
@@ -177,7 +178,7 @@ for (const [id, st] of Object.entries(raw.slotTypes as Record<string, { levelDel
 }
 
 writeFileSync(
-	`${here}/../src/lib/save/module-caps.json`,
+	`${here}/../src/lib/save/module-effects.json`,
 	JSON.stringify({ modules, slotLevelDeltas }, null, 1)
 );
 
@@ -185,7 +186,7 @@ const counts = new Map<string, number>();
 for (const m of Object.values(modules)) {
 	for (const e of m.effects) counts.set(e.kind, (counts.get(e.kind) ?? 0) + 1);
 }
-console.log(`wrote module-caps.json: ${Object.keys(modules).length} modules`);
+console.log(`wrote module-effects.json: ${Object.keys(modules).length} modules`);
 for (const [kind, n] of [...counts].sort((a, b) => b[1] - a[1])) {
 	console.log(`  ${String(n).padStart(4)} ${kind}`);
 }

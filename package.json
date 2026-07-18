@@ -11,6 +11,8 @@
 		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
 		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
 		"lint": "eslint .",
+		"extract": "bun scripts/extract-all.ts",
+		"check:data": "bun scripts/check-data.ts",
 		"tauri": "tauri"
 	},
 	"devDependencies": {

@@ -9,7 +9,8 @@ import { lzfCompress, lzfDecompress } from './lzf';
 import { EntryType, META_KEYS, OdinBinaryReader, OdinBinaryWriter, isNode } from './odin';
 import type { OdinNode, OdinValue, TypeInfo } from './odin';
 import assetNames from './asset-names.json';
-import moduleCaps from './module-caps.json';
+import itemIcons from './item-icons.json';
+import moduleCaps from './module-effects.json';
 import moduleInfoJson from './module-info.json';
 
 export interface SaveSlot {
@@ -81,6 +82,16 @@ export function assetsByCategory(category: string): { id: string; info: AssetInf
 		.filter(([, info]) => info.category === category)
 		.map(([id, info]) => ({ id, info }))
 		.sort((a, b) => displayName(a.id).localeCompare(displayName(b.id)));
+}
+
+/**
+ * The modules the player can actually equip — the game's `ModuleData.Equippable`
+ * check is a displayName AND an icon. Named modules without an icon are
+ * embedded enemy parts and never appear in the shop or the vault.
+ */
+export function equippableModules(): { id: string; info: AssetInfo }[] {
+	const icons = itemIcons as Record<string, string>;
+	return assetsByCategory('Module').filter(({ id, info }) => info.displayName && icons[id]);
 }
 
 async function loadOdin(dir: SaveDir, file: string): Promise<OdinNode> {

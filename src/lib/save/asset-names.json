@@ -6,7 +6,7 @@
   "level": 1
  },
  "0081b7d8-cd9a-409b-abcb-fee408247d9b": {
-  "category": "Zipper",
+  "category": "Module",
   "assetName": "Zipper Module",
   "displayName": "",
   "level": 1
@@ -25,7 +25,7 @@
   "level": 1
  },
  "050f8469-3cdd-4b25-8cd0-f699e6f7331e": {
-  "category": "Larva",
+  "category": "Module",
   "assetName": "Larva Module",
   "displayName": "",
   "level": 1
@@ -91,7 +91,7 @@
   "level": 1
  },
  "1a8a22e0-f893-4acd-b247-b547d9034cc5": {
-  "category": "Weapon",
+  "category": "Module",
   "assetName": "Weapon Rocket Rookie Module",
   "displayName": "Weapon Rocket Rookie",
   "level": 1
@@ -117,7 +117,7 @@
   "level": 2
  },
  "1fc77425-8190-43d6-ac92-1e3a71008cae": {
-  "category": "PlayerDefault",
+  "category": "Module",
   "assetName": "PlayerDefault",
   "displayName": "SHIP",
   "level": 1
@@ -129,7 +129,7 @@
   "level": 1
  },
  "269b634c-3091-4298-838f-af525562dc6b": {
-  "category": "Turret",
+  "category": "Module",
   "assetName": "Turret Laser Module",
   "displayName": "",
   "level": 1
@@ -142,7 +142,7 @@
   "level": 1
  },
  "2b2dbb4d-69e8-40ff-a212-a52efdf9c587": {
-  "category": "Weapon",
+  "category": "Module",
   "assetName": "Weapon Enemy DroneMissile Module",
   "displayName": "Weapon Enemy DroneMissile",
   "level": 1
@@ -154,13 +154,13 @@
   "level": 1
  },
  "2cf20dad-69f5-43db-b4fd-a021be584b5f": {
-  "category": "Weapon",
+  "category": "Module",
   "assetName": "Weapon CrossPin Module",
   "displayName": "Weapon CrossPin",
   "level": 1
  },
  "2def7b71-17c8-40e2-935d-ccdce9270514": {
-  "category": "CrossAlfa",
+  "category": "Module",
   "assetName": "CrossAlfa Module",
   "displayName": "",
   "level": 1
@@ -193,7 +193,7 @@
   "level": 1
  },
  "351a78e1-2f55-467c-8198-5317fbd7c7a1": {
-  "category": "Weapon_Turret_Laser",
+  "category": "Module",
   "assetName": "Weapon_Turret_Laser Module",
   "displayName": "Weapon_Turret_Laser",
   "level": 1
@@ -206,25 +206,25 @@
   "level": 1
  },
  "391f2d91-7db8-4000-8884-9c9f9c3f0a53": {
-  "category": "CrossLaser",
+  "category": "Module",
   "assetName": "CrossLaser Module",
   "displayName": "",
   "level": 1
  },
  "39a2df66-c89d-4226-b7c6-4848da16479f": {
-  "category": "Weapon_CrossAlpha",
+  "category": "Module",
   "assetName": "Weapon_CrossAlpha Module",
   "displayName": "Weapon_CrossAlpha",
   "level": 1
  },
  "3afed7a6-53bc-4f49-8e9b-f938b5f74d96": {
-  "category": "FieldGenerator",
+  "category": "Module",
   "assetName": "FieldGenerator Module",
   "displayName": "",
   "level": 1
  },
  "3c22cfb1-32d8-4bfc-ab5b-4271b3398d92": {
-  "category": "Weapon_Grunt",
+  "category": "Module",
   "assetName": "Weapon_Grunt Module",
   "displayName": "Weapon_Grunt",
   "level": 1
@@ -290,13 +290,13 @@
   "level": 1
  },
  "46c8e93d-67fe-4a04-a910-bbf16521971a": {
-  "category": "Weapon",
+  "category": "Module",
   "assetName": "Weapon Rocket Soldier Purple",
   "displayName": "Weapon Rocket Soldier",
   "level": 1
  },
  "47f8634f-15fe-407b-b15d-329319d52aaf": {
-  "category": "Weapon",
+  "category": "Module",
   "assetName": "Weapon Laser CrossTablet Module",
   "displayName": "Weapon Laser CrossTablet",
   "level": 1
@@ -309,7 +309,7 @@
   "level": 1
  },
  "48a5fb41-0d95-49d9-93dc-48fe4f634a8f": {
-  "category": "Fly",
+  "category": "Module",
   "assetName": "Fly Laser Module",
   "displayName": "",
   "level": 1
@@ -322,7 +322,7 @@
   "level": 1
  },
  "4b333163-e8aa-48f0-aa93-184e2dfade3f": {
-  "category": "WeaponModule",
+  "category": "Module",
   "assetName": "WeaponModule Beacon",
   "displayName": "Weapon_Turret_Laser",
   "level": 1
@@ -340,7 +340,7 @@
   "level": 1
  },
  "4eba9754-339c-4587-98a8-d159fda13ad4": {
-  "category": "Weapon_Cross",
+  "category": "Module",
   "assetName": "Weapon_Cross Module",
   "displayName": "Weapon_Cross",
   "level": 1
@@ -359,7 +359,7 @@
   "level": 1
  },
  "517aaf64-71a1-4878-bba3-d7f9b995a6aa": {
-  "category": "Weapon_CrossQueen",
+  "category": "Module",
   "assetName": "Weapon_CrossQueen Module",
   "displayName": "Weapon_CrossQueen",
   "level": 1
@@ -377,13 +377,13 @@
   "level": 1
  },
  "5682bca7-51a4-48b8-bc45-067d1ebaba47": {
-  "category": "Cross",
+  "category": "Module",
   "assetName": "Cross Module",
   "displayName": "",
   "level": 1
  },
  "57149378-6837-4e76-a6d9-b6f3b3f3435d": {
-  "category": "Weapon_CrossRed",
+  "category": "Module",
   "assetName": "Weapon_CrossRed Module",
   "displayName": "Weapon_CrossRed",
   "level": 1
@@ -396,7 +396,7 @@
   "level": 1
  },
  "60030afe-a08a-4c61-9bd4-dc4e5ae2e189": {
-  "category": "Weapon",
+  "category": "Module",
   "assetName": "Weapon Module OneShot4",
   "displayName": "Weapon CrossPin",
   "level": 1
@@ -416,7 +416,7 @@
   "level": 2
  },
  "63fedd1a-0b62-4c1d-89b8-473b53dd38c7": {
-  "category": "WeaponModule",
+  "category": "Module",
   "assetName": "WeaponModule FloaterMiniCaps",
   "displayName": "Weapon FloaterMiniCaps",
   "level": 1
@@ -429,13 +429,13 @@
   "maxCount": 10
  },
  "69278b56-c542-4cd5-b33f-95887000e0db": {
-  "category": "Weapon_CrossRed",
+  "category": "Module",
   "assetName": "Weapon_CrossRed Electron Module",
   "displayName": "Weapon_CrossRed",
   "level": 1
  },
  "693125a0-a1b3-4508-b3eb-f523081e26ac": {
-  "category": "WeaponModule",
+  "category": "Module",
   "assetName": "WeaponModule FloaterMiniPurple",
   "displayName": "Weapon FloaterMiniCaps",
   "level": 1
@@ -487,7 +487,7 @@
   "level": 1
  },
  "73cf7441-4ef5-49e5-b26f-4d8394bd67dd": {
-  "category": "Weapon",
+  "category": "Module",
   "assetName": "Weapon Enemy Queen Bomb Module",
   "displayName": "Weapon Enemy Queen Bomb",
   "level": 1
@@ -505,7 +505,7 @@
   "level": 1
  },
  "7cb9173d-4229-48b8-b079-73dea8d339e5": {
-  "category": "WeaponModule",
+  "category": "Module",
   "assetName": "WeaponModule BouncerRed",
   "displayName": "Weapon_Bouncer",
   "level": 1
@@ -531,13 +531,13 @@
   "level": 1
  },
  "7fca9e7d-79f6-4a05-8b69-0084d0ac4c3e": {
-  "category": "Turret",
+  "category": "Module",
   "assetName": "Turret Sniper Module",
   "displayName": "",
   "level": 1
  },
  "7fe9d646-5dd6-43b8-80d2-03ee41bcec67": {
-  "category": "Weapon",
+  "category": "Module",
   "assetName": "Weapon Enemy Turret Sniper Module",
   "displayName": "Weapon Enemy Drone Sniper",
   "level": 1
@@ -585,13 +585,13 @@
   "level": 1
  },
  "938ea129-d605-4e3e-81eb-f8fbfba79f85": {
-  "category": "Weapon_Minion_CrossQueen",
+  "category": "Module",
   "assetName": "Weapon_Minion_CrossQueen Module",
   "displayName": "Weapon_Minion_CrossQueen",
   "level": 1
  },
  "957fc473-fd1a-44c1-817e-0b1857250193": {
-  "category": "Weapon_CrossLaser",
+  "category": "Module",
   "assetName": "Weapon_CrossLaser Module",
   "displayName": "Weapon_CrossLaser",
   "level": 1
@@ -625,7 +625,7 @@
   "level": 1
  },
  "Active": {
-  "category": "Active",
+  "category": "SlotType",
   "assetName": "Active",
   "displayName": null
  },
@@ -645,7 +645,7 @@
   "displayName": "Fiber"
  },
  "Embedded": {
-  "category": "Embedded",
+  "category": "SlotType",
   "assetName": "Embedded",
   "displayName": null
  },
@@ -665,17 +665,17 @@
   "displayName": "Gland"
  },
  "Invalid": {
-  "category": "Invalid",
+  "category": "SlotType",
   "assetName": "Invalid",
   "displayName": null
  },
  "LevelUp": {
-  "category": "LevelUp",
+  "category": "SlotType",
   "assetName": "LevelUp",
   "displayName": null
  },
  "Normal": {
-  "category": "Normal",
+  "category": "SlotType",
   "assetName": "Normal",
   "displayName": null
  },
@@ -730,7 +730,7 @@
   "displayName": "Generator"
  },
  "Weapon": {
-  "category": "Weapon",
+  "category": "SlotType",
   "assetName": "Weapon",
   "displayName": null
  },
@@ -1120,107 +1120,107 @@
   "displayName": null
  },
  "WeaponActiveModule": {
-  "category": "WeaponActiveModule",
+  "category": "Weapon",
   "assetName": "WeaponActiveModule",
   "displayName": null
  },
  "Weapon_Active_Teardrop": {
-  "category": "Weapon_Active_Teardrop",
+  "category": "Weapon",
   "assetName": "Weapon_Active_Teardrop",
   "displayName": null
  },
  "Weapon_Cross": {
-  "category": "Weapon_Cross",
+  "category": "Weapon",
   "assetName": "Weapon_Cross",
   "displayName": null
  },
  "Weapon_CrossAlpha": {
-  "category": "Weapon_CrossAlpha",
+  "category": "Weapon",
   "assetName": "Weapon_CrossAlpha",
   "displayName": null
  },
  "Weapon_CrossJock": {
-  "category": "Weapon_CrossJock",
+  "category": "Weapon",
   "assetName": "Weapon_CrossJock",
   "displayName": null
  },
  "Weapon_CrossQueen": {
-  "category": "Weapon_CrossQueen",
+  "category": "Weapon",
   "assetName": "Weapon_CrossQueen",
   "displayName": null
  },
  "Weapon_FieldGenerator": {
-  "category": "Weapon_FieldGenerator",
+  "category": "Weapon",
   "assetName": "Weapon_FieldGenerator",
   "displayName": null
  },
  "Weapon_Fly": {
-  "category": "Weapon_Fly",
+  "category": "Weapon",
   "assetName": "Weapon_Fly",
   "displayName": null
  },
  "Weapon_Fly_Alfa": {
-  "category": "Weapon_Fly_Alfa",
+  "category": "Weapon",
   "assetName": "Weapon_Fly_Alfa",
   "displayName": null
  },
  "Weapon_Fly_AlfaSub": {
-  "category": "Weapon_Fly_AlfaSub",
+  "category": "Weapon",
   "assetName": "Weapon_Fly_AlfaSub",
   "displayName": null
  },
  "Weapon_Fly_Dad": {
-  "category": "Weapon_Fly_Dad",
+  "category": "Weapon",
   "assetName": "Weapon_Fly_Dad",
   "displayName": null
  },
  "Weapon_Fly_Laser": {
-  "category": "Weapon_Fly_Laser",
+  "category": "Weapon",
   "assetName": "Weapon_Fly_Laser",
   "displayName": null
  },
  "Weapon_Grunt": {
-  "category": "Weapon_Grunt",
+  "category": "Weapon",
   "assetName": "Weapon_Grunt",
   "displayName": null
  },
  "Weapon_Laser_CrossQueen": {
-  "category": "Weapon_Laser_CrossQueen",
+  "category": "Weapon",
   "assetName": "Weapon_Laser_CrossQueen",
   "displayName": null
  },
  "Weapon_Minion_CrossQueen": {
-  "category": "Weapon_Minion_CrossQueen",
+  "category": "Weapon",
   "assetName": "Weapon_Minion_CrossQueen",
   "displayName": null
  },
  "Weapon_PhantomDrone": {
-  "category": "Weapon_PhantomDrone",
+  "category": "Weapon",
   "assetName": "Weapon_PhantomDrone",
   "displayName": null
  },
  "Weapon_Raven": {
-  "category": "Weapon_Raven",
+  "category": "Weapon",
   "assetName": "Weapon_Raven",
   "displayName": null
  },
  "Weapon_Turret_Laser": {
-  "category": "Weapon_Turret_Laser",
+  "category": "Weapon",
   "assetName": "Weapon_Turret_Laser",
   "displayName": null
  },
  "Weapon_Turret_Worm": {
-  "category": "Weapon_Turret_Worm",
+  "category": "Weapon",
   "assetName": "Weapon_Turret_Worm",
   "displayName": null
  },
  "Weapon_Zipper": {
-  "category": "Weapon_Zipper",
+  "category": "Weapon",
   "assetName": "Weapon_Zipper",
   "displayName": null
  },
  "a2d09b85-8a79-449c-9dad-61a3dbf9607a": {
-  "category": "Artifact1",
+  "category": "Module",
   "assetName": "Artifact1",
   "displayName": "RED EYE",
   "level": 1
@@ -1232,7 +1232,7 @@
   "level": 1
  },
  "a42354fe-a50e-4a2a-a264-28eb728a7b9e": {
-  "category": "WeaponModule",
+  "category": "Module",
   "assetName": "WeaponModule Unit FlyZapper",
   "displayName": "Weapon_Fly_Alfa",
   "level": 1
@@ -1245,7 +1245,7 @@
   "level": 1
  },
  "a5821cd4-48c9-4b1e-96aa-1ef4e0d64a50": {
-  "category": "Weapon",
+  "category": "Module",
   "assetName": "Weapon Drone Module",
   "displayName": "Weapon Drone",
   "level": 1
@@ -1264,7 +1264,7 @@
   "level": 1
  },
  "aabbf1de-33e5-4f1d-8cb2-2ad35c95251f": {
-  "category": "Weapon",
+  "category": "Module",
   "assetName": "Weapon Minion CrossRed Module",
   "displayName": "Weapon Minion CrossRed",
   "level": 1
@@ -1277,7 +1277,7 @@
   "maxCount": 10
  },
  "ae453f20-1aa1-4ea2-af9a-ca2756325454": {
-  "category": "Weapon",
+  "category": "Module",
   "assetName": "Weapon Fish Module",
   "displayName": "Weapon Fish",
   "level": 1
@@ -1290,19 +1290,19 @@
   "level": 1
  },
  "b3c4ae5d-b5ad-46a4-8030-240470591fca": {
-  "category": "Turret",
+  "category": "Module",
   "assetName": "Turret Worm Module",
   "displayName": "",
   "level": 1
  },
  "bbc0dd01-a91a-427c-977a-f1a546c3e4a0": {
-  "category": "WeaponModule",
+  "category": "Module",
   "assetName": "WeaponModule Crawler Laser",
   "displayName": "Crawler Laser",
   "level": 1
  },
  "bc282173-4c8b-4960-8742-9069f29d9fbb": {
-  "category": "Weapon_Fly_Dad",
+  "category": "Module",
   "assetName": "Weapon_Fly_Dad Module",
   "displayName": "Weapon_Fly_Dad",
   "level": 1
@@ -1315,7 +1315,7 @@
   "level": 1
  },
  "bd569afb-39b6-46c2-9c5a-57a282f073c4": {
-  "category": "Weapon_Fly_Laser",
+  "category": "Module",
   "assetName": "Weapon_Fly_Laser Module",
   "displayName": "Weapon_Fly_Laser",
   "level": 1
@@ -1328,7 +1328,7 @@
   "level": 1
  },
  "bfa5e950-37e2-484f-b39c-80c0dce4edc6": {
-  "category": "Weapon_Laser_CrossQueen",
+  "category": "Module",
   "assetName": "Weapon_Laser_CrossQueen Module",
   "displayName": "Weapon_Laser_CrossQueen",
   "level": 1
@@ -1359,7 +1359,7 @@
   "level": 1
  },
  "c742cdd3-284d-420a-9feb-399f820c15ce": {
-  "category": "Weapon_Zipper",
+  "category": "Module",
   "assetName": "Weapon_Zipper Module",
   "displayName": "Weapon_Zipper",
   "level": 1
@@ -1405,7 +1405,7 @@
   "level": 1
  },
  "d9377cc7-3bc4-44c9-af1c-a0647f62e96c": {
-  "category": "Weapon",
+  "category": "Module",
   "assetName": "Weapon Rocket Soldier Module",
   "displayName": "Weapon Rocket Soldier",
   "level": 1
@@ -1458,7 +1458,7 @@
   "level": 1
  },
  "e00d2bc2-548b-4356-9241-438bea5979cd": {
-  "category": "Weapon_Fly_Alfa",
+  "category": "Module",
   "assetName": "Weapon_Fly_Alfa Module",
   "displayName": "Weapon_Fly_Alfa",
   "level": 1
@@ -1485,7 +1485,7 @@
   "level": 1
  },
  "e2c3772b-9226-43b5-a9c7-6a6456aaeb24": {
-  "category": "Weapon_Raven",
+  "category": "Module",
   "assetName": "Weapon_Raven Module",
   "displayName": "Weapon_Raven",
   "level": 1
@@ -1498,7 +1498,7 @@
   "level": 2
  },
  "eba0f80e-74fd-45e9-9319-0777c72e0cd6": {
-  "category": "Weapon",
+  "category": "Module",
   "assetName": "Weapon Rocket Soldier Tech",
   "displayName": "Weapon Rocket Soldier",
   "level": 1
@@ -1511,19 +1511,19 @@
   "level": 1
  },
  "eecde5fa-0f5d-45d2-bf40-59ed14bded7d": {
-  "category": "Weapon_Turret_Worm",
+  "category": "Module",
   "assetName": "Weapon_Turret_Worm Module",
   "displayName": "Weapon_Turret_Worm",
   "level": 1
  },
  "f404b176-bec9-486c-9733-65ce4842fdd7": {
-  "category": "Fly",
+  "category": "Module",
   "assetName": "Fly Alfa Module",
   "displayName": "",
   "level": 1
  },
  "f7168902-c6c4-426c-9da7-f1bfdcb2c2d5": {
-  "category": "Weapon",
+  "category": "Module",
   "assetName": "Weapon Rocket TurretSeeker Module",
   "displayName": "Weapon Rocket TurretSeeker",
   "level": 1
@@ -1535,7 +1535,7 @@
   "level": 1
  },
  "f9fdd750-2a66-4be2-9e9f-b4137d1b6f58": {
-  "category": "Weapon_PhantomDrone",
+  "category": "Module",
   "assetName": "Weapon_PhantomDrone Module",
   "displayName": "Weapon_PhantomDrone",
   "level": 1
@@ -1555,7 +1555,7 @@
   "level": 1
  },
  "strange_ball": {
-  "category": "Strange",
+  "category": "Ingredient",
   "assetName": "Strange Ball",
   "displayName": "Strange Ball"
  }
