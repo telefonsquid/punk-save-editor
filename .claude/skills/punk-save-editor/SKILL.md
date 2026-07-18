@@ -78,7 +78,8 @@ bun run check:data  # cross-check the generated JSONs without re-extracting
 - `src/lib/components/` — `Section`/`Button`/`NumberInput` primitives (restyle these for the
   redesign), `panels/` (one per editor section), `ModuleList`/`ModulePicker`/`RichText`/`RawTree`,
   `ResourceIcon` (all four resource art sizes)/`ItemIcon`/`EffectFieldGrid` (the area-of-effect
-  diagram the game draws on power cores and boosters).
+  diagram the game draws on power cores and boosters) + `EffectFieldChooser` (picking or painting
+  that shape — hand-painted fields must stay **square and odd**, see docs/game-code.md).
 - `src/routes/+page.svelte` — composition only.
 - `scripts/` — `punklib.py` (shared extraction lib) + extractors; **`bun run extract`** regenerates
   everything and validates (`scripts/check-data.ts`). See docs/migration.md.

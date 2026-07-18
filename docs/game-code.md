@@ -276,6 +276,29 @@ to `src/lib/game/module-info.json`:
   sits in the middle cell — the game logs `"Power core has invalid size"` otherwise, and
   `check-data.ts` errors on it.
 
+#### Fields the game never rolled (hand-painted shapes)
+
+The editor lets the player paint an arbitrary field, which works because **the game validates a field
+only where it builds one from a sprite**. `ModuleEffectField`'s constructor is what logs `"Power core
+has invalid size"`, and `Module.RestoreMemento` never goes near it: it assigns `memento.powerCore` /
+`memento.levelModificationField` straight onto the module, exactly as Odin deserialized them. Nothing
+downstream re-checks. Two invariants still have to hold, and neither is enforced by the game:
+
+- **Square.** Every gameplay read goes through `ModuleEffectField.GetPositionsRelative` or
+  `GetValueRelative`, both of which index `fieldData[y * height + x]` — plainly a bug for `width`,
+  which the game gets away with because all seven of its own patterns are 5×5. For `height > width`
+  that expression runs past the end of the array and throws `IndexOutOfRangeException` mid-grid-walk.
+  Equal sides make the bug indistinguishable from correct indexing, which is why `effectFieldProblem`
+  rejects anything else outright rather than merely warning.
+- **Odd.** The module sits at `width / 2, height / 2` in *integer* division, so an even size silently
+  puts it off-centre and the field acts on the wrong slots. Not a crash, just wrong.
+
+Size is otherwise unconstrained: `ModuleEffectFieldWidget.Display` reads `width`/`height` off the
+field and builds its grid to match (and indexes correctly, `i * width + j`), so an oversized core
+draws its own card fine. `ModuleCluster` counts covered slots up to `MainModule.PowerLevel` and stops,
+so a huge field over-delivers nothing and cannot overflow. A 7×7 core has been round-tripped through a
+real save.
+
 ### Item icons
 
 Ingredients, consumables and modules carry their own item art: `Ingredient.iconBig`/`iconSmall`,

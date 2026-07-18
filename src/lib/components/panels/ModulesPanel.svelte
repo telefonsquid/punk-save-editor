@@ -1,20 +1,23 @@
 <script lang="ts">
 	import Button from '../Button.svelte';
-	import ModuleList from '../ModuleList.svelte';
+	import ModuleList, { type FieldKind, type ModuleItem } from '../ModuleList.svelte';
 	import ModulePicker from '../ModulePicker.svelte';
 	import NumberInput from '../NumberInput.svelte';
 	import Section from '../Section.svelte';
 	import { numInput } from '$lib/editor/inputs';
 	import type { EditorState } from '$lib/editor/state.svelte';
-	import { displayName, equippableModules, usesPowerCore } from '$lib/game/data';
+	import { displayName, equippableModules, usesPowerCore, type EffectField } from '$lib/game/data';
 	import {
 		addModule,
 		CONNECTION_SIDES,
 		getModules,
 		removeModule,
 		savedEffectField,
+		setSavedEffectField,
 		type ConnectionKey,
-		type ModuleView
+		type EffectFieldKey,
+		type ModuleView,
+		type NewModuleFields
 	} from '$lib/save/slot';
 
 	let { editor }: { editor: EditorState } = $props();
@@ -57,9 +60,24 @@
 		editor.refresh();
 	}
 
-	function addModuleToVault(id: string) {
+	/** The list's own vocabulary for the two fields, in memento terms. */
+	const MEMENTO_KEY: Record<FieldKind, EffectFieldKey> = {
+		powerCores: 'powerCore',
+		levelFields: 'levelModificationField'
+	};
+
+	/** Rewrites the shape a vault module projects, in the raw tree. */
+	function setField(item: ModuleItem, kind: FieldKind, field: EffectField) {
+		if (!editor.slot) return;
+		const row = moduleRows[item.key as number];
+		setSavedEffectField(editor.slot.vault, row.module, MEMENTO_KEY[kind], field);
+		editor.markCurated();
+		editor.refresh();
+	}
+
+	function addModuleToVault(id: string, fields: NewModuleFields) {
 		if (!editor.slot || !id) return;
-		addModule(editor.slot.vault, id);
+		addModule(editor.slot.vault, id, fields);
 		editor.markCurated();
 		editor.refresh();
 	}
@@ -73,7 +91,7 @@
 </script>
 
 <Section title="Vault · Modules" class="md:col-span-2">
-	<ModuleList items={moduleItems} empty="Vault has no modules.">
+	<ModuleList items={moduleItems} empty="Vault has no modules." onfieldchange={setField}>
 		{#snippet actions(item)}
 			{@const row = moduleRows[item.key as number]}
 			<div class="flex gap-1">

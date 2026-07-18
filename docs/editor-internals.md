@@ -107,13 +107,16 @@ node; the `state_referenced_locally` autofixer warning is intentionally silenced
   maps `Resource Money`/`White`/`Purple` to **Money / Stamina / Gel**. The **ids are save-file
   keys** — only the label changes.
 - `equippableModules()` mirrors the game's `ModuleData.Equippable`: a displayName **and** an icon.
-  Named modules without an icon are embedded enemy parts and never appear in the picker.
+  Named modules without an icon are embedded enemy parts and never appear in the picker. `isOwnable`
+  then drops the three that pass that check but still cannot be owned: the `Embedded` category (SHIP,
+  Crawler — they belong to an entity, not a vault) and any module with no effects, no weapon and no
+  effect field, which is RED EYE alone, an unfinished asset that would do nothing in a grid slot.
 - Consumables: the vault holds a **fixed run of 8 slots**, empty ones carrying a `null` id (the game's
   `Vault()` seeds 8 and `RestoreFromMemento` rebuilds one slot per memento entry). `addConsumable`
   mirrors `Vault.Add` — it fills the first empty slot rather than growing the list. `reorderConsumables`
   reorders the filled slots and keeps the empties trailing, so the slot count is preserved. The UI hides
   the empty slots and offers an add button per absent consumable type instead.
-- Modules: `addModule(vault, id)` appends a `Module+Memento` mirroring `Module.CreateMemento` — all
+- Modules: `addModule(vault, id, fields?)` appends a `Module+Memento` mirroring `Module.CreateMemento` — all
   four connections on, `powerLevel` at the asset's max, and **both** effect fields rebuilt from
   `module-info.json`: the `powerCore` (without it a placed module would provide no core) and the
   `levelModificationField` (without it an added BOOSTER CORE would boost nothing). New **reference**
@@ -121,7 +124,11 @@ node; the `state_referenced_locally` autofixer warning is intentionally silenced
   reusing one would silently repoint an existing reference. `maxOdinId(tree) + 1` supplies fresh ones
   (the memento plus two nodes per field). `savedEffectField(node)` reads a stored field back — the
   module's *rolled* shape, which is what the vault list draws and what the grid walk in `ship.ts`
-  uses. `moduleInfo(id)` exposes the module's colour/resource.
+  uses. `fields` overrides either shape, which is how the picker applies a choice made before Add.
+  `moduleInfo(id)` exposes the module's colour/resource.
+- `setSavedEffectField(vault, module, key, field)` changes the shape a module already in the vault
+  projects. It rewrites the existing `ModuleEffectField` node **in place** rather than swapping it —
+  the node's `$id` is what any `$ref` resolves through, so replacing it would strand those references.
 
 ## Generated data (regenerate on game update)
 
@@ -218,10 +225,27 @@ toggles / power cores / remove, the picker passes an Add button.
 - **POWER and BOOSTERS are pinned to the top** of every grouped module list (`categoryRank`). Both
   categories act on their *neighbours* rather than on themselves, which makes them the modules whose
   placement matters most; the game's own shop order splits them (POWER first, BOOSTERS last).
+- **Within a category, modules sort by resource then name** (`resourceRank`), in the order the player
+  meets them: Stamina, Health, Gel, Caps, Electron, Tech, everything else last. Deliberately *not*
+  `orderInHud` — that is the order the bars stack on screen (Caps first, Health last) and reads as
+  arbitrary in a list. It also keeps each resource's modules adjacent and uniformly coloured.
 - **Effect fields are drawn as diagrams**, the way the game does on a core's card
   (`ModuleEffectFieldWidget`): `EffectFieldGrid.svelte` renders the bool grid in the module's own
-  colour and rings the centre cell. A vault row shows the shape its module actually rolled; a picker
-  row shows every shape the module could roll, labelled "one of N".
+  colour and rings the centre cell. It does three jobs — static diagram, one selectable option, or a
+  paintable canvas — differing only in what wraps the cells.
+- **The shape is selectable** wherever a list passes `onfieldchange` (`EffectFieldChooser.svelte`).
+  The options are `effectFieldChoices`: every *distinct* orientation of every shape the asset can
+  roll. That is not a liberty — `ModuleEffectField.Parse` rolls a mirror per axis and a quarter-turn
+  when it builds a module, so all eight symmetries are fields the player could legitimately have got,
+  and the shape stored in a save is rarely the sprite's base orientation. Symmetric patterns dedupe,
+  which is why POWER CORE's five sprites offer 10 options and BOOSTER CORE's three offer 4.
+  In the vault a pick writes the memento immediately; in the picker it is transient state keyed by
+  module id, applied only when that row's Add is pressed, and dropped when the dialog closes.
+- **Hand-painted fields** sit behind a `Custom…` toggle and an explicit warning, because they leave
+  the set of shapes the game can produce. They work — see the hand-painted-shapes section of
+  game-code.md for exactly why, and for the square-and-odd invariants `effectFieldProblem` enforces
+  (non-square fields make the game's own `y * height + x` indexing read out of bounds and throw).
+  A field that fails validation is simply not written.
 - **Stat lines** (`$lib/game/module-stats.ts`) are the "+2 max Fuel" / "0.2 per shot" numbers. They
   come from two places: `WeaponData` for weapon modules (damage, fire rate, per-shot cost) and the
   decoded `ModuleEffect` list for everything else. Effects are evaluated at the module's *own* asset

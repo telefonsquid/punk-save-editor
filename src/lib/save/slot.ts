@@ -289,59 +289,101 @@ function maxOdinId(root: OdinValue): number {
 	return max;
 }
 
+/** The two `ModuleEffectField` members of a module memento. */
+export const EFFECT_FIELD_KEYS = ['powerCore', 'levelModificationField'] as const;
+export type EffectFieldKey = (typeof EFFECT_FIELD_KEYS)[number];
+
+/** One `ModuleEffectField` node, or null when the module projects none. */
+function effectFieldNode(field: EffectField | null | undefined, allocId: () => number): OdinValue {
+	if (!field) return null;
+	const fieldId = allocId();
+	const arrayId = allocId();
+	return {
+		$type: EFFECT_FIELD_TYPE,
+		$id: fieldId,
+		fieldData: {
+			$type: BOOL_ARRAY_TYPE,
+			$id: arrayId,
+			$0: {
+				$primitiveArray: true,
+				bytesPerElement: 1,
+				data: Uint8Array.from(field.data)
+			}
+		},
+		width: field.width,
+		height: field.height,
+		$types: {
+			width: { e: EntryType.UnnamedInt },
+			height: { e: EntryType.UnnamedInt }
+		}
+	} satisfies OdinNode;
+}
+
+/**
+ * Replaces the shape a module in the vault projects.
+ *
+ * An existing field node is rewritten **in place** rather than swapped out: its
+ * `$id` is what any `$ref` elsewhere in the tree resolves through, so replacing
+ * the node would leave those references pointing at nothing.
+ */
+export function setSavedEffectField(
+	vault: OdinNode,
+	module: ModuleView,
+	key: EffectFieldKey,
+	field: EffectField
+): void {
+	const existing = module[key];
+	if (isNode(existing)) {
+		const array = existing.fieldData as OdinValue;
+		const inner = isNode(array) ? (array.$0 as OdinValue) : null;
+		if (!isPrimitiveArray(inner)) throw new Error(`${key} has no bool array`);
+		inner.data = Uint8Array.from(field.data);
+		existing.width = field.width;
+		existing.height = field.height;
+		return;
+	}
+	let nextId = maxOdinId(vault) + 1;
+	module[key] = effectFieldNode(field, () => nextId++);
+}
+
+/** The shapes a module is created with — its rolled fields, or the asset's first. */
+export type NewModuleFields = Partial<Record<EffectFieldKey, EffectField | null>>;
+
 /**
  * Appends a module to the vault, mirroring what the game stores for one the
  * player picked up (`Module.CreateMemento`). All four connections are enabled so
  * it can be attached anywhere on the grid, and the power level defaults to the
- * asset's maximum. The power core is rebuilt from the extracted sprite grid —
- * without it the module would provide no core at all when placed.
+ * asset's maximum. Both effect fields are rebuilt from the extracted sprite
+ * grids — without its power core the module would provide none at all when
+ * placed, and a BOOSTER CORE without its level field would boost nothing.
+ *
+ * `fields` overrides either shape, which is how the picker applies the
+ * orientation the user chose before pressing Add.
  */
-export function addModule(vault: OdinNode, moduleDataId: string): void {
+export function addModule(vault: OdinNode, moduleDataId: string, fields: NewModuleFields = {}): void {
 	const info = moduleInfo(moduleDataId);
 	// Every node the editor adds claims ids after the highest one in the tree;
 	// each field costs two (the ModuleEffectField and its bool array).
 	let nextId = maxOdinId(vault) + 1;
-
-	/** One `ModuleEffectField` node, or null when the module projects none. */
-	const fieldNode = (field: EffectField | undefined): OdinValue => {
-		if (!field) return null;
-		const fieldId = nextId++;
-		const arrayId = nextId++;
-		return {
-			$type: EFFECT_FIELD_TYPE,
-			$id: fieldId,
-			fieldData: {
-				$type: BOOL_ARRAY_TYPE,
-				$id: arrayId,
-				$0: {
-					$primitiveArray: true,
-					bytesPerElement: 1,
-					data: Uint8Array.from(field.data)
-				}
-			},
-			width: field.width,
-			height: field.height,
-			$types: {
-				width: { e: EntryType.UnnamedInt },
-				height: { e: EntryType.UnnamedInt }
-			}
-		} satisfies OdinNode;
-	};
+	const allocId = () => nextId++;
+	// The game draws a random shape out of each distribution; absent a choice the
+	// editor takes the first, which is one of the draws the game could make.
+	const chosen = (key: EffectFieldKey, fallback: EffectField | undefined) =>
+		key in fields ? fields[key] : fallback;
 
 	const node: OdinNode = {
 		$type: MODULE_MEMENTO_TYPE,
-		$id: nextId++,
+		$id: allocId(),
 		moduleDataId,
 		northConnection: true,
 		eastConnection: true,
 		southConnection: true,
 		westConnection: true,
-		// The game draws a random shape out of each distribution; the editor
-		// takes the first, which is one of the draws the game itself could make.
-		// A BOOSTER CORE without its level field would sit on the grid doing
-		// nothing at all, so both are built here.
-		powerCore: fieldNode(info?.powerCores[0]),
-		levelModificationField: fieldNode(info?.levelFields[0]),
+		powerCore: effectFieldNode(chosen('powerCore', info?.powerCores[0]), allocId),
+		levelModificationField: effectFieldNode(
+			chosen('levelModificationField', info?.levelFields[0]),
+			allocId
+		),
 		powerLevel: info?.powerLevel?.[1] ?? 1,
 		$types: { powerLevel: { e: EntryType.UnnamedInt } }
 	};

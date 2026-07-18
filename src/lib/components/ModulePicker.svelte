@@ -1,6 +1,7 @@
 <script lang="ts">
-	import ModuleList, { type ModuleItem } from './ModuleList.svelte';
-	import { displayName, moduleCategory } from '$lib/game/data';
+	import ModuleList, { type FieldKind, type ModuleItem } from './ModuleList.svelte';
+	import { displayName, moduleCategory, moduleInfo, type EffectField } from '$lib/game/data';
+	import type { NewModuleFields } from '$lib/save/slot';
 
 	let {
 		open = $bindable(false),
@@ -10,11 +11,17 @@
 		open?: boolean;
 		/** Module ids that may be added. */
 		ids: string[];
-		onadd: (id: string) => void;
+		onadd: (id: string, fields: NewModuleFields) => void;
 	} = $props();
 
 	let dialog = $state<HTMLDialogElement | null>(null);
 	let query = $state('');
+
+	// Shape choices made while browsing. They are transient on purpose: nothing
+	// exists to change yet, so a pick only means anything once the row's Add
+	// button turns it into a module. Keyed by module id, dropped when the dialog
+	// closes.
+	let picked = $state<Record<string, Partial<Record<FieldKind, EffectField>>>>({});
 
 	// `showModal()` is what gives the native dialog its focus trap and Esc
 	// handling, and there is no attribute equivalent — so the open state has to
@@ -35,12 +42,37 @@
 					displayName(id).toLowerCase().includes(needle) ||
 					moduleCategory(id).toLowerCase().includes(needle)
 			)
-			.map((id): ModuleItem => ({ key: id, id }));
+			.map((id): ModuleItem => {
+				// Show the shape this row would be added with: the pick if there is
+				// one, else the asset's first candidate — which is exactly what
+				// `addModule` falls back to.
+				const info = moduleInfo(id);
+				const sel = picked[id] ?? {};
+				const shape = (chosen: EffectField | undefined, fallback: EffectField | undefined) =>
+					[chosen ?? fallback].filter((f) => f !== undefined);
+				return {
+					key: id,
+					id,
+					fields: {
+						powerCores: shape(sel.powerCores, info?.powerCores[0]),
+						levelFields: shape(sel.levelFields, info?.levelFields[0])
+					}
+				};
+			});
 	});
+
+	function chooseField(item: ModuleItem, kind: FieldKind, field: EffectField) {
+		if (!item.id) return;
+		picked[item.id] = { ...picked[item.id], [kind]: field };
+	}
 
 	function add(id: string | null) {
 		if (!id) return;
-		onadd(id);
+		const sel = picked[id] ?? {};
+		const fields: NewModuleFields = {};
+		if (sel.powerCores) fields.powerCore = sel.powerCores;
+		if (sel.levelFields) fields.levelModificationField = sel.levelFields;
+		onadd(id, fields);
 		open = false;
 	}
 </script>
@@ -53,6 +85,7 @@
 	onclose={() => {
 		open = false;
 		query = ''; // a stale filter would hide most of the list on reopen
+		picked = {}; // shape picks belong to the browsing session, not the next one
 	}}
 >
 	<div class="flex items-center gap-3 border-b border-zinc-800 px-5 py-3">
@@ -73,7 +106,7 @@
 		</button>
 	</div>
 	<div class="max-h-[70vh] overflow-y-auto px-5 py-3">
-		<ModuleList {items} empty="No module matches that filter.">
+		<ModuleList {items} empty="No module matches that filter." onfieldchange={chooseField}>
 			{#snippet actions(item)}
 				<button
 					type="button"
@@ -86,6 +119,7 @@
 		</ModuleList>
 	</div>
 	<p class="border-t border-zinc-800 px-5 py-2 text-xs text-zinc-600">
-		Added with all four connections and the module's highest power-core capacity.
+		Added with all four connections and the module's highest power-core capacity. Picking a shape
+		here only applies to the module you then add.
 	</p>
 </dialog>

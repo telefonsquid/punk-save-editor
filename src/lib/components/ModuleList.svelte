@@ -10,28 +10,40 @@
 		 * to the asset's *candidate* shapes; a module that already exists in the
 		 * save passes the single shape it rolled (see `savedEffectField`).
 		 */
-		fields?: { powerCores: EffectField[]; levelFields: EffectField[] };
+		fields?: Record<FieldKind, EffectField[]>;
 	}
+
+	/** The two kinds of effect field, named as `ModuleInfo` and `ModuleItem` hold them. */
+	export type FieldKind = 'powerCores' | 'levelFields';
+
+	const KINDS: { key: FieldKind; label: string }[] = [
+		{ key: 'powerCores', label: 'POWERS' },
+		{ key: 'levelFields', label: 'BOOSTS' }
+	];
 </script>
 
 <script lang="ts">
 	import type { Snippet } from 'svelte';
+	import EffectFieldChooser from './EffectFieldChooser.svelte';
 	import EffectFieldGrid from './EffectFieldGrid.svelte';
 	import ItemIcon from './ItemIcon.svelte';
 	import ResourceIcon from './ResourceIcon.svelte';
 	import RichText from './RichText.svelte';
-	import { assets, categoryRank, displayName, moduleInfo } from '$lib/game/data';
+	import { assets, categoryRank, displayName, moduleInfo, resourceRank } from '$lib/game/data';
 	import { moduleStats } from '$lib/game/module-stats';
 
 	let {
 		items,
 		actions,
-		empty = 'No modules.'
+		empty = 'No modules.',
+		onfieldchange
 	}: {
 		items: ModuleItem[];
 		/** Trailing controls for a row (edit fields, an add button). */
 		actions?: Snippet<[ModuleItem]>;
 		empty?: string;
+		/** Supply this to make the effect-field diagrams selectable. */
+		onfieldchange?: (item: ModuleItem, kind: FieldKind, field: EffectField) => void;
 	} = $props();
 
 	/**
@@ -39,6 +51,11 @@
 	 * except for the two core categories, which `categoryRank` pins to the top —
 	 * so weapons/gadgets/ship modules/weapon mods stay separated the way the
 	 * player sees them in-game. A module whose type is missing lands in "OTHER".
+	 *
+	 * Inside a category the resource comes first and the name only breaks ties:
+	 * a player looking for a weapon is choosing which resource to spend long
+	 * before they care what it is called, and it keeps each resource's modules
+	 * adjacent and uniformly coloured.
 	 */
 	const groups = $derived.by(() => {
 		const by: Record<string, { name: string; rank: number; items: ModuleItem[] }> = {};
@@ -49,23 +66,28 @@
 				item
 			);
 		}
+		for (const group of Object.values(by)) {
+			group.items.sort(
+				(a, b) =>
+					resourceRank(moduleInfo(a.id)?.resource) - resourceRank(moduleInfo(b.id)?.resource) ||
+					displayName(a.id).localeCompare(displayName(b.id))
+			);
+		}
 		return Object.values(by).sort((a, b) => a.rank - b.rank || a.name.localeCompare(b.name));
 	});
 
 	/**
-	 * The effect-field diagrams to draw under a row, one entry per kind: its own
-	 * saved shapes when the caller passed them, else the asset's candidates.
+	 * The effect fields to draw under a row, one entry per kind the module's asset
+	 * defines: `shapes` is what it projects now (its own rolled shape when the
+	 * caller passed one, else the asset's candidates) and `candidates` is what it
+	 * could project, which is what the chooser offers.
 	 */
 	function fieldsOf(item: ModuleItem) {
 		const info = moduleInfo(item.id);
-		const fields = item.fields ?? {
-			powerCores: info?.powerCores ?? [],
-			levelFields: info?.levelFields ?? []
-		};
-		return [
-			{ label: 'POWERS', shapes: fields.powerCores },
-			{ label: 'BOOSTS', shapes: fields.levelFields }
-		].filter((kind) => kind.shapes.length > 0);
+		return KINDS.map((kind) => {
+			const candidates = info?.[kind.key] ?? [];
+			return { ...kind, candidates, shapes: item.fields?.[kind.key] ?? candidates };
+		}).filter((kind) => kind.candidates.length > 0);
 	}
 </script>
 
@@ -111,20 +133,30 @@
 						     shape of that area is the most important thing about them —
 						     the game shows the same diagram on their card. More than one
 						     means the module rolls a random shape when it is built. -->
-						{#each fieldsOf(item) as kind (kind.label)}
-							<div class="mt-1.5 flex flex-wrap items-center gap-2">
-								{#each kind.shapes as shape, i (i)}
-									<EffectFieldGrid
-										field={shape}
-										color={info?.color}
-										label="{kind.label} the highlighted slots around it"
-									/>
-								{/each}
-								<span class="text-[0.65rem] tracking-wider text-zinc-500">
-									{kind.label}
-									{#if kind.shapes.length > 1}(one of {kind.shapes.length}){/if}
-								</span>
-							</div>
+						{#each fieldsOf(item) as kind (kind.key)}
+							{#if onfieldchange}
+								<EffectFieldChooser
+									candidates={kind.candidates}
+									value={kind.shapes[0] ?? null}
+									color={info?.color}
+									label={kind.label}
+									onchange={(field) => onfieldchange(item, kind.key, field)}
+								/>
+							{:else}
+								<div class="mt-1.5 flex flex-wrap items-center gap-2">
+									{#each kind.shapes as shape, i (i)}
+										<EffectFieldGrid
+											field={shape}
+											color={info?.color}
+											label="{kind.label} the highlighted slots around it"
+										/>
+									{/each}
+									<span class="text-[0.65rem] tracking-wider text-zinc-500">
+										{kind.label}
+										{#if kind.shapes.length > 1}(one of {kind.shapes.length}){/if}
+									</span>
+								</div>
+							{/if}
 						{/each}
 						{#if stats.length > 0}
 							<div class="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs">

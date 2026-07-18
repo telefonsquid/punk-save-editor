@@ -50,10 +50,18 @@ current save, and commit the regenerated data.
   at runtime; we do the same in `extract-item-icons.py`). White-ColorAsset modules stay white on
   purpose; `Crawler` is authored pre-coloured and has no ColorAsset.
 - **New effect-field patterns** (a `SpriteDistribution` gaining shapes) → flows through: the
-  extractor writes every candidate and the UI labels them "one of N". A module that gains a
-  `levelModificationField` becomes a booster automatically, in both the diagram and `addModule`.
+  extractor writes every candidate and the chooser offers every orientation of each. A module that
+  gains a `levelModificationField` becomes a booster automatically, in the diagram and in `addModule`.
+- **A non-5×5 effect-field sprite** → `check-data` errors (odd-size check). If the game ever ships a
+  *non-square* one it will have fixed the `y * height + x` indexing in `ModuleEffectField`; re-read
+  that method before relaxing `effectFieldProblem`, which the custom-field painter depends on.
 - **`ModuleData.Equippable` semantics** (displayName AND icon) → mirrored by `equippableModules()`;
-  check-data counts equippables so a sudden drop is visible.
+  check-data counts equippables so a sudden drop is visible. `isOwnable` narrows it further and is
+  *not* data-driven in the same way: it hardcodes the `Embedded` category and an "inert module"
+  test that today matches only RED EYE. If the game finishes that asset, the exclusion lapses on its
+  own — but a new decorative category would need adding.
+- **New resource** → sorts last in every module list until it is added to `RESOURCE_ORDER` in
+  `src/lib/game/data.ts` (nothing breaks; the order just stops matching the game's progression).
 - **Save-format changes** → `write(parse(x))` must stay byte-identical on every save file; if the
   Odin reader throws on a new save, see docs/save-format.md before touching the codec.
 - **MonoBehaviour header layout** (used by `punklib.script_class` to read `m_Script` from raw
