@@ -55,33 +55,33 @@ The DLL has the *code*, but designer-authored values (module effect magnitudes, 
 resource metadata) live in Unity `ScriptableObject` assets. Read them with **UnityPy** +
 **TypeTreeGeneratorAPI** (the Mono DLLs give UnityPy the type trees it needs).
 
-Python venv (kept in scratchpad; recreate anywhere):
+Python venv at the repo root (`/.venv`, gitignored — not the scratchpad, whose temp cleaner guts
+site-packages):
 
 ```bash
-python -m venv venv
-venv/Scripts/pip install UnityPy TypeTreeGeneratorAPI
+python -m venv .venv
+.venv/Scripts/pip install UnityPy TypeTreeGeneratorAPI Pillow
 ```
 
-Boilerplate that every extraction script uses:
+**All the shared plumbing lives in `scripts/punklib.py`** — one `PunkAssets` scan of the whole
+`Punk_Data` folder (cross-file `PPtr`s only resolve in a folder-wide environment), the Unity version
+auto-detected from the serialized files, PPtr helpers, and asset classification. Write new probes on
+top of it instead of copying boilerplate:
 
 ```python
-import UnityPy
-from UnityPy.helpers.TypeTreeGenerator import TypeTreeGenerator
-gen = TypeTreeGenerator("6000.3.4f1")
-gen.load_local_dll_folder(str(GAME_DATA / "Managed"))
-for f in sorted(GAME_DATA.glob("*.assets")) + sorted(GAME_DATA.glob("level*")) + [GAME_DATA/"globalgamemanagers"]:
-    if not f.is_file() or f.suffix == ".resS": continue
-    env = UnityPy.load(str(f)); env.typetree_generator = gen
-    for obj in env.objects:
-        if obj.type.name != "MonoBehaviour": continue
-        data = obj.read(check_read=False)          # may throw; wrap in try/except
-        d = data.__dict__                          # field name -> value
+import punklib
+assets = punklib.PunkAssets()          # or PunkAssets(Path(".../Punk_Data"))
+for a in assets.assets():              # every MonoBehaviour with a string `id`
+    print(a.id, a.cls, a.category, a.d.get("displayName"))
 ```
 
-Identifying an asset by its fields (there's no clean type filter): a `ScriptableObject` with a string
-`id` field is one of the game's identifiable assets. Discriminate by which fields it has —
-`moduleType` → `ModuleData`; `isShared`+`lowTreshold` → `Resource`; `canBePowered`+`gridPlacementRectSize`
-→ `ModuleSlotType`; `displayName` present → user-facing.
+Assets are identified **by their C# class name** (`a.cls`: `ModuleData`, `WeaponModuleData`,
+`Resource`, `Ingredient`, …), not by duck-typing fields. One wrinkle made that non-trivial: with a
+TypeTreeGenerator attached, UnityPy misparses the standard `m_Script` PPtr (missing 4-byte alignment
+after `m_Enabled` — values come back shifted by 24 bits), so `punklib.script_class` reads the
+pointer straight out of the object's raw header bytes (offset 16, a layout stable across Unity
+versions) and resolves it against a MonoScript map. Classes punklib doesn't know are warned about
+loudly — see docs/migration.md.
 
 ### Gotcha: Odin-serialized assets
 
@@ -90,12 +90,12 @@ Unity type tree — it's an Odin binary blob in `serializationData.SerializedByt
 references pulled out into `serializationData.ReferencedUnityObjects` (a `PPtr` list). To read those:
 
 1. In Python, base64 the `SerializedBytes` and resolve each `ReferencedUnityObjects` entry to its
-   `m_Name`/`id` (see `scripts/extract-module-caps.py`).
+   `m_Name`/`id` (see `scripts/extract-module-effects.py`).
 2. In TS, decode the bytes with **`OdinBinaryReader.parseMembers`** (not `parse` — asset streams are a
    bare member sequence). External references decode to `{$ext: index}`; look the index up in the
-   dumped `refs` array to get the real object id (see `scripts/extract-module-caps.ts`).
+   dumped `refs` array to get the real object id (see `scripts/extract-module-effects.ts`).
 
-This is exactly the two-step pipeline that produces `src/lib/save/module-caps.json`.
+This is exactly the two-step pipeline that produces `src/lib/game/module-effects.json`.
 
 ## 3. Subsystem map (runtime → save)
 
@@ -175,7 +175,7 @@ the steady-state rate, not what you'd observe right after taking damage.
 `ModifyResourceCapacity` and `ResourceAutoChargeEffect` are two of eight `ModuleEffect` subclasses,
 and all eight share one shape: a `FloatSeries` magnitude evaluated at level-1, usually a `Resource`
 reference, and a few flat scalars. Only the field *names* differ, which is why
-`scripts/extract-module-caps.ts` decodes them from a single table rather than case by case:
+`scripts/extract-module-effects.ts` decodes them from a single table rather than case by case:
 
 | C# type | kind | magnitude field | notes |
 | --- | --- | --- | --- |
@@ -214,11 +214,11 @@ rich-text section in editor-internals.md for how the editor renders it.
 
 Module/consumable/ingredient/resource ids in saves are Unity asset ids (GUIDs or `"Resource X"`
 strings). `scripts/extract-asset-names.py` dumps every identifiable asset's `id → {category,
-assetName, displayName, …}` into `src/lib/save/asset-names.json`, surfaced through
-`slot.ts:displayName()`. Regenerate it (and `module-caps.json`) whenever the game updates.
+assetName, displayName, …}` into `src/lib/game/asset-names.json`, surfaced through
+`displayName()` in `src/lib/game/data.ts`. Regenerate it (and `module-effects.json`) whenever the game updates.
 
 `Resource` assets have **no `displayName`**, and three of their ids are artist codenames rather than
-player-facing words. `slot.ts:RESOURCE_LABELS` maps `Resource Money → Money`,
+player-facing words. `RESOURCE_LABELS` in `src/lib/game/data.ts` maps `Resource Money → Money`,
 `Resource White → Stamina`, `Resource Purple → Gel`; everything else just loses the `Resource `
 prefix. The ids remain the save-file keys.
 
@@ -227,7 +227,7 @@ prefix. The ids remain the save-file keys.
 Each `Resource` ScriptableObject has a `Sprite icon` (the little HUD glyph for health/fuel/etc.).
 `scripts/extract-resource-icons.py` loads the whole `Punk_Data` folder into one UnityPy environment
 (so the cross-file sprite `PPtr` resolves), reads each icon to a PIL image via `sprite.image`, and
-writes an `id → data-URI PNG` map to `src/lib/save/resource-icons.json`. They're tiny pixel-art (~8–13
+writes an `id → data-URI PNG` map to `src/lib/game/resource-icons.json`. They're tiny pixel-art (~8–13
 px), so inlining them as base64 keeps the editor self-contained (the `ResourceIcon.svelte` component
 renders them with `image-rendering: pixelated`). Regenerate on game update.
 
@@ -241,7 +241,7 @@ odd one out (`BOOSTER CORE`, green) has a ColorAsset no resource claims. Most mo
 `Resource White` (`#ffffff`), the neutral colour.
 
 `scripts/extract-module-info.py` writes this plus two things needed to *build* a module from scratch,
-to `src/lib/save/module-info.json`:
+to `src/lib/game/module-info.json`:
 
 - `powerLevel: [min, max]` from the asset's `MinMaxInt`. This is the **maximum number of power cores
   the module can accept** when expanding its grid (`HoveredModuleInfo` renders it as
@@ -259,7 +259,7 @@ Ingredients, consumables and modules carry their own item art: `Ingredient.iconB
 even for the Odin-serialized `ModuleData`). `scripts/extract-item-icons.py` loads the whole folder
 into one env (cross-file sprite PPtrs again), discriminates the three asset kinds by their fields
 (`moduleType` → module, `maxCount`+`icon` → consumable, `iconBig`/`iconSmall` → ingredient), and
-writes an `id → data-URI PNG` map to `src/lib/save/item-icons.json`. This art is larger than the HUD
+writes an `id → data-URI PNG` map to `src/lib/game/item-icons.json`. This art is larger than the HUD
 glyphs, so each sprite's long edge is capped to 64 px (nearest-neighbour) to keep the JSON checkin-
 sized. Rendered by `components/ItemIcon.svelte` (pixelated); assets with no sprite assigned (a few
 modules, e.g. `Weapon_Fly`) are simply absent from the map. Regenerate on game update.
