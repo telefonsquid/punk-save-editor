@@ -20,7 +20,10 @@ export default defineConfig({
 			},
 			adapter: adapter({
 				fallback: 'index.html'
-			})
+			}),
+			vitePlugin: {
+				inspector: true
+			}
 		})
 	]
 });

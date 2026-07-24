@@ -1,3 +1,227 @@
 @import 'tailwindcss';
 @plugin '@tailwindcss/forms';
 @plugin '@tailwindcss/typography';
+
+/* PUNK uses TWO pixel faces, and which one goes where is not a stylistic call —
+   it mirrors the game. Both ship inside the Unity build as TextMeshPro SDF
+   atlases (`8-bit-hud SDF` and `Font_Minimum`); an SDF atlas is useless to a
+   browser, so we serve the original TrueType each was generated from.
+
+   `Font_Minimum` reports its family as "000webfont", which reads like a
+   converter artefact but is the actual typeface name: "000webfont" by
+   memesbruh03, released 2017-12-22, 598 glyphs, dafont lists it as
+   public domain / GPL / OFL. It is the font doing nearly all the work in the
+   game — every button, label, number and paragraph (see text_sample.png,
+   button.png, number_input.png). Chamfered corners on the round glyphs are how
+   you recognise it.
+
+   `8-bit HUD` by lSPl (Seba Perez), SIL OFL 1.1 (static/fonts/OFL.txt), is the
+   narrower job: module titles and other display headings.
+
+   Both are `font-display: block` — swapping in a fallback would reflow every
+   pixel-snapped size and flash the wrong metrics. */
+@font-face {
+	font-family: '000webfont';
+	src: url('/fonts/000webfont.woff2') format('woff2'),
+		url('/fonts/000webfont.ttf') format('truetype');
+	font-weight: normal;
+	font-style: normal;
+	font-display: block;
+}
+
+@font-face {
+	font-family: '8-bit HUD';
+	src: url('/fonts/8-bit-hud.woff2') format('woff2'),
+		url('/fonts/8-bit-hud.ttf') format('truetype');
+	font-weight: normal;
+	font-style: normal;
+	font-display: block;
+}
+
+@theme {
+	/* Sampled straight out of static/design-references, not eyeballed. The game
+	   is warm-black throughout — every grey has red in it, so stock Tailwind
+	   zinc/neutral reads cold and wrong next to it. */
+	--color-void: #000000; /* the page. pure black, as the game is */
+	--color-surface: #191512; /* card interior (module_card.png) */
+	--color-edge: #665c51; /* idle border on buttons and tabs */
+	--color-edge-dim: #3a342d; /* quieter border (number_input.png) */
+	--color-ink: #fefefe; /* labels, values, anything you read first */
+	--color-muted: #7c6654; /* body copy, hints, disabled */
+	--color-accent: #fe9e20; /* THE interaction colour: hover, focus, active */
+	--color-amber: #a87328; /* emphasis inside a sentence */
+	--color-danger: #85291b; /* warnings, destructive actions */
+
+	/* `ui` is the default for everything; `title` is for display headings only. */
+	--font-ui: '000webfont', ui-monospace, monospace;
+	--font-title: '8-bit HUD', ui-monospace, monospace;
+
+	/* Both faces are pixel art, so a size that doesn't land the brick on a whole
+	   pixel blurs the whole face. The two grids are different and neither is
+	   negotiable — each was read off the font's own outline coordinates:
+
+	     000webfont  em = 16 bricks  ->  font-size must be a multiple of 16
+	                 cap  =  5 bricks (0.3125em), advance = 7 bricks (0.4375em)
+	     8-bit HUD   em =  5 bricks  ->  font-size must be a multiple of 5
+	                 cap  =  6 bricks (1.2em)
+
+	   That is why the two scales below look so unlike each other: 000webfont
+	   needs a 48px font-size to draw a 15px capital, which is exactly the cap
+	   height measured in text_sample.png. Line heights follow the game's own
+	   spacing (35px between baselines at cap 15). */
+	--text-ui-xs: 32px;
+	--text-ui-xs--line-height: 24px;
+	--text-ui-sm: 48px;
+	--text-ui-sm--line-height: 35px;
+	--text-ui-md: 64px;
+	--text-ui-md--line-height: 46px;
+	--text-ui-lg: 80px;
+	--text-ui-lg--line-height: 58px;
+
+	/* Caps sit at 1.2x the font-size here, so these run visually larger than the
+	   ui sizes at the same number. Titles only. */
+	--text-hud-xs: 10px;
+	--text-hud-xs--line-height: 15px;
+	--text-hud-sm: 15px;
+	--text-hud-sm--line-height: 25px;
+	--text-hud-md: 20px;
+	--text-hud-md--line-height: 30px;
+	--text-hud-lg: 25px;
+	--text-hud-lg--line-height: 35px;
+	--text-hud-xl: 30px;
+	--text-hud-xl--line-height: 45px;
+
+	/* 8-bit HUD is a narrow face and the game letterspaces its titles. Do NOT
+	   reach for these with 000webfont: every glyph in it already carries two
+	   empty bricks of right sidebearing (advance 7, ink 5), so it letterspaces
+	   itself and anything added on top reads as gappy. */
+	--tracking-hud: 0.1em;
+	--tracking-hud-wide: 0.2em;
+
+	/* 000webfont hangs its capital low in the em box, so a box that only pads
+	   evenly ends up with the label sagging. The cure is extra padding-bottom,
+	   and the amount that actually centres the cap under `punk-cap` was found by
+	   rendering and measuring, not by the raw font metric (the collapsed line box
+	   shifts things the metric alone doesn't predict): 0.23em lands the cap dead
+	   centre in a button.
+
+	   Rounded to whole pixels because it lands on a control's edge: left as a raw
+	   em it antialiases every frame bar. */
+	--cap-fix: round(0.23em, 1px);
+}
+
+@layer base {
+	html {
+		background-color: var(--color-void);
+	}
+
+	body {
+		background-color: var(--color-void);
+		color: var(--color-ink);
+		font-family: var(--font-ui);
+		font-size: var(--text-ui-sm);
+		line-height: 30px;
+		/* 000webfont already carries two empty bricks of gap per glyph (advance 7,
+		   ink 5). Pull one brick back so the text reads tighter, like in game.
+		   One brick is 0.0625em, which lands on a whole pixel at every legal size,
+		   so it stays crisp. Do NOT reach for --tracking-hud with this face. */
+		letter-spacing: -0.0425em;
+	}
+
+	/* Every sprite in this app is pixel art shown at an integer scale, and the
+	   browser's default smoothing would undo that. See lib/game/pixel-icon.ts. */
+	img {
+		image-rendering: pixelated;
+	}
+}
+
+@utility punk-frame {
+	/* PUNK's box. Every interactive control in the game wears this exact frame —
+	   buttons, number fields, dropdowns — and two details are what make it read
+	   as the game's rather than as a generic pixel outline:
+
+	     1. It is UNEVEN. Top, left and right are one game pixel; the bottom is
+	        two, so the control sits on its bottom edge like a physical key.
+	     2. Every CORNER PIXEL IS MISSING. Each edge stops one pixel short of the
+	        next, leaving all four corners open.
+	     3. The bottom bar being two pixels tall does NOT mean it loses two
+	        pixels at each end — only its LOWER row is cut back. Its upper row
+	        runs the full width, because the side bars come all the way down to
+	        it. Read straight off number_input.png (a 4x capture): the run at
+	        y=57..60 spans x=5..77 edge to edge, while y=61..64 spans x=8..73.
+
+	   A CSS `border` can express none of that, so the frame is four background
+	   bars. Order is top / bottom / left / right and must stay in step across
+	   background-image, -size and -position. Point 3 lives in the side bars'
+	   height: they stop 1u short of the bottom, not 2u.
+
+	   Callers set `--frame` to recolour it (usually on :hover) and may override
+	   `--u`. Measured off button.png and number_input.png, both of which are
+	   ~3.5x captures whose bars come out at 3-4 device pixels; the game's
+	   cap-height-to-frame ratio is 5:1 and our capital is 15px, so one game
+	   pixel is 3 of ours. */
+	--u: 3px;
+	--frame: var(--color-edge);
+	/* The interior colour. Left transparent so the open corners really are
+	   see-through (the page or artwork shows through the four cut pixels);
+	   controls that want a filled body set this to their fill. It is a
+	   background layer, not `background-color`, precisely so it can stop short
+	   of the corners instead of painting them. */
+	--frame-fill: transparent;
+
+	background-image: linear-gradient(var(--frame), var(--frame)),
+		linear-gradient(var(--frame), var(--frame)), linear-gradient(var(--frame), var(--frame)),
+		linear-gradient(var(--frame), var(--frame)),
+		linear-gradient(var(--frame-fill), var(--frame-fill));
+	background-repeat: no-repeat;
+	background-size:
+		calc(100% - 2 * var(--u)) var(--u),
+		calc(100% - 2 * var(--u)) calc(2 * var(--u)),
+		var(--u) calc(100% - 2 * var(--u)),
+		var(--u) calc(100% - 2 * var(--u)),
+		calc(100% - 2 * var(--u)) calc(100% - 3 * var(--u));
+	background-position:
+		var(--u) 0,
+		var(--u) 100%,
+		0 var(--u),
+		100% var(--u),
+		var(--u) var(--u);
+}
+
+@utility punk-cap {
+	/* Collapses the line box onto the capital, so a control's height is set by
+	   its padding and the ink it actually shows rather than by 000webfont's very
+	   tall em box. Pair it with `padding-block: X calc(X + var(--cap-fix))` —
+	   the pair is what makes the label sit in the middle. */
+	line-height: 0.3125em;
+}
+
+@utility punk-title-shadow {
+	/* 8-bit HUD headings in game carry a hard one-pixel offset copy to their
+	   right — no blur, no vertical offset, just an almost-black drop that lifts
+	   the title off the card (module_card.png). */
+	text-shadow: 3px 0 0 #050403;
+}
+
+@utility punk-outlined {
+	/* A one-pixel black keyline in all eight directions, for text that has to
+	   stay readable on top of moving artwork (the title screen's subtitle sits
+	   over the logo's echo tunnel).
+
+	   `-webkit-text-stroke` would be the obvious tool and is wrong here: it
+	   rounds its joins, so on a pixel face it sands the corners off every glyph.
+	   Eight shadows keep the keyline square.
+
+	   The offset is 0.0625em = 1/16 em, which is exactly one brick of
+	   000webfont — so at any legal size (a multiple of 16px) the keyline is a
+	   whole number of pixels and stays crisp. */
+	text-shadow:
+		0.0625em 0 0 var(--color-void),
+		-0.0625em 0 0 var(--color-void),
+		0 0.0625em 0 var(--color-void),
+		0 -0.0625em 0 var(--color-void),
+		0.0625em 0.0625em 0 var(--color-void),
+		-0.0625em 0.0625em 0 var(--color-void),
+		0.0625em -0.0625em 0 var(--color-void),
+		-0.0625em -0.0625em 0 var(--color-void);
+}
