@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { resourceArt, resourceLabel } from '$lib/game/data';
-	import { iconStyle } from '$lib/game/pixel-icon';
+	import { tintedIconStyle } from '$lib/game/pixel-icon';
 
 	// One ship-resource tank drawn the way the game's HUD draws it (ship-resources.png):
 	// a run of unit shapes, the full ones bright, the rest a hollow outline. The two
@@ -68,7 +68,7 @@
 			: (art?.barColorEmpty ?? art?.color ?? '#665c51');
 		// Mask so the shared white-alpha shape takes the tint, exactly as the game
 		// multiplies the unit colour over the sprite.
-		return `${iconStyle(src, scale)} background-color: ${color}; mask: url(${src}) center / 100% 100%; -webkit-mask: url(${src}) center / 100% 100%;`;
+		return tintedIconStyle(src, scale, color);
 	}
 
 	function commit(i: number) {

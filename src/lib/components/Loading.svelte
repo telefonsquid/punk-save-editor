@@ -29,14 +29,14 @@
 
 	.cells {
 		display: flex;
-		gap: calc(2 * var(--u, 3px));
+		gap: calc(2 * var(--u));
 	}
 
 	/* Each cell is a small square in the game's control frame, lit to the accent as
 	   the wave passes and dimming back to the quiet edge colour. */
 	.cell {
-		width: calc(6 * var(--u, 3px));
-		height: calc(6 * var(--u, 3px));
+		width: calc(6 * var(--u));
+		height: calc(6 * var(--u));
 		background-color: var(--color-edge-dim);
 		animation: cell-pulse 1s ease-in-out infinite;
 	}
@@ -49,7 +49,7 @@
 		}
 		40% {
 			background-color: var(--color-accent);
-			transform: translateY(calc(-2 * var(--u, 3px)));
+			transform: translateY(calc(-2 * var(--u)));
 		}
 	}
 

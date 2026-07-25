@@ -69,13 +69,12 @@
 		   width so it runs on past the last tab, with a short lead-in on the left
 		   so it also shows before the first tab. */
 		width: 100%;
-		border-bottom: var(--u, 3px) solid var(--color-edge);
-		padding-inline-start: calc(4 * var(--u, 3px));
-		gap: calc(6 * var(--u, 3px));
+		border-bottom: var(--u) solid var(--color-edge);
+		padding-inline-start: calc(4 * var(--u));
+		gap: calc(6 * var(--u));
 	}
 
 	.punk-tab {
-		--u: 3px;
 		--tab-frame: var(--color-edge);
 		position: relative;
 		color: var(--color-ink);

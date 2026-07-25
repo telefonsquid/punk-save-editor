@@ -52,11 +52,10 @@
 		font-family: var(--font-title);
 	}
 
-	/* The module tooltip's own shell: warm near-black a shade below the surface,
-	   square corners, the flat grey edge sampled off module_card.png. Matches the
-	   cards this panel sits beside. */
+	/* The module tooltip's own shell (see --color-card in layout.css): square
+	   corners and the flat grey edge, matching the cards this panel sits beside. */
 	.punk-section {
-		background-color: #120f0c;
-		border: 2px solid rgb(48, 40, 34);
+		background-color: var(--color-card);
+		border: 2px solid var(--color-card-edge);
 	}
 </style>

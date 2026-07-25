@@ -30,8 +30,7 @@
 </footer>
 
 <style>
-	/* Sits on the same rule the tab strip uses, so the page closes the way its
-	   sections divide. */
+	/* Quiet strip of links at the very bottom, pushed clear of the content. */
 	.punk-footer {
 		margin-top: 4rem;
 		padding: 1.5rem 1.5rem 2rem;

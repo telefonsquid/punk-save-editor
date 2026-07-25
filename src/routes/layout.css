@@ -66,6 +66,14 @@
 	--color-accent: #fe9e20; /* THE interaction colour: hover, focus, active */
 	--color-amber: #a87328; /* emphasis inside a sentence */
 	--color-danger: #85291b; /* warnings, destructive actions */
+	--color-card: #120f0c; /* the module tooltip slab, a shade below the surface (module_card.png) */
+	--color-card-edge: #302822; /* the tooltip's flat grey edge, sampled off the same capture */
+
+	/* One game pixel. The game's cap-height-to-frame ratio is 5:1 and our
+	   capital is 15px, so one game pixel is 3 of ours. Everything sized against
+	   the game's own captures (frames, tabs, loading cells) counts in this unit;
+	   controls may override it locally to redraw at another scale. */
+	--u: 3px;
 
 	/* `ui` is the default for everything; `title` is for display headings only;
 	   `desc` is the DOS face, only for module descriptions (the one lowercase
@@ -171,11 +179,15 @@
 		color: var(--color-ink);
 		font-family: var(--font-ui);
 		font-size: var(--text-ui-sm);
+		/* Deliberately tighter than the 35px the ui-sm token documents: body copy
+		   sits on a denser rhythm than a standalone label, and 30px is what read
+		   right against the game captures. Standalone `text-ui-sm` text gets the
+		   token's 35px. */
 		line-height: 30px;
 		/* 000webfont already carries two empty bricks of gap per glyph (advance 7,
-		   ink 5). Pull one brick back so the text reads tighter, like in game.
-		   One brick is 0.0625em, which lands on a whole pixel at every legal size,
-		   so it stays crisp. Do NOT reach for --tracking-hud with this face. */
+		   ink 5). Pull part of that back so the text reads tighter, like in game.
+		   A whole brick (0.0625em) overshoots — this value was set by eye, about
+		   two thirds of a brick. Do NOT reach for --tracking-hud with this face. */
 		letter-spacing: -0.0425em;
 	}
 
@@ -213,11 +225,9 @@
 	   height: they stop 1u short of the bottom, not 2u.
 
 	   Callers set `--frame` to recolour it (usually on :hover) and may override
-	   `--u`. Measured off button.png and number_input.png, both of which are
-	   ~3.5x captures whose bars come out at 3-4 device pixels; the game's
-	   cap-height-to-frame ratio is 5:1 and our capital is 15px, so one game
-	   pixel is 3 of ours. */
-	--u: 3px;
+	   `--u` (the game pixel, defined on :root). Measured off button.png and
+	   number_input.png, both of which are ~3.5x captures whose bars come out at
+	   3-4 device pixels. */
 	--frame: var(--color-edge);
 	/* The interior colour. Left transparent so the open corners really are
 	   see-through (the page or artwork shows through the four cut pixels);
@@ -265,6 +275,26 @@
 	   blur, just an almost-black offset that lifts the text off the card, the same
 	   trick the titles use (see punk-title-shadow). */
 	text-shadow: 1px 1px 0 #050403;
+}
+
+@utility punk-hud-num {
+	/* An editable number in the HUD digit face, shared by every number field:
+	   no chrome of its own, no browser spinner (vector chrome that cannot be
+	   pixel art), and the font's native spacing — the body's negative tracking
+	   would blur 8-bit HUD. Also clears @tailwindcss/forms' default border and
+	   white fill, which would paint over whatever frame the control draws. */
+	font-family: var(--font-title);
+	letter-spacing: normal;
+	background-color: transparent;
+	border: 0;
+	transition: none;
+	appearance: textfield;
+	-moz-appearance: textfield;
+	&::-webkit-outer-spin-button,
+	&::-webkit-inner-spin-button {
+		appearance: none;
+		margin: 0;
+	}
 }
 
 @utility punk-group-title {

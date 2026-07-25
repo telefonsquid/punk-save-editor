@@ -19,28 +19,18 @@
 	let { class: klass = 'w-24', ...rest }: HTMLInputAttributes = $props();
 </script>
 
-<input type="number" class="punk-num punk-frame text-center {klass}" {...rest} />
+<input type="number" class="punk-num punk-frame punk-hud-num text-center {klass}" {...rest} />
 
 <style>
 	.punk-num {
-		/* Fill the body, leave the frame's cut corners transparent. @tailwindcss/forms
-		   paints inputs solid white by default, which would show through the four cut
-		   corners the fill layer stops short of — so the element's own background has
-		   to be cleared and the body colour drawn as the frame's inset fill instead. */
-		background-color: transparent;
+		/* punk-hud-num clears the element's own background, which matters here:
+		   a solid fill would show through the four cut corners punk-frame leaves
+		   open, so the body colour is drawn as the frame's inset fill instead. */
 		--frame-fill: var(--color-void);
 		--frame: var(--color-edge-dim);
 
-		font-family: var(--font-title);
 		font-size: 14px;
-		/* 8-bit HUD is not the self-spacing face 000webfont is, so the body's
-		   negative letter-spacing would blur it. Reset to the font's own metrics. */
-		letter-spacing: normal;
 		color: var(--color-muted);
-		/* @tailwindcss/forms gives every input a 1px border. Here that border is
-		   a closed rectangle drawn straight over the four corners punk-frame just
-		   cut open, so it has to go. */
-		border: 0;
 		/* Pin the box to the reference's 14u and let a full-height line-height sit
 		   the centred digits in the middle of it. */
 		height: calc(14 * var(--u));
@@ -49,7 +39,6 @@
 		   single game pixel of bottom padding lifts the digits back to centre. */
 		padding-block: 0 var(--u);
 		padding-inline: calc(3 * var(--u));
-		transition: none;
 	}
 
 	/* Hover recolours only the outline — the value holds its colour. */
@@ -61,18 +50,5 @@
 	.punk-num:focus {
 		--frame: var(--color-ink);
 		outline: none;
-	}
-
-	/* Spinner arrows are vector chrome the browser draws at whatever size it
-	   likes — there is no way to make them pixel art, so they go. */
-	.punk-num::-webkit-outer-spin-button,
-	.punk-num::-webkit-inner-spin-button {
-		appearance: none;
-		margin: 0;
-	}
-
-	.punk-num {
-		appearance: textfield;
-		-moz-appearance: textfield;
 	}
 </style>

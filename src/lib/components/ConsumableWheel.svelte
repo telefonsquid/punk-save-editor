@@ -180,7 +180,7 @@
 							<input
 								type="number"
 								min="0"
-								class="count-num"
+								class="count-num punk-hud-num"
 								bind:this={countInputs[i]}
 								value={c.amount}
 								oninput={numInput(editor, c.node, 'amount', {
@@ -365,11 +365,9 @@
 		   slot no matter how many digits the amount has. */
 		field-sizing: content;
 		min-width: 1ch;
-		background-color: transparent;
-		border: 0;
 		padding: 0;
 		text-align: right;
-		font: inherit;
+		font-size: inherit;
 		color: inherit;
 	}
 
@@ -379,16 +377,5 @@
 		   accent recolour is the only editing cue this box needs. */
 		box-shadow: none;
 		color: var(--color-accent);
-	}
-
-	.count-num::-webkit-outer-spin-button,
-	.count-num::-webkit-inner-spin-button {
-		appearance: none;
-		margin: 0;
-	}
-
-	.count-num {
-		appearance: textfield;
-		-moz-appearance: textfield;
 	}
 </style>

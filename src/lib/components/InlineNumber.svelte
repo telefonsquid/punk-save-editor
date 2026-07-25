@@ -15,22 +15,16 @@
 	}: Omit<HTMLInputAttributes, 'size'> & { size?: 'md' | 'sm' } = $props();
 </script>
 
-<input type="number" class="punk-inline-num punk-inline-num-{size} {klass}" {...rest} />
+<input type="number" class="punk-inline-num punk-hud-num punk-inline-num-{size} {klass}" {...rest} />
 
 <style>
 	.punk-inline-num {
-		background-color: transparent;
-		border: 0;
 		padding: 0;
-		font-family: var(--font-title);
-		/* 8-bit HUD carries its own spacing; the body's negative tracking would blur it. */
-		letter-spacing: normal;
 		text-align: right;
 		color: var(--color-ink);
 		/* Grow and shrink to the digits so the icon sits right up against the number. */
 		field-sizing: content;
 		min-width: 1ch;
-		transition: none;
 	}
 
 	/* Two HUD sizes: the big counter, and a quieter one for the inventory strip. */
@@ -47,16 +41,5 @@
 		outline: none;
 		box-shadow: none;
 		color: var(--color-accent);
-	}
-
-	.punk-inline-num::-webkit-outer-spin-button,
-	.punk-inline-num::-webkit-inner-spin-button {
-		appearance: none;
-		margin: 0;
-	}
-
-	.punk-inline-num {
-		appearance: textfield;
-		-moz-appearance: textfield;
 	}
 </style>

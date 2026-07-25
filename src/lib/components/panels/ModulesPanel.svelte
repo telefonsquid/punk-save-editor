@@ -233,13 +233,13 @@
 		}
 	}
 
-	/* The card itself: the game's module tooltip — a warm near-black slab a shade
-	   below the surface so it recedes from the panel, square-cornered, with the
-	   flat grey edge sampled straight off module_card.png (rgb 48 40 34). */
+	/* The card itself: the game's module tooltip (see --color-card in
+	   layout.css) — a slab a shade below the surface so it recedes from the
+	   panel, square-cornered, with the flat grey edge. */
 	.module-card {
 		position: relative;
-		background-color: #120f0c;
-		border: 2px solid rgb(48, 40, 34);
+		background-color: var(--color-card);
+		border: 2px solid var(--color-card-edge);
 		padding: 1rem 1.25rem;
 	}
 

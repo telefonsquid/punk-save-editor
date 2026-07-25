@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { resourceArt, resourceLabel } from '$lib/game/data';
-	import { iconStyle } from '$lib/game/pixel-icon';
+	import { iconStyle, tintedIconStyle } from '$lib/game/pixel-icon';
 
 	// One component for every size the game draws a resource at (ripped by
 	// scripts/extract-resource-icons.py — see ResourceArt for what each is):
@@ -41,7 +41,7 @@
 			role="img"
 			aria-label={labeled ? resourceLabel(id) : undefined}
 			aria-hidden={labeled ? undefined : 'true'}
-			style="{iconStyle(src, scale)} background-color: {art.color}; mask: url({src}) center / 100% 100%;"
+			style={tintedIconStyle(src, scale, art.color)}
 		></span>
 	{:else}
 		<img {src} alt={labeled ? resourceLabel(id) : ''} style={iconStyle(src, scale)} />

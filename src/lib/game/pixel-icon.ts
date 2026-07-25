@@ -49,3 +49,15 @@ export function iconStyle(dataUri: string, scale: number): string {
 	if (!size) return base;
 	return `${base} width: ${size.width * s}px; height: ${size.height * s}px;`;
 }
+
+/**
+ * `iconStyle` plus the tint recipe for the shared sprites: the sprite becomes a
+ * mask and the element fills with `color`, the same multiply the game does.
+ * Both mask properties on purpose — older WebKitGTK (still shipped on some
+ * Linux distros) only honors the -webkit- one, and without it the tinted
+ * variants paint as solid colour rectangles.
+ */
+export function tintedIconStyle(dataUri: string, scale: number, color: string): string {
+	const mask = `url(${dataUri}) center / 100% 100%`;
+	return `${iconStyle(dataUri, scale)} background-color: ${color}; mask: ${mask}; -webkit-mask: ${mask};`;
+}

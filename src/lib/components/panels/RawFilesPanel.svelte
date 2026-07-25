@@ -62,8 +62,8 @@
 	   sits under: warm near-black, square corners, the flat grey edge. The "at your
 	   own risk" warning lives in the title, so the frame need not shout. */
 	.raw-panel {
-		background-color: #120f0c;
-		border: 2px solid rgb(48, 40, 34);
+		background-color: var(--color-card);
+		border: 2px solid var(--color-card-edge);
 	}
 
 	/* The card's own heading, in the HUD title face like every other section title. */
