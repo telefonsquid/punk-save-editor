@@ -26,6 +26,9 @@ rediscovering it:
   `$state.raw` rule, the save/game/editor layer split, generated-data pipelines, in-browser e2e.
 - **[docs/migration.md](../../../docs/migration.md)** — the game-update runbook: `bun run extract`,
   what every warning means, known blast radii.
+- **[docs/design.md](../../../docs/design.md)** — the design system: the three game fonts and their
+  pixel grids, the palette tokens, the game pixel `--u`, integer-scaled art, the shared `punk-*`
+  utilities, and the `.crt-screen` scroller traps. Read before any styling work.
 
 ## Golden rules (violating these corrupts saves or crashes the game)
 

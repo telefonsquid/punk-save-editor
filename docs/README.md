@@ -9,6 +9,7 @@ Reverse-engineering notes and architecture for this editor. Start with the
 | [game-code.md](game-code.md) | How to get back into the game itself: decompiling `Punk.Main.dll` (ilspycmd), extracting ScriptableObject data (UnityPy), and a subsystem map (resources/tanks, modules/grid, capacity math) with class citations. |
 | [editor-internals.md](editor-internals.md) | How the SvelteKit app is wired: the `$state.raw` save-tree rule that saves depend on, the save/game/editor layer split, generated-data pipelines, and in-browser e2e testing. |
 | [migration.md](migration.md) | The game-update runbook: `bun run extract`, what every warning means, and the known blast radii of an update. |
+| [design.md](design.md) | The design system: the three game fonts and their pixel grids, the palette tokens, the game pixel `--u`, integer-scaled art, the shared `punk-*` utilities, and the `.crt-screen` scroller traps. |
 
 **Golden rules** (each explained in the docs):
 
