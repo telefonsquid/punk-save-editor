@@ -2,12 +2,13 @@
 	import RawTree from '../RawTree.svelte';
 	import type { EditorState } from '$lib/editor/state.svelte';
 	import { ODIN_FILES, OPAQUE_FILES } from '$lib/save/slot';
+    import { reveal } from '$lib/actions/reveal';
 
 	let { editor }: { editor: EditorState } = $props();
 </script>
 
 {#if editor.slot}
-	<div class="raw-panel">
+	<div class="raw-panel" use:reveal>
 		<h2 class="punk-title-shadow raw-panel-title">Raw Game Data - modify at your own risk</h2>
 		<div class="raw-panel-body">
 			<p class="raw-panel-note">

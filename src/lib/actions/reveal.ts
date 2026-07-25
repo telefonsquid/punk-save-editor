@@ -87,8 +87,8 @@ export function reveal(node: HTMLElement, options: RevealOptions = {}) {
 
 	const it: Pending = {
 		node,
-		y: options.y ?? 16,
-		duration: options.duration ?? 460,
+		y: options.y ?? 48,
+		duration: options.duration ?? 360,
 		delay: options.delay ?? 0
 	};
 	node.style.opacity = '0';

@@ -58,7 +58,7 @@
 			{title}
 		</h2>
 		{#if subtitle}
-			<p class="mt-1 text-ui-xs text-muted">{subtitle}</p>
+			<p class="mt-1 text-muted text-ui-xs">{subtitle}</p>
 		{/if}
 	</div>
 	{@render children()}
