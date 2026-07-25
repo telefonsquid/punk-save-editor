@@ -12,14 +12,20 @@ const MAX_REF = 264;
 const HLOG = 14;
 const HSIZE = 1 << HLOG;
 
+/** No save file decompresses anywhere near this; a corrupt stream never fits
+ * at all, so the doubling has to stop somewhere instead of allocating forever. */
+const MAX_OUT = 512 << 20;
+
 export function lzfDecompress(input: Uint8Array): Uint8Array {
-	let outLen = input.length * 2;
-	for (;;) {
+	// A zero-byte file (crash-truncated save) would otherwise double a
+	// zero-length buffer forever and hang the app with no error.
+	if (input.length === 0) throw new Error('lzf: empty input — not a compressed save file');
+	for (let outLen = input.length * 2; outLen <= MAX_OUT; outLen *= 2) {
 		const out = new Uint8Array(outLen);
 		const n = tryDecompress(input, out);
 		if (n > 0) return out.subarray(0, n);
-		outLen *= 2;
 	}
+	throw new Error('lzf: corrupt stream — no output size fits');
 }
 
 function tryDecompress(input: Uint8Array, output: Uint8Array): number {
@@ -33,6 +39,8 @@ function tryDecompress(input: Uint8Array, output: Uint8Array): number {
 			// literal run of ctrl+1 bytes
 			let run = ctrl + 1;
 			if (op + run > outCap) return 0;
+			// reading past the end would silently write zeros into the tree
+			if (ip + run > inLen) throw new Error('lzf: truncated stream');
 			do {
 				output[op++] = input[ip++];
 			} while (--run !== 0);
@@ -42,6 +50,7 @@ function tryDecompress(input: Uint8Array, output: Uint8Array): number {
 			let ref = op - ((ctrl & 0x1f) << 8) - 1;
 			if (len === 7) len += input[ip++];
 			ref -= input[ip++];
+			if (ip > inLen) throw new Error('lzf: truncated stream'); // header reads ran past the end
 			if (op + len + 2 > outCap) return 0;
 			if (ref < 0) throw new Error('lzf: invalid back reference (corrupt stream?)');
 			output[op++] = output[ref++];

@@ -673,6 +673,12 @@ export class OdinBinaryWriter {
 			this.i32((v as OdinRef).$ref);
 			return;
 		}
+		if ('$ext' in v) {
+			// External references occur in asset files only, never in saves, and
+			// falling through to node() would silently write an empty struct in
+			// their place — fail loudly like the rest of the codec instead.
+			throw new Error(`odin: cannot write external reference (member '${name}')`);
+		}
 		this.node(name, v as OdinNode);
 	}
 

@@ -71,8 +71,13 @@ export class EditorState {
 			try {
 				await loadFile(this.slot, 'entities');
 				this.loadedFiles.add('entities');
-			} catch {
-				/* no entities file — the ship section falls back to its notice */
+			} catch (err) {
+				// A save without the file is normal (the ship section shows its
+				// notice). A file that exists but fails to decode is not — surface
+				// that instead of pretending the ship doesn't exist.
+				if (await this.slot.dir.exists('entities')) {
+					this.error = `entities: ${(err as Error).message}`;
+				}
 			}
 			this.version++;
 			await fonts; // text has to be able to paint before the wait lifts

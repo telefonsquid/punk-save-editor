@@ -11,7 +11,7 @@ Every non-PNG file is a **raw LZF stream** produced by `CLZF2.Compress` (the com
 LZF stream grammar (per control byte `ctrl`):
 
 - `ctrl < 0x20`: literal run of `ctrl + 1` bytes follows.
-- `ctrl >= 0x20`: back-reference; `len = (ctrl >> 5) + 2`, if `ctrl >> 5 == 7` an extra byte extends the length (`len = 9 + extra`, max 266 output bytes). Offset is `((ctrl & 0x1F) << 8 | nextByte) + 1` (max 8192) back from the current output position.
+- `ctrl >= 0x20`: back-reference; `len = (ctrl >> 5) + 2`, if `ctrl >> 5 == 7` an extra byte extends the length (`len = 9 + extra`, max 264 output bytes). Offset is `((ctrl & 0x1F) << 8 | nextByte) + 1` (max 8192) back from the current output position.
 
 Implemented in [src/lib/save/lzf.ts](../src/lib/save/lzf.ts). Any valid LZF stream is accepted by the game, so a re-encoder does not need to be byte-identical (ours is near-identical anyway).
 
@@ -58,7 +58,7 @@ All numeric/scalar fields observed in the saves parse cleanly with the reader in
 Our reader produces plain objects. Meta keys (all in `META_KEYS`): `$type` (assembly-qualified name or `null`), `$id` (ref-node id), `$types` (per-field `EntryType` metadata, needed to re-serialize scalars losslessly), `$ref` (internal reference → an `$id`), `$ext` (external reference), `$primitiveArray`. Anonymous members (unnamed array-element fields, `List<T>`/`Dictionary` internals) get keys `$0`, `$1`, … in emission order.
 
 - **`List<T>`** serializes as a node whose single anonymous member `$0` is the backing array. Access via `listItems(node)`.
-- **`Dictionary<K,V>`** serializes as a node with a `comparer` member and an anonymous pairs array of `{$k, $v}` nodes. **The pairs array is not always `$1`** — its index shifts by one depending on whether `comparer` was emitted inline or as a back-reference (`$ref`). Always find it as "the first array-valued non-meta member": use `dictPairs(node)` in `slot.ts`, never a hard-coded `$0`/`$1`.
+- **`Dictionary<K,V>`** serializes as a node with a `comparer` member and an anonymous pairs array of `{$k, $v}` nodes. **The pairs array is not always `$1`** — its index shifts by one depending on whether `comparer` was emitted inline or as a back-reference (`$ref`). Always find it as "the first array-valued non-meta member": use `dictPairs(node)` in `tree.ts`, never a hard-coded `$0`/`$1`.
 
 ## `entities` file (`List<EntityData.Memento>`)
 
