@@ -14,7 +14,7 @@
 	});
 </script>
 
-<Section title="Run stats" square>
+<Section title="Run stats">
 	{#if stats}
 		<label class="mb-2 flex items-center justify-between gap-4">
 			<span>Enemies killed</span>
