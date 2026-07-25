@@ -10,6 +10,7 @@
  */
 
 import source from '../../CHANGELOG.md?raw';
+import { versionHeading } from './changelog-heading';
 
 export interface InlinePart {
 	text: string;
@@ -72,14 +73,14 @@ function parse(markdown: string): Release[] {
 	};
 
 	for (const line of markdown.split(/\r?\n/)) {
-		const version = line.match(/^##\s+v?(\S+)\s*(?:[—–-]\s*(.*))?$/);
+		const version = versionHeading(line);
 		const heading = line.match(/^###\s+(.*)$/);
 		if (version) {
 			flush();
 			group = null;
 			release = {
-				version: version[1],
-				date: version[2]?.trim() || null,
+				version: version.version,
+				date: version.date,
 				intro: [],
 				groups: []
 			};

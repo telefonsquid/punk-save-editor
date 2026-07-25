@@ -13,6 +13,7 @@
 
 import { readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
+import { versionHeading } from '../src/lib/changelog-heading';
 
 const ROOT = join(import.meta.dir, '..');
 const version = process.argv[2];
@@ -36,7 +37,10 @@ function patch(file: string, pattern: RegExp, replacement: string) {
 	console.log(`  ${file}`);
 }
 
-if (!new RegExp(`^##\\s+v?${version.replace(/\./g, '\\.')}\\b`, 'm').test(read('CHANGELOG.md'))) {
+const hasSection = read('CHANGELOG.md')
+	.split(/\r?\n/)
+	.some((line) => versionHeading(line)?.version === version);
+if (!hasSection) {
 	console.error(`CHANGELOG.md has no "## ${version} — <date>" section yet. Write it first.`);
 	process.exit(1);
 }

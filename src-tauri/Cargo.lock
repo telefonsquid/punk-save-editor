@@ -2569,8 +2569,6 @@ dependencies = [
 name = "punk-save-editor"
 version = "1.0.0"
 dependencies = [
- "serde",
- "serde_json",
  "tauri",
  "tauri-build",
  "tauri-plugin-dialog",

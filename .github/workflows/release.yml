@@ -1,7 +1,8 @@
 # Builds the desktop app for every OS/arch pair and attaches the bundles to a
-# draft GitHub release. Publish flow: bump the version in package.json,
-# src-tauri/tauri.conf.json and src-tauri/Cargo.toml, then push a tag like
-# v1.0.0. Review the draft on GitHub, write the notes, publish.
+# draft GitHub release. Publish flow (details in CLAUDE.md "Releasing"): write
+# the CHANGELOG.md section, `bun run version:set <version>`, commit, push a tag
+# like v1.0.0. The notes are filled in from the changelog below — review the
+# draft on GitHub and publish; never write notes by hand.
 name: Release
 
 on:

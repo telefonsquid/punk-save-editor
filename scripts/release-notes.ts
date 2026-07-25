@@ -8,6 +8,7 @@
 
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
+import { versionHeading } from '../src/lib/changelog-heading';
 
 const wanted = (process.argv[2] ?? '').replace(/^v/, '');
 if (!wanted) {
@@ -16,10 +17,7 @@ if (!wanted) {
 }
 
 const lines = readFileSync(join(import.meta.dir, '..', 'CHANGELOG.md'), 'utf8').split(/\r?\n/);
-const isVersionHeading = (line: string) => /^##\s+v?\S+/.test(line);
-const start = lines.findIndex(
-	(line) => isVersionHeading(line) && line.replace(/^##\s+v?/, '').split(/\s/)[0] === wanted
-);
+const start = lines.findIndex((line) => versionHeading(line)?.version === wanted);
 
 if (start === -1) {
 	console.error(`CHANGELOG.md has no section for ${wanted}`);
@@ -27,7 +25,7 @@ if (start === -1) {
 }
 
 const rest = lines.slice(start + 1);
-const end = rest.findIndex(isVersionHeading);
+const end = rest.findIndex((line) => versionHeading(line) !== null);
 const body = (end === -1 ? rest : rest.slice(0, end)).join('\n').trim();
 
 console.log(body);
