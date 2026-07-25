@@ -54,14 +54,24 @@ export function resourceLabel(id: string): string {
  * - `barCompact` / `barMicro` — the smaller bar units. These sprites are
  *   **shared by every resource**; the game distinguishes them by tinting with
  *   `color`, so anything rendering them should tint too.
+ * - `barFull` / `barEmpty` — the two tank-bar unit shapes: a solid one and a
+ *   hollow outline. White-alpha masks tinted with `barColorFull` / `barColorEmpty`
+ *   (and `barColorHi` on hover). Absent for Money. `maxUnitPerRow` is how many
+ *   the game packs into a row before wrapping.
  */
 export interface ResourceArt {
 	color: string | null;
 	orderInHud: number;
+	maxUnitPerRow?: number;
 	icon?: string;
 	bar?: string;
 	barCompact?: string;
 	barMicro?: string;
+	barFull?: string;
+	barEmpty?: string;
+	barColorFull?: string;
+	barColorEmpty?: string;
+	barColorHi?: string;
 }
 
 /** Every resource's art and colour, keyed by the save-file resource id. */

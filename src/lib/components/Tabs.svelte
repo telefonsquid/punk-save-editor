@@ -44,13 +44,13 @@
 	}
 </script>
 
-<div class="punk-tabs flex items-end" role="tablist" aria-label={label}>
+<div class="flex items-end punk-tabs" role="tablist" aria-label={label}>
 	{#each tabs as tab (tab.id)}
 		{@const active = tab.id === current}
 		<button
 			type="button"
 			id="tab-{tab.id}"
-			class="punk-tab punk-cap px-16 text-ui-sm uppercase"
+			class="px-16 text-ui-sm uppercase punk-tab punk-cap"
 			class:punk-tab-active={active}
 			role="tab"
 			aria-selected={active}
@@ -80,8 +80,10 @@
 		position: relative;
 		color: var(--color-ink);
 		/* Roomy box with the small label floated in it — the reference tab is mostly
-		   air. Bottom carries the cap-fix that centres 000webfont's low capital. */
-		padding-block: calc(6 * var(--u)) calc(6 * var(--u) + var(--cap-fix));
+		   air. Bottom carries the cap-fix that centres 000webfont's low capital. One
+		   game pixel of that padding is moved from the bottom to the top, nudging the
+		   label down so it reads centred rather than riding high. */
+		padding-block: calc(7 * var(--u)) calc(5 * var(--u) + var(--cap-fix));
 		/* Float one pixel clear of the rule so it shows through underneath. */
 		margin-bottom: var(--u);
 		transition: none;
@@ -114,7 +116,7 @@
 	   pixel of the strip; the negative margin carries it over. Its bottom corners
 	   stay square — this is the one box that meets the panel. */
 	.punk-tab-active {
-		padding-block: calc(6 * var(--u)) calc(8 * var(--u) + var(--cap-fix));
+		padding-block: calc(7 * var(--u)) calc(7 * var(--u) + var(--cap-fix));
 		margin-bottom: calc(-1 * var(--u));
 		background-image: linear-gradient(var(--tab-frame), var(--tab-frame)),
 			linear-gradient(var(--tab-frame), var(--tab-frame)),

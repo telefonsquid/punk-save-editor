@@ -38,23 +38,41 @@
 	font-display: block;
 }
 
+/* `Perfect DOS VGA 437` is the third face, ripped from the game's own
+   `PerfectDOSVGA437` Font asset: a thin monospace bitmap with real lowercase.
+   The game sets module descriptions in it, and neither 000webfont (caps only)
+   nor 8-bit HUD (blocky) matches that, so it is served just for that body copy. */
+@font-face {
+	font-family: 'Perfect DOS VGA 437';
+	src: url('/fonts/PerfectDOSVGA437.woff2') format('woff2'),
+		url('/fonts/PerfectDOSVGA437.ttf') format('truetype');
+	font-weight: normal;
+	font-style: normal;
+	font-display: block;
+}
+
 @theme {
 	/* Sampled straight out of static/design-references, not eyeballed. The game
 	   is warm-black throughout — every grey has red in it, so stock Tailwind
 	   zinc/neutral reads cold and wrong next to it. */
 	--color-void: #000000; /* the page. pure black, as the game is */
 	--color-surface: #191512; /* card interior (module_card.png) */
+	--color-cell-off: #120e0a; /* unlit effect-field cell. darkest shade of the surface brown */
 	--color-edge: #665c51; /* idle border on buttons and tabs */
 	--color-edge-dim: #3a342d; /* quieter border (number_input.png) */
 	--color-ink: #fefefe; /* labels, values, anything you read first */
 	--color-muted: #7c6654; /* body copy, hints, disabled */
+	--color-stone: #968e7d; /* the card's DOS body copy. sampled from module_card.png, lighter and greyer than muted */
 	--color-accent: #fe9e20; /* THE interaction colour: hover, focus, active */
 	--color-amber: #a87328; /* emphasis inside a sentence */
 	--color-danger: #85291b; /* warnings, destructive actions */
 
-	/* `ui` is the default for everything; `title` is for display headings only. */
+	/* `ui` is the default for everything; `title` is for display headings only;
+	   `desc` is the DOS face, only for module descriptions (the one lowercase
+	   body copy the game uses). */
 	--font-ui: '000webfont', ui-monospace, monospace;
 	--font-title: '8-bit HUD', ui-monospace, monospace;
+	--font-desc: 'Perfect DOS VGA 437', ui-monospace, monospace;
 
 	/* Both faces are pixel art, so a size that doesn't land the brick on a whole
 	   pixel blurs the whole face. The two grids are different and neither is
@@ -84,6 +102,11 @@
 	--text-hud-xs--line-height: 15px;
 	--text-hud-sm: 15px;
 	--text-hud-sm--line-height: 25px;
+	/* A card-title size sitting 10% under `sm` (15 → 13.5). 8-bit HUD wants whole
+	   multiples of 5px to stay pixel-crisp, so this one is deliberately off-grid —
+	   it renders a touch soft, which is the trade the smaller title asked for. */
+	--text-hud-sm-title: 13.5px;
+	--text-hud-sm-title--line-height: 22px;
 	--text-hud-md: 20px;
 	--text-hud-md--line-height: 30px;
 	--text-hud-lg: 25px;
@@ -115,6 +138,23 @@
 		background-color: var(--color-void);
 	}
 
+	/* The whole app sits inside this wrapper so the CRT filter (see CrtFilter.svelte)
+	   lands on every page the same way. It reads the real rendered pixels, which is
+	   the only way the aberration and bloom can actually bend and light the content
+	   rather than just tint over it.
+
+	   Pinned to the viewport with its own scroll: a page-tall filter buffer runs
+	   past the browser's size cap and the whole thing gets downsampled to a blur
+	   (the Modules list hit this). Filtering only the visible box keeps every tab
+	   crisp no matter how long its content is. */
+	.crt-screen {
+		position: fixed;
+		inset: 0;
+		overflow-x: hidden;
+		overflow-y: auto;
+		filter: url(#crt);
+	}
+
 	body {
 		background-color: var(--color-void);
 		color: var(--color-ink);
@@ -132,6 +172,12 @@
 	   browser's default smoothing would undo that. See lib/game/pixel-icon.ts. */
 	img {
 		image-rendering: pixelated;
+	}
+
+	/* Inline snippets like save paths and .bak keep the pixel face too — the
+	   browser's own monospace looks out of place beside everything else. */
+	code {
+		font-family: var(--font-ui);
 	}
 }
 
@@ -201,6 +247,13 @@
 	   right — no blur, no vertical offset, just an almost-black drop that lifts
 	   the title off the card (module_card.png). */
 	text-shadow: 3px 0 0 #050403;
+}
+
+@utility punk-desc-shadow {
+	/* The DOS body copy sits over a hard one-pixel drop to its lower right. No
+	   blur, just an almost-black offset that lifts the text off the card, the same
+	   trick the titles use (see punk-title-shadow). */
+	text-shadow: 1px 1px 0 #050403;
 }
 
 @utility punk-outlined {

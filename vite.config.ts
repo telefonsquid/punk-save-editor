@@ -22,7 +22,13 @@ export default defineConfig({
 				fallback: 'index.html'
 			}),
 			vitePlugin: {
-				inspector: true
+				// Press Alt+X (or hold it) in dev to inspect a component and jump to
+				// its source in the editor. Alt+X is the plugin default, spelled out
+				// here so it is obvious. The always-on toggle button makes it findable.
+				inspector: {
+					toggleKeyCombo: 'alt-x',
+					holdMode: true,
+				}
 			}
 		})
 	]

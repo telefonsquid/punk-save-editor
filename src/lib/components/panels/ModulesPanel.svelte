@@ -1,12 +1,26 @@
 <script lang="ts">
 	import Button from '../Button.svelte';
-	import ModuleList, { type FieldKind, type ModuleItem } from '../ModuleList.svelte';
+	import EffectFieldChooser from '../EffectFieldChooser.svelte';
+	import ItemIcon from '../ItemIcon.svelte';
 	import ModulePicker from '../ModulePicker.svelte';
 	import NumberInput from '../NumberInput.svelte';
+	import ResourceIcon from '../ResourceIcon.svelte';
+	import RichText from '../RichText.svelte';
 	import Section from '../Section.svelte';
+	import { reveal } from '$lib/actions/reveal';
 	import { numInput } from '$lib/editor/inputs';
 	import type { EditorState } from '$lib/editor/state.svelte';
-	import { displayName, equippableModules, usesPowerCore, type EffectField } from '$lib/game/data';
+	import {
+		assets,
+		categoryRank,
+		displayName,
+		equippableModules,
+		moduleInfo,
+		resourceRank,
+		usesPowerCore,
+		type EffectField
+	} from '$lib/game/data';
+	import { moduleStats } from '$lib/game/module-stats';
 	import {
 		addModule,
 		CONNECTION_SIDES,
@@ -22,7 +36,6 @@
 
 	let { editor }: { editor: EditorState } = $props();
 
-	// The add-module picker is a modal over the same list component the vault uses.
 	let pickerOpen = $state(false);
 	const addableModuleIds = equippableModules().map(({ id }) => id);
 
@@ -47,11 +60,50 @@
 			) as Record<ConnectionKey, boolean>
 		}));
 	});
-	// The shared list only needs identity; `key` is the vault index, which the
-	// actions snippet uses to find the editable row back in `moduleRows`.
-	const moduleItems = $derived(
-		moduleRows.map((row) => ({ key: row.index, id: row.id, fields: row.fields }))
-	);
+	type ModuleRow = (typeof moduleRows)[number];
+
+	// Grouped by the module's own category in the game's shop order — the two core
+	// categories pinned to the top — so weapons, gadgets and ship modules stay
+	// apart the way the player sees them. Inside a group the resource leads and the
+	// name only breaks ties, which keeps each resource's modules adjacent.
+	const groups = $derived.by(() => {
+		const by: Record<string, { name: string; rank: number; rows: ModuleRow[] }> = {};
+		for (const row of moduleRows) {
+			const type = moduleInfo(row.id)?.type;
+			const name = type?.name ?? 'OTHER';
+			(by[name] ??= { name, rank: categoryRank(name, type?.order ?? 99), rows: [] }).rows.push(row);
+		}
+		for (const group of Object.values(by)) {
+			group.rows.sort(
+				(a, b) =>
+					resourceRank(moduleInfo(a.id)?.resource) - resourceRank(moduleInfo(b.id)?.resource) ||
+					displayName(a.id).localeCompare(displayName(b.id))
+			);
+		}
+		return Object.values(by).sort((a, b) => a.rank - b.rank || a.name.localeCompare(b.name));
+	});
+
+	// The two effect-field slots a card can draw, in the game's own words.
+	type FieldKind = 'powerCores' | 'levelFields';
+	const FIELD_KINDS: { key: FieldKind; label: string }[] = [
+		{ key: 'powerCores', label: 'POWERS' },
+		{ key: 'levelFields', label: 'BOOSTS' }
+	];
+	const MEMENTO_KEY: Record<FieldKind, EffectFieldKey> = {
+		powerCores: 'powerCore',
+		levelFields: 'levelModificationField'
+	};
+
+	// The fields to actually draw on a card: the ones whose asset defines any
+	// candidate shape, with the shape the module currently projects.
+	function cardFields(row: ModuleRow) {
+		const info = moduleInfo(row.id);
+		return FIELD_KINDS.map((kind) => ({
+			...kind,
+			candidates: info?.[kind.key] ?? [],
+			value: row.fields[kind.key][0] ?? null
+		})).filter((kind) => kind.candidates.length > 0);
+	}
 
 	/** Flips one grid connection of a module in the raw tree. */
 	function toggleConnection(m: ModuleView, key: ConnectionKey) {
@@ -60,16 +112,9 @@
 		editor.refresh();
 	}
 
-	/** The list's own vocabulary for the two fields, in memento terms. */
-	const MEMENTO_KEY: Record<FieldKind, EffectFieldKey> = {
-		powerCores: 'powerCore',
-		levelFields: 'levelModificationField'
-	};
-
 	/** Rewrites the shape a vault module projects, in the raw tree. */
-	function setField(item: ModuleItem, kind: FieldKind, field: EffectField) {
+	function setField(row: ModuleRow, kind: FieldKind, field: EffectField) {
 		if (!editor.slot) return;
-		const row = moduleRows[item.key as number];
 		setSavedEffectField(editor.slot.vault, row.module, MEMENTO_KEY[kind], field);
 		editor.markCurated();
 		editor.refresh();
@@ -90,53 +135,324 @@
 	}
 </script>
 
-<Section title="Vault · Modules" class="md:col-span-2">
-	<ModuleList items={moduleItems} empty="Vault has no modules." onfieldchange={setField}>
-		{#snippet actions(item)}
-			{@const row = moduleRows[item.key as number]}
-			<div class="flex gap-1">
-				{#each CONNECTION_SIDES as side (side.key)}
-					<button
-						type="button"
-						class="h-7 w-7 rounded border text-xs font-semibold {row.connections[side.key]
-							? 'border-lime-400 bg-lime-400/20 text-lime-300'
-							: 'border-zinc-700 text-zinc-600 hover:border-zinc-500'}"
-						aria-pressed={row.connections[side.key]}
-						aria-label="{side.label} connection of {displayName(row.id)}"
-						onclick={() => toggleConnection(row.module, side.key)}
+<Section title="Vault Modules" plain>
+	<!-- The one action for the whole tab sits right under the title, the way the
+	     other panels put their add controls up top. -->
+	<div class="flex justify-center mb-10">
+		<Button size="sm" onclick={() => (pickerOpen = true)}>Add a module…</Button>
+	</div>
+
+	{#if moduleRows.length === 0}
+		<p class="text-center text-muted text-ui-xs">Vault has no modules.</p>
+	{:else}
+		{#each groups as group (group.name)}
+			<h3 class="module-group">
+				{group.name}
+				<span class="module-group-count">({group.rows.length})</span>
+			</h3>
+			<div class="module-grid mb-10">
+				{#each group.rows as row (row.index)}
+					{@const info = moduleInfo(row.id)}
+					{@const stats = moduleStats(row.id)}
+					{@const tier = row.id ? assets[row.id]?.level : undefined}
+					<!-- One module drawn as the game's own tooltip card (module_card.png):
+					     coloured title, muted body, its effect diagram and stats — with the
+					     bits the editor lets you change sitting in a quiet footer. -->
+					<article
+						class="module-card"
+						style:--card-accent={info?.color ?? 'var(--color-edge)'}
+						use:reveal
 					>
-						{side.label}
-					</button>
+						<button
+							type="button"
+							class="card-x"
+							aria-label="Remove {displayName(row.id)} from the vault"
+							onclick={() => removeModuleAt(row.index)}
+						>
+							<svg viewBox="0 0 8 8" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true">
+								<path d="M1 1l6 6M7 1l-6 6" />
+							</svg>
+						</button>
+
+						<header class="card-head">
+							<ItemIcon id={row.id} scale={2} />
+							<h4 class="card-name" style:color={info?.color ?? undefined}>
+								{displayName(row.id)}{#if tier}<span class="card-tier">tier {tier}</span>{/if}
+							</h4>
+						</header>
+
+						{#if info?.description}
+							<p class="card-desc punk-desc-shadow"><RichText text={info.description} /></p>
+						{/if}
+
+						{#if stats.length > 0}
+							<!-- One stat per line so a card with several ("Explosion 1 dmg" then
+							     "Cost 2 per shot") reads as a list, not a run-on. -->
+							<ul class="card-stats">
+								{#each stats as stat, i (i)}
+									<li class="stat punk-desc-shadow">
+										{stat.label}
+										<span class="stat-val">{stat.value}</span>
+										{#if stat.resource}<span class="stat-icon"><ResourceIcon id={stat.resource} labeled /></span>{/if}
+										{#if stat.suffix}{stat.suffix}{/if}
+									</li>
+								{/each}
+							</ul>
+						{/if}
+
+						<footer class="card-foot">
+							<!-- The shape pickers moved down here next to the connection toggles:
+							     both are things you change, so they live together below the line
+							     rather than dressing up the game-card body above it. -->
+							{#each cardFields(row) as kind (kind.key)}
+								<EffectFieldChooser
+									candidates={kind.candidates}
+									value={kind.value}
+									color={info?.color}
+									label={kind.label}
+									onchange={(field) => setField(row, kind.key, field)}
+								/>
+							{/each}
+
+							<div class="foot-controls">
+								<div class="foot-group">
+									<span class="foot-label">Connections</span>
+									<div class="conn-row">
+										{#each CONNECTION_SIDES as side (side.key)}
+											<button
+												type="button"
+												class="conn-cell punk-frame {row.connections[side.key] ? 'is-on' : ''}"
+												aria-pressed={row.connections[side.key]}
+												aria-label="{side.label} connection of {displayName(row.id)}"
+												onclick={() => toggleConnection(row.module, side.key)}
+											>
+												{side.label}
+											</button>
+										{/each}
+									</div>
+								</div>
+								<!-- Power cores only apply to weapons and gadgets; ship modules and
+								     weapon mods have no core, so the field is left off there. -->
+								{#if usesPowerCore(row.id)}
+									<label class="foot-group">
+										<span class="foot-label">Cores</span>
+										<NumberInput
+											class="w-16"
+											min="0"
+											value={row.powerLevel}
+											oninput={numInput(row.module, 'powerLevel')}
+										/>
+									</label>
+								{/if}
+							</div>
+						</footer>
+					</article>
 				{/each}
 			</div>
-			<!-- Power cores only apply to weapons and gadgets; ship modules and
-			     weapon mods have no core, so the field would be dead there. -->
-			{#if usesPowerCore(row.id)}
-				<label class="flex items-center gap-1 text-xs text-zinc-500">
-					Cores
-					<NumberInput
-						class="w-16"
-						min="0"
-						value={row.powerLevel}
-						oninput={numInput(row.module, 'powerLevel')}
-					/>
-				</label>
-			{/if}
-			<Button
-				variant="danger"
-				size="xs"
-				aria-label="Remove {displayName(row.id)} from the vault"
-				onclick={() => removeModuleAt(row.index)}
-			>
-				Remove
-			</Button>
-		{/snippet}
-	</ModuleList>
-	<div class="mt-4 flex flex-wrap items-center gap-3 border-t border-zinc-800 pt-3">
-		<Button size="sm" onclick={() => (pickerOpen = true)}>Add a module…</Button>
-		<span class="text-xs text-zinc-600">
-			Browse every equippable module, grouped the way the game groups them.
-		</span>
-	</div>
+		{/each}
+	{/if}
+
 	<ModulePicker bind:open={pickerOpen} ids={addableModuleIds} onadd={addModuleToVault} />
 </Section>
+
+<style>
+	/* Two cards per row on anything but a phone. */
+	.module-grid {
+		display: grid;
+		grid-template-columns: 1fr;
+		gap: 1rem;
+	}
+	@media (min-width: 48rem) {
+		.module-grid {
+			grid-template-columns: repeat(2, minmax(0, 1fr));
+		}
+	}
+
+	/* Category heading in the HUD face, quiet enough to group without shouting. */
+	.module-group {
+		font-family: var(--font-title);
+		font-size: var(--text-hud-sm);
+		line-height: var(--text-hud-sm--line-height);
+		letter-spacing: var(--tracking-hud-wide);
+		text-transform: uppercase;
+		color: var(--color-muted);
+		margin-bottom: 0.5rem;
+	}
+	.module-group-count {
+		color: var(--color-edge);
+	}
+
+	/* The card itself: the game's module tooltip — a warm near-black slab a shade
+	   below the surface so it recedes from the panel, square-cornered, with the
+	   flat grey edge sampled straight off module_card.png (rgb 48 40 34). */
+	.module-card {
+		position: relative;
+		background-color: #120f0c;
+		border: 2px solid rgb(48, 40, 34);
+		padding: 1rem 1.25rem;
+	}
+
+	/* Remove is a bare cross in the top-right, dim until reached for. */
+	.card-x {
+		position: absolute;
+		top: 0.5rem;
+		right: 0.5rem;
+		width: 1rem;
+		height: 1rem;
+		color: var(--color-muted);
+		background: transparent;
+		border: 0;
+		padding: 0;
+		cursor: pointer;
+	}
+	.card-x:hover {
+		color: var(--color-danger);
+	}
+	.card-x svg {
+		width: 100%;
+		height: 100%;
+	}
+
+	.card-head {
+		display: flex;
+		align-items: center;
+		gap: 0.75rem;
+		/* Keep the name clear of the remove cross. */
+		padding-right: 1.25rem;
+	}
+
+	/* Module name in 8-bit HUD with the game's hard right drop shadow, coloured by
+	   the module inline. A dedicated size 10% under `sm`, the way the reference
+	   sets the title a touch smaller than a section head. */
+	.card-name {
+		font-family: var(--font-title);
+		font-size: var(--text-hud-sm-title);
+		line-height: var(--text-hud-sm-title--line-height);
+		letter-spacing: var(--tracking-hud-wide);
+		text-transform: uppercase;
+		text-shadow: 3px 0 0 #050403;
+		overflow-wrap: anywhere;
+	}
+
+	/* Tier rides on the title line, in the quiet grey, without the title's caps
+	   tracking or drop shadow. */
+	.card-tier {
+		margin-left: 0.6em;
+		font-size: var(--text-hud-xs);
+		letter-spacing: normal;
+		color: var(--color-edge);
+		text-shadow: none;
+		white-space: nowrap;
+	}
+
+	/* The description is the one lowercase body copy the game's card carries, set
+	   in the DOS face the game itself uses for it (see layout.css). */
+	.card-desc {
+		margin-top: 0.625rem;
+		font-family: var(--font-desc);
+		font-size: 18px;
+		line-height: 1.35;
+		letter-spacing: normal;
+		color: var(--color-stone);
+	}
+
+	.card-stats {
+		display: flex;
+		flex-direction: column;
+		gap: 0;
+		margin-top: 0.75rem;
+		list-style: none;
+		padding: 0;
+	}
+	/* The stats share the description's DOS face, forced uppercase like the game's
+	   own card, so the whole card body reads as one block of pixel copy. */
+	.stat {
+		display: flex;
+		align-items: center;
+		gap: 0.25rem;
+		font-family: var(--font-desc);
+		font-size: 18px;
+		line-height: 1.35;
+		letter-spacing: normal;
+		text-transform: uppercase;
+		color: var(--color-stone);
+	}
+	.stat-val {
+		color: var(--color-ink);
+	}
+	/* The stat words are uppercase, so their ink sits in the top of the line box
+	   while the empty descender space pads the bottom. Centring the pixel icon in
+	   that box would drop it below the letters, so nudge it up onto the caps. */
+	.stat-icon {
+		display: inline-flex;
+		transform: translateY(-2px);
+	}
+
+	/* The editor controls sit under a thin rule, kept apart from the game-card body
+	   above them. Shape pickers first, then the toggles and cores below. */
+	.card-foot {
+		display: flex;
+		flex-direction: column;
+		gap: 0.75rem;
+		margin-top: 1rem;
+		padding-top: 0.75rem;
+		border-top: 2px solid var(--color-edge-dim);
+	}
+	.foot-controls {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: flex-end;
+		gap: 1.5rem;
+	}
+	.foot-group {
+		display: flex;
+		flex-direction: column;
+		gap: 0.375rem;
+	}
+	/* Control labels are quiet grey, not the accent the game keeps for its own
+	   headings. */
+	.foot-label {
+		font-size: var(--text-ui-xs);
+		line-height: 1;
+		text-transform: uppercase;
+		color: var(--color-muted);
+	}
+
+	.conn-row {
+		display: flex;
+		gap: 0.375rem;
+	}
+
+	/* Connection toggles wear the game's own control frame: dim at rest, the accent
+	   when the side is wired up. The box is roomy enough that the letter clears the
+	   frame on every side. */
+	.conn-cell {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		width: calc(12 * var(--u));
+		height: calc(12 * var(--u));
+		font-family: var(--font-title);
+		font-size: 12px;
+		line-height: 1;
+		letter-spacing: normal;
+		/* 8-bit HUD hangs a full brick of empty space on each glyph's right (advance
+		   7, ink 6), so flex-centring the letter leaves it sitting left of centre.
+		   Padding the left pushes the letter back to the middle of the box (a
+		   padding shift moves centred content by half its width). */
+		padding-left: round(0.2em, 1px);
+		color: var(--color-muted);
+		--frame: var(--color-edge-dim);
+		--frame-fill: var(--color-void);
+		background-color: transparent;
+		border: 0;
+		cursor: pointer;
+	}
+	.conn-cell:hover {
+		--frame: var(--color-edge);
+	}
+	.conn-cell.is-on {
+		--frame: var(--color-accent);
+		color: var(--color-accent);
+	}
+</style>

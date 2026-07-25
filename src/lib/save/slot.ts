@@ -205,6 +205,21 @@ export function reorderConsumables(vault: OdinNode, from: number, to: number): v
 	arr.push(...filled, ...empty);
 }
 
+/** Empties a filled consumable slot (`filledIndex` counts only filled slots, as
+ * the UI shows them). The now-empty slot is kept trailing so the fixed slot count
+ * the game restores from its memento is preserved. */
+export function removeConsumable(vault: OdinNode, filledIndex: number): void {
+	const arr = listItems(vault.consumables as OdinValue);
+	const filled = arr.filter((c) => (c as unknown as ConsumableView).consumableId != null);
+	const empty = arr.filter((c) => (c as unknown as ConsumableView).consumableId == null);
+	if (filledIndex < 0 || filledIndex >= filled.length) return;
+	const [gone] = filled.splice(filledIndex, 1) as unknown as ConsumableView[];
+	gone.consumableId = null;
+	gone.amount = 0;
+	arr.length = 0;
+	arr.push(...(filled as typeof arr), gone as unknown as (typeof arr)[number], ...empty);
+}
+
 // ---------------------------------------------------------------------------
 // Vault modules
 // ---------------------------------------------------------------------------

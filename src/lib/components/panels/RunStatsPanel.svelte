@@ -14,22 +14,31 @@
 	});
 </script>
 
-<Section title="Run stats">
+<Section title="Run stats" square>
 	{#if stats}
 		<label class="mb-2 flex items-center justify-between gap-4">
 			<span>Enemies killed</span>
-			<NumberInput value={stats.killedEnemyCount} oninput={numInput(stats, 'killedEnemyCount')} />
+			<NumberInput
+				class="w-36"
+				value={stats.killedEnemyCount}
+				oninput={numInput(stats, 'killedEnemyCount')}
+			/>
 		</label>
 		<label class="mb-2 flex items-center justify-between gap-4">
 			<span>Bosses killed</span>
-			<NumberInput value={stats.killedBossCount} oninput={numInput(stats, 'killedBossCount')} />
+			<NumberInput
+				class="w-36"
+				value={stats.killedBossCount}
+				oninput={numInput(stats, 'killedBossCount')}
+			/>
 		</label>
 		<label class="mb-2 flex items-center justify-between gap-4">
 			<span>
 				Run time
-				<span class="text-zinc-500">({formatDuration(stats.totalRunTime)})</span>
+				<span class="text-muted">({formatDuration(stats.totalRunTime)})</span>
 			</span>
 			<NumberInput
+				class="w-36"
 				step="any"
 				value={fmt1(stats.totalRunTime)}
 				oninput={numInput(stats, 'totalRunTime')}

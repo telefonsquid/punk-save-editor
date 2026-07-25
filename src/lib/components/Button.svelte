@@ -73,6 +73,10 @@
 	   adds on top: padding, and how it answers the pointer. */
 	.punk-btn {
 		position: relative;
+		/* A label must stay on one line: punk-cap collapses the line box onto the
+		   caps, so a wrapped two-word label would print its lines on top of each
+		   other. Keep "Add shape" and the like whole even when the row is tight. */
+		white-space: nowrap;
 		/* Fill the body but leave the frame's four cut corners transparent, so the
 		   button reads as open-cornered over whatever sits behind it. */
 		--frame-fill: var(--color-void);
@@ -106,8 +110,10 @@
 		--frame: var(--color-edge);
 	}
 	.punk-btn-primary {
-		--frame: var(--color-ink);
-		/* The one button that reads white — it is the call to action. */
+		/* Border is the reference brown, same as every button in game (button.png
+		   samples #665c51 edge to edge). Only the label stays white to mark it as
+		   the call to action. */
+		--frame: var(--color-edge);
 		color: var(--color-ink);
 	}
 	.punk-btn-ghost {

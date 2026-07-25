@@ -7,30 +7,26 @@
 </script>
 
 {#if editor.slot}
-	<details class="rounded-lg border border-amber-900/60 bg-zinc-900/50">
-		<summary
-			class="cursor-pointer px-5 py-4 text-sm font-bold tracking-widest text-amber-400 uppercase select-none"
-		>
-			Modify at your own risk
-		</summary>
-		<div class="space-y-3 px-5 pb-5">
-			<p class="text-sm text-zinc-400">
+	<div class="raw-panel">
+		<h2 class="punk-title-shadow raw-panel-title">Raw Game Data - modify at your own risk</h2>
+		<div class="raw-panel-body">
+			<p class="raw-panel-note">
 				Every value the save files contain, unfiltered. The game does not validate any of this:
 				nonsensical values can corrupt the run or make it fail to load (originals are backed up
-				as <code class="text-xs">*.bak</code> on first save). Changes here are saved per file
-				with the Save button above.
+				as <code>*.bak</code> on first save). Changes here are saved per file with the Save button
+				above.
 			</p>
 			{#each ODIN_FILES as name (name)}
 				<details
-					class="rounded border border-zinc-800 bg-zinc-950/50 px-3 py-2"
+					class="raw-panel-file"
 					ontoggle={(e) => editor.openRawFile(name, e.currentTarget.open)}
 				>
-					<summary class="cursor-pointer text-sm font-semibold text-zinc-300 select-none">
+					<summary class="raw-panel-file-title">
 						{name}
 						{#if editor.dirtyFiles.has(name)}
-							<span class="text-xs text-amber-400">· modified</span>
+							<span class="raw-panel-mod">· modified</span>
 						{:else if !editor.loadedFiles.has(name)}
-							<span class="text-xs text-zinc-600">· click to load</span>
+							<span class="raw-panel-load">· click to load</span>
 						{/if}
 					</summary>
 					{#if editor.loadedFiles.has(name)}
@@ -46,14 +42,85 @@
 							/>
 						</div>
 					{:else if editor.rawLoading === name}
-						<p class="mt-2 text-sm text-zinc-500">Decoding…</p>
+						<p class="raw-panel-decoding">Decoding…</p>
 					{/if}
 				</details>
 			{/each}
-			<p class="text-xs text-zinc-600">
-				Not editable here: {OPAQUE_FILES.join(', ')} (raw terrain data and PNG images rather
-				than serialized objects).
+			<p class="raw-panel-foot">
+				Not editable here: {OPAQUE_FILES.join(', ')} (raw terrain data and PNG images rather than
+				serialized objects).
 			</p>
 		</div>
-	</details>
+	</div>
 {/if}
+
+<style>
+	/* The raw editor wears the same module tooltip shell as the run-stats panel it
+	   sits under: warm near-black, square corners, the flat grey edge. The "at your
+	   own risk" warning lives in the title, so the frame need not shout. */
+	.raw-panel {
+		background-color: #120f0c;
+		border: 2px solid rgb(48, 40, 34);
+	}
+
+	/* The card's own heading, in the HUD title face like every other section title. */
+	.raw-panel-title {
+		font-family: var(--font-title);
+		font-size: var(--text-hud-sm);
+		line-height: var(--text-hud-sm--line-height);
+		letter-spacing: var(--tracking-hud-wide);
+		text-transform: uppercase;
+		color: var(--color-accent);
+		padding: 1rem 1.25rem;
+	}
+
+	.raw-panel-body {
+		display: flex;
+		flex-direction: column;
+		gap: 0.75rem;
+		padding: 0 1.25rem 1.25rem;
+	}
+
+	/* Body copy in the same quiet grey the rest of the editor uses for hints. */
+	.raw-panel-note {
+		font-size: var(--text-ui-xs);
+		line-height: var(--text-ui-xs--line-height);
+		color: var(--color-muted);
+	}
+	.raw-panel-note code {
+		color: var(--color-stone);
+	}
+	.raw-panel-foot {
+		font-size: var(--text-ui-xs);
+		line-height: var(--text-ui-xs--line-height);
+		color: var(--color-edge);
+	}
+
+	/* Each file is its own quiet slab inside the card, square like the frame. */
+	.raw-panel-file {
+		background-color: var(--color-void);
+		border: 2px solid var(--color-edge-dim);
+		padding: 0.5rem 0.75rem;
+	}
+	.raw-panel-file-title {
+		font-size: var(--text-ui-xs);
+		line-height: var(--text-ui-xs--line-height);
+		color: var(--color-stone);
+		cursor: pointer;
+		user-select: none;
+	}
+	.raw-panel-mod {
+		font-size: var(--text-ui-xs);
+		color: var(--color-accent);
+	}
+	.raw-panel-load {
+		font-size: var(--text-ui-xs);
+		color: var(--color-edge);
+	}
+	.raw-panel-decoding {
+		margin-top: 0.5rem;
+		font-size: var(--text-ui-xs);
+		line-height: var(--text-ui-xs--line-height);
+		color: var(--color-muted);
+	}
+</style>

@@ -32,7 +32,7 @@
 		--frame: var(--color-edge-dim);
 
 		font-family: var(--font-title);
-		font-size: var(--text-hud-xs);
+		font-size: 14px;
 		/* 8-bit HUD is not the self-spacing face 000webfont is, so the body's
 		   negative letter-spacing would blur it. Reset to the font's own metrics. */
 		letter-spacing: normal;

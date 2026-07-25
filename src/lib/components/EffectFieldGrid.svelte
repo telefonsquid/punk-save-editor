@@ -91,7 +91,7 @@
 			<button
 				type="button"
 				class="min-h-0 min-w-0"
-				style:background-color={c.on ? fill : '#18181b'}
+				style:background-color={c.on ? fill : 'var(--color-cell-off)'}
 				aria-pressed={c.on}
 				aria-label="Column {(i % field.width) + 1}, row {Math.floor(i / field.width) + 1}"
 				onpointerdown={() => startPaint(i, c.on)}
@@ -106,7 +106,7 @@
 		{:else}
 			<span
 				class="min-h-0 min-w-0"
-				style:background-color={c.on ? fill : '#18181b'}
+				style:background-color={c.on ? fill : 'var(--color-cell-off)'}
 				title={interactive && c.center ? 'The module sits here' : undefined}
 			></span>
 		{/if}

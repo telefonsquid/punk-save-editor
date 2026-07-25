@@ -1,4 +1,5 @@
 <script lang="ts">
+	import Button from './Button.svelte';
 	import ModuleList, { type FieldKind, type ModuleItem } from './ModuleList.svelte';
 	import { displayName, moduleCategory, moduleInfo, type EffectField } from '$lib/game/data';
 	import type { NewModuleFields } from '$lib/save/slot';
@@ -78,48 +79,63 @@
 </script>
 
 <!-- `m-auto` is what centres the dialog: the UA centres a modal with its own
-     `margin: auto`, which Tailwind's preflight reset zeroes out. -->
+     `margin: auto`, which Tailwind's preflight reset zeroes out. Square warm-black
+     slab with the game's edge, same language as the editor's own cards. -->
 <dialog
 	bind:this={dialog}
-	class="m-auto max-h-[85vh] w-[min(56rem,92vw)] rounded-lg border border-zinc-700 bg-zinc-900 p-0 text-zinc-200 backdrop:bg-black/70"
+	class="punk-dialog m-auto max-h-[85vh] w-[min(56rem,92vw)] border-2 border-edge bg-surface p-0 text-ink backdrop:bg-black/80"
 	onclose={() => {
 		open = false;
 		query = ''; // a stale filter would hide most of the list on reopen
 		picked = {}; // shape picks belong to the browsing session, not the next one
 	}}
+	onclick={(e) => {
+		// A click that lands on the dialog element itself is the backdrop (its
+		// content fills the box, so anything else has a child as its target).
+		if (e.target === dialog) open = false;
+	}}
 >
-	<div class="flex items-center gap-3 border-b border-zinc-800 px-5 py-3">
-		<h2 class="text-sm font-bold tracking-widest text-fuchsia-400 uppercase">Add a module</h2>
+	<div class="flex items-center gap-3 border-b-2 border-edge-dim px-5 py-3">
+		<h2 class="font-title text-hud-sm tracking-hud-wide text-accent shrink-0 whitespace-nowrap uppercase">
+			Add a module
+		</h2>
 		<input
 			type="search"
-			class="ml-auto w-56 rounded border-zinc-700 bg-zinc-950 px-2 py-1 text-sm"
+			class="punk-search ml-auto w-56 text-ui-xs"
 			placeholder="Filter…"
 			aria-label="Filter modules"
 			bind:value={query}
 		/>
-		<button
-			type="button"
-			class="rounded border border-zinc-700 px-2 py-1 text-sm hover:border-zinc-500"
-			onclick={() => (open = false)}
-		>
-			Close
-		</button>
+		<Button variant="ghost" size="sm" onclick={() => (open = false)}>Close</Button>
 	</div>
-	<div class="max-h-[70vh] overflow-y-auto px-5 py-3">
+	<div class="max-h-[70vh] overflow-y-auto px-5 py-4">
 		<ModuleList {items} empty="No module matches that filter." onfieldchange={chooseField}>
 			{#snippet actions(item)}
-				<button
-					type="button"
-					class="rounded border border-zinc-700 px-3 py-1 text-xs font-semibold hover:border-lime-400 hover:text-lime-400"
-					onclick={() => add(item.id)}
-				>
-					Add
-				</button>
+				<Button size="xs" onclick={() => add(item.id)}>Add</Button>
 			{/snippet}
 		</ModuleList>
 	</div>
-	<p class="border-t border-zinc-800 px-5 py-2 text-xs text-zinc-600">
+	<p class="border-t-2 border-edge-dim px-5 py-3 text-ui-xs text-muted">
 		Added with all four connections and the module's highest power-core capacity. Picking a shape
 		here only applies to the module you then add.
 	</p>
 </dialog>
+
+<style>
+	/* The filter box wears the game's quiet edge and clears @tailwindcss/forms'
+	   white fill and blue focus ring, so it reads like the rest of the editor. */
+	.punk-search {
+		border: 2px solid var(--color-edge-dim);
+		background-color: var(--color-void);
+		color: var(--color-ink);
+		padding: 0.35rem 0.6rem;
+	}
+	.punk-search:focus {
+		outline: none;
+		box-shadow: none;
+		border-color: var(--color-accent);
+	}
+	.punk-search::placeholder {
+		color: var(--color-muted);
+	}
+</style>

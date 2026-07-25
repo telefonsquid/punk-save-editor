@@ -92,28 +92,28 @@
 </script>
 
 {#if items.length === 0}
-	<p class="text-sm text-zinc-500">{empty}</p>
+	<p class="text-ui-xs text-muted">{empty}</p>
 {:else}
 	{#each groups as group (group.name)}
-		<h3 class="mt-4 mb-1 text-xs font-bold tracking-widest text-zinc-500 uppercase first:mt-0">
+		<h3 class="module-group">
 			{group.name}
-			<span class="font-normal text-zinc-600">({group.items.length})</span>
+			<span class="module-group-count">({group.items.length})</span>
 		</h3>
-		<ul class="divide-y divide-zinc-800/50">
+		<ul class="module-rows">
 			{#each group.items as item (item.key)}
 				{@const info = moduleInfo(item.id)}
 				{@const stats = moduleStats(item.id)}
-				<li class="flex flex-wrap items-start gap-3 py-2">
+				<li class="flex flex-wrap items-start gap-3 py-3">
 					<!-- Modules share a ColorAsset with the resource they belong to,
 					     which is what tints them in the game itself. -->
 					<span
-						class="w-1 shrink-0 self-stretch rounded-full"
-						style:background-color={info?.color ?? '#52525b'}
+						class="w-1 shrink-0 self-stretch"
+						style:background-color={info?.color ?? 'var(--color-edge)'}
 					></span>
 					<ItemIcon id={item.id} />
 					<div class="min-w-48 flex-1">
 						<div class="flex items-center gap-2">
-							<span class="font-semibold" style:color={info?.color ?? undefined}>
+							<span class="row-name" style:color={info?.color ?? undefined}>
 								{displayName(item.id)}
 							</span>
 							{#if info?.resource}
@@ -121,13 +121,11 @@
 								<ResourceIcon id={info.resource} labeled />
 							{/if}
 							{#if item.id && assets[item.id]?.level}
-								<span class="text-xs text-zinc-600">tier {assets[item.id].level}</span>
+								<span class="text-ui-xs text-edge">tier {assets[item.id].level}</span>
 							{/if}
 						</div>
 						{#if info?.description}
-							<p class="mt-0.5 text-xs leading-snug text-zinc-400">
-								<RichText text={info.description} />
-							</p>
+							<p class="row-desc punk-desc-shadow"><RichText text={info.description} /></p>
 						{/if}
 						<!-- Power cores and boosters act on the slots *around* them, so the
 						     shape of that area is the most important thing about them —
@@ -155,13 +153,13 @@
 							{/if}
 						{/each}
 						{#if stats.length > 0}
-							<div class="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs">
+							<div class="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1">
 								{#each stats as stat, i (i)}
-									<span class="flex items-center gap-1 text-zinc-500">
+									<span class="row-stat punk-desc-shadow">
 										{stat.label}
-										<span class="font-semibold text-zinc-300">{stat.value}</span>
+										<span class="row-stat-val">{stat.value}</span>
 										{#if stat.resource}
-											<ResourceIcon id={stat.resource} labeled />
+											<span class="row-stat-icon"><ResourceIcon id={stat.resource} labeled /></span>
 										{/if}
 										{#if stat.suffix}{stat.suffix}{/if}
 									</span>
@@ -177,3 +175,67 @@
 		</ul>
 	{/each}
 {/if}
+
+<style>
+	/* Category heading in the HUD face, matched to the Modules tab's own group
+	   headings so the picker reads as the same surface. */
+	.module-group {
+		font-family: var(--font-title);
+		font-size: var(--text-hud-sm);
+		line-height: var(--text-hud-sm--line-height);
+		letter-spacing: var(--tracking-hud-wide);
+		text-transform: uppercase;
+		color: var(--color-muted);
+		margin: 1.25rem 0 0.5rem;
+	}
+	.module-group:first-child {
+		margin-top: 0;
+	}
+	.module-group-count {
+		color: var(--color-edge);
+	}
+
+	/* Rows sit apart on the game's quiet edge line rather than a cold zinc rule. */
+	.module-rows > li + li {
+		border-top: 2px solid var(--color-edge-dim);
+	}
+
+	.row-name {
+		font-size: var(--text-ui-xs);
+		color: var(--color-ink);
+	}
+
+	/* The description is the game's own lowercase body copy, in the DOS face the
+	   card uses for it. */
+	.row-desc {
+		margin-top: 0.25rem;
+		font-family: var(--font-desc);
+		font-size: 18px;
+		line-height: 1.35;
+		letter-spacing: normal;
+		color: var(--color-stone);
+	}
+
+	/* Stats share the description's DOS face, forced uppercase like the game's card. */
+	.row-stat {
+		display: flex;
+		align-items: center;
+		gap: 0.25rem;
+		font-family: var(--font-desc);
+		font-size: 18px;
+		line-height: 1.35;
+		letter-spacing: normal;
+		text-transform: uppercase;
+		color: var(--color-stone);
+	}
+	.row-stat-val {
+		color: var(--color-ink);
+	}
+	/* The stat words are uppercase, so their ink sits in the top of the line box
+	   while the empty descender space pads the bottom. Centring the pixel icon in
+	   that box would drop it below the letters, so nudge it up onto the caps. */
+	.row-stat-icon {
+		display: inline-flex;
+		transform: translateY(-2px);
+	}
+</style>

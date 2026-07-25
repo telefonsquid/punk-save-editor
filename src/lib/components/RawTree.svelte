@@ -73,16 +73,13 @@
 </script>
 
 {#if kind === 'node' || kind === 'array'}
-	<details
-		class="border-l border-zinc-800 pl-3"
-		ontoggle={(e) => (open = e.currentTarget.open)}
-	>
-		<summary class="cursor-pointer py-0.5 text-sm text-zinc-300 select-none hover:text-lime-400">
+	<details class="raw-branch" ontoggle={(e) => (open = e.currentTarget.open)}>
+		<summary class="raw-summary">
 			{label}
 			{#if kind === 'array'}
-				<span class="text-xs text-zinc-500">[{(value as OdinValue[]).length}]</span>
+				<span class="raw-hint">[{(value as OdinValue[]).length}]</span>
 			{:else if shortType(value as OdinNode)}
-				<span class="text-xs text-zinc-600">{shortType(value as OdinNode)}</span>
+				<span class="raw-hint">{shortType(value as OdinNode)}</span>
 			{/if}
 		</summary>
 		{#if open}
@@ -91,10 +88,7 @@
 					<RawTree container={value as unknown[]} key={i} label={`[${i}]`} {ondirty} />
 				{/each}
 				{#if (value as OdinValue[]).length > limit}
-					<button
-						class="my-1 rounded border border-zinc-700 px-2 py-0.5 text-xs text-zinc-400 hover:border-lime-400 hover:text-lime-400"
-						onclick={() => (limit += 500)}
-					>
+					<button class="raw-more" onclick={() => (limit += 500)}>
 						Show more ({(value as OdinValue[]).length - limit} hidden)
 					</button>
 				{/if}
@@ -111,50 +105,146 @@
 		{/if}
 	</details>
 {:else}
-	<div class="flex items-center gap-3 border-l border-zinc-800 py-0.5 pl-3 text-sm">
-		<span class="min-w-32 text-zinc-400">{label}</span>
+	<div class="raw-leaf">
+		<span class="raw-label">{label}</span>
 		{#if kind === 'number'}
 			<input
 				type="number"
 				step="any"
-				class="w-40 rounded border-zinc-700 bg-zinc-900 px-2 py-0.5 text-right text-sm"
+				class="raw-field w-40 text-right"
 				value={value as number}
 				oninput={setNumber}
 			/>
 		{:else if kind === 'bigint'}
 			<input
 				type="text"
-				class="w-40 rounded border-zinc-700 bg-zinc-900 px-2 py-0.5 text-right text-sm"
+				class="raw-field w-40 text-right"
 				value={(value as bigint).toString()}
 				oninput={setBigint}
 			/>
 		{:else if kind === 'boolean'}
 			<input
 				type="checkbox"
-				class="rounded border-zinc-700 bg-zinc-900"
+				class="raw-check"
 				checked={value as boolean}
 				onchange={(e) => set(e.currentTarget.checked)}
 			/>
 		{:else if kind === 'string'}
 			<input
 				type="text"
-				class="w-72 rounded border-zinc-700 bg-zinc-900 px-2 py-0.5 text-sm"
+				class="raw-field w-72"
 				value={value as string}
 				oninput={(e) => set(e.currentTarget.value)}
 			/>
 			{#if assetHint}
-				<span class="text-xs text-fuchsia-400">{assetHint}</span>
+				<span class="raw-asset">{assetHint}</span>
 			{/if}
 		{:else if kind === 'ref'}
-			<span class="text-xs text-zinc-500">→ internal ref #{(value as OdinRef).$ref}</span>
+			<span class="raw-hint">→ internal ref #{(value as OdinRef).$ref}</span>
 		{:else if kind === 'binary'}
-			<span class="text-xs text-zinc-500">
+			<span class="raw-hint">
 				binary · {(value as OdinPrimitiveArray).data.length /
 					(value as OdinPrimitiveArray).bytesPerElement} ×
 				{(value as OdinPrimitiveArray).bytesPerElement} B (not editable)
 			</span>
 		{:else}
-			<span class="text-xs text-zinc-600 italic">null</span>
+			<span class="raw-null">null</span>
 		{/if}
 	</div>
 {/if}
+
+<style>
+	/* The raw tree is the game's own data laid bare, but it still lives inside this
+	   editor, so it wears the editor's warm palette and legible pixel face rather
+	   than the cold zinc/lime it started as. */
+
+	/* Nesting guide: a quiet warm rule down the left of each branch. */
+	.raw-branch,
+	.raw-leaf {
+		border-left: 2px solid var(--color-edge-dim);
+		padding-left: 0.75rem;
+	}
+	.raw-leaf {
+		display: flex;
+		align-items: center;
+		gap: 0.75rem;
+		padding-block: 0.125rem;
+	}
+
+	.raw-summary {
+		font-size: var(--text-ui-xs);
+		line-height: var(--text-ui-xs--line-height);
+		color: var(--color-stone);
+		cursor: pointer;
+		user-select: none;
+		padding-block: 0.125rem;
+	}
+	.raw-summary:hover {
+		color: var(--color-accent);
+	}
+
+	/* Keys read quiet; the value beside them is what the eye lands on. */
+	.raw-label {
+		min-width: 8rem;
+		font-size: var(--text-ui-xs);
+		line-height: var(--text-ui-xs--line-height);
+		color: var(--color-muted);
+	}
+	/* Type names, lengths, refs and binary notes are all just annotations. */
+	.raw-hint {
+		font-size: var(--text-ui-xs);
+		color: var(--color-edge);
+	}
+	.raw-null {
+		font-size: var(--text-ui-xs);
+		font-style: italic;
+		color: var(--color-edge);
+	}
+	/* The asset a raw id points at, called out the way the game emphasises a word
+	   mid-sentence. */
+	.raw-asset {
+		font-size: var(--text-ui-xs);
+		color: var(--color-amber);
+	}
+
+	/* Editable fields borrow the number box's warm-black body and outline that
+	   answers the pointer, kept simpler than the full punk-frame for a dense tree. */
+	.raw-field {
+		font-family: var(--font-ui);
+		font-size: var(--text-ui-xs);
+		line-height: var(--text-ui-xs--line-height);
+		letter-spacing: -0.0425em;
+		color: var(--color-ink);
+		background-color: var(--color-void);
+		border: 2px solid var(--color-edge-dim);
+		padding: 0.125rem 0.5rem;
+	}
+	.raw-field:hover {
+		border-color: var(--color-accent);
+	}
+	.raw-field:focus {
+		border-color: var(--color-ink);
+		outline: none;
+	}
+	.raw-check {
+		width: 1rem;
+		height: 1rem;
+		accent-color: var(--color-accent);
+	}
+
+	.raw-more {
+		margin-block: 0.25rem;
+		font-family: var(--font-ui);
+		font-size: var(--text-ui-xs);
+		line-height: var(--text-ui-xs--line-height);
+		color: var(--color-muted);
+		background-color: transparent;
+		border: 2px solid var(--color-edge);
+		padding: 0.125rem 0.5rem;
+		cursor: pointer;
+	}
+	.raw-more:hover {
+		border-color: var(--color-accent);
+		color: var(--color-accent);
+	}
+</style>
