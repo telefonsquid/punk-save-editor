@@ -8,34 +8,19 @@
  * renumbered enum leaking ordinals. Errors (exit 1) are relationships the app
  * relies on; warnings are known-lopsided game data worth eyeballing.
  */
+import type { AssetInfo, ModuleEffectsEntry, ModuleInfo } from '../src/lib/game/data';
+import { EFFECT_KIND_VALUES } from '../src/lib/game/effect-kinds';
 import assetNames from '../src/lib/game/asset-names.json';
 import itemIcons from '../src/lib/game/item-icons.json';
 import moduleEffects from '../src/lib/game/module-effects.json';
 import moduleInfo from '../src/lib/game/module-info.json';
 import resourceIcons from '../src/lib/game/resource-icons.json';
 
-interface AssetEntry {
-	category: string;
-	displayName: string | null;
-}
-const assets = assetNames as Record<string, AssetEntry>;
+const assets = assetNames as Record<string, AssetInfo>;
 const icons = itemIcons as Record<string, string>;
 const resIcons = resourceIcons as Record<string, { icon?: string; bar?: string }>;
-type Field = { width: number; height: number; data: number[] };
-const infos = moduleInfo as Record<
-	string,
-	{
-		resource: string | null;
-		type: { name: string } | null;
-		weapon: Record<string, unknown> | null;
-		powerCores: Field[];
-		levelFields: Field[];
-	}
->;
-const effects = moduleEffects.modules as Record<
-	string,
-	{ effects: { kind: string; resource: string | null; cost?: { resource: string | null }; extra?: Record<string, unknown> }[] }
->;
+const infos = moduleInfo as unknown as Record<string, ModuleInfo>;
+const effects = moduleEffects.modules as unknown as Record<string, ModuleEffectsEntry>;
 
 const errors: string[] = [];
 const warnings: string[] = [];
@@ -93,9 +78,7 @@ for (const [id, info] of Object.entries(infos)) {
 		}
 	}
 }
-const KNOWN_KINDS = new Set([
-	'capacity', 'regen', 'drain', 'shield', 'weaponProperty', 'explosion', 'burn', 'discharge'
-]);
+const KNOWN_KINDS = new Set<string>(EFFECT_KIND_VALUES);
 for (const [id, m] of Object.entries(effects)) {
 	for (const e of m.effects) {
 		checkResource(e.resource, `effect of ${id}`);

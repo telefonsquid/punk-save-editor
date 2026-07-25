@@ -11,14 +11,18 @@
  * capacity/regen grid walk and the stat lines the UI prints — reads that shape.
  *
  * A new effect type in a game update shows up as an "unknown effect" warning
- * rather than silently vanishing; add it to EFFECT_KINDS.
+ * rather than silently vanishing; add it to EFFECT_KINDS, with its `kind`
+ * registered in src/lib/game/effect-kinds.ts (the type check then demands a
+ * stat line for it in module-stats.ts).
  *
  *     bun scripts/extract-module-effects.ts
  */
 import { readFileSync, writeFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
-import { OdinBinaryReader, isNode } from '../src/lib/game/odin';
-import type { OdinValue } from '../src/lib/game/odin';
+import type { ModuleEffectInfo, Series } from '../src/lib/game/data';
+import type { EffectKind } from '../src/lib/game/effect-kinds';
+import { OdinBinaryReader, isNode } from '../src/lib/save/odin';
+import type { OdinValue } from '../src/lib/save/odin';
 
 const here = fileURLToPath(new URL('.', import.meta.url));
 const raw = JSON.parse(readFileSync(`${here}/module-effects-raw.json`, 'utf8'));
@@ -31,31 +35,15 @@ interface RawModule {
 	refs: { name: string | null; id: string | null }[];
 }
 
-/** A FloatSeries: magnitude at level L is base (+|*) change^(L-1). */
-interface Series {
-	base: number;
-	method: 'add' | 'mul';
-	change: number;
-}
-
-interface EffectInfo {
-	kind: string;
-	/** The resource the effect acts on, or the damage type for weapon augments. */
-	resource: string | null;
-	series: Series | null;
-	/** Per-shot resource cost, for the weapon augments that charge one. */
-	cost?: { amount: number; resource: string | null };
-	/** Flat extras worth printing (radius, chain length, enum choices). */
-	extra?: Record<string, number | boolean | string>;
-}
-
 /**
  * C# effect type -> which field holds the magnitude and which holds the
  * resource. `cost` names the per-projectile cost field when the effect has one.
+ * The `kind`s come from the shared union in src/lib/game/effect-kinds.ts, so a
+ * new subclass added here without a stat line fails `bun run check`.
  */
 const EFFECT_KINDS: Record<
 	string,
-	{ kind: string; series: string; resource?: string; cost?: string; extra?: string[] }
+	{ kind: EffectKind; series: string; resource?: string; cost?: string; extra?: string[] }
 > = {
 	ModifyResourceCapacity: { kind: 'capacity', series: 'delta', resource: 'resource' },
 	ResourceAutoChargeEffect: { kind: 'regen', series: 'rechargeRate', resource: 'resource' },
@@ -101,19 +89,19 @@ const OPERATION = ['add', 'mul'];
 
 const modules: Record<
 	string,
-	{ level: number; canBeBoosted: boolean; effects: EffectInfo[] }
+	{ level: number; canBeBoosted: boolean; effects: ModuleEffectInfo[] }
 > = {};
 const unknown = new Set<string>();
 
 /** Resolves an Odin external reference (`$ext` index) to a resource id. */
-function extRef(value: OdinValue, mod: RawModule): string | null {
+function extRef(value: unknown, mod: RawModule): string | null {
 	if (!value || typeof value !== 'object' || !('$ext' in value)) return null;
 	const idx = (value as { $ext: unknown }).$ext;
 	if (typeof idx !== 'number') return null;
 	return mod.refs[idx]?.id ?? mod.refs[idx]?.name ?? null;
 }
 
-function series(node: OdinValue): Series | null {
+function series(node: unknown): Series | null {
 	if (!isNode(node)) return null;
 	return {
 		base: (node.baseValue as number) ?? 0,
@@ -128,7 +116,7 @@ for (const [guid, mod] of Object.entries(raw.modules as Record<string, RawModule
 	const effectsList = root.effects;
 	const items: OdinValue[] =
 		isNode(effectsList) && Array.isArray(effectsList.$0) ? effectsList.$0 : [];
-	const effects: EffectInfo[] = [];
+	const effects: ModuleEffectInfo[] = [];
 	for (const eff of items) {
 		if (!isNode(eff)) continue;
 		const type = eff.$type?.split(',')[0] ?? '';
@@ -137,7 +125,7 @@ for (const [guid, mod] of Object.entries(raw.modules as Record<string, RawModule
 			unknown.add(type);
 			continue;
 		}
-		const info: EffectInfo = {
+		const info: ModuleEffectInfo = {
 			kind: spec.kind,
 			resource: spec.resource ? extRef(eff[spec.resource], mod) : null,
 			series: series(eff[spec.series])

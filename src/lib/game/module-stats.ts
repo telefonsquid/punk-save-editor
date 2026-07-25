@@ -59,8 +59,13 @@ function effectLine(effect: ModuleEffectInfo, levelIndex: number): StatLine | nu
 			return { label: 'Burn', value: fmtStat(amount) };
 		case 'discharge':
 			return { label: 'Chain', value: `${fmtStat(amount)} dmg`, resource: effect.resource };
-		default:
+		default: {
+			// a kind added to EFFECT_KIND_VALUES lands here until it gets a stat
+			// line, as a compile error rather than a silently blank card
+			const missing: never = effect.kind;
+			void missing;
 			return null;
+		}
 	}
 }
 

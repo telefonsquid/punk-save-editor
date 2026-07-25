@@ -8,6 +8,7 @@
  * loading and accessors live in `$lib/save/`.
  */
 
+import type { EffectKind } from './effect-kinds';
 import assetNames from './asset-names.json';
 import itemIcons from './item-icons.json';
 import moduleEffectsJson from './module-effects.json';
@@ -174,18 +175,17 @@ export function equippableModules(): { id: string; info: AssetInfo }[] {
 /** A `FloatSeries` magnitude: `base (+|*) change` per level above the first. */
 export interface Series {
 	base: number;
-	method: string;
+	method: 'add' | 'mul';
 	change: number;
 }
 
 /**
  * One decoded `ModuleEffect` (see scripts/extract-module-effects.ts, which
- * flattens all eight C# subclasses onto this shape). `kind` is `capacity`,
- * `regen`, `drain`, `shield`, `weaponProperty`, `explosion`, `burn` or
- * `discharge`.
+ * flattens all the C# subclasses onto this shape). The legal `kind`s live in
+ * `./effect-kinds`.
  */
 export interface ModuleEffectInfo {
-	kind: string;
+	kind: EffectKind;
 	resource: string | null;
 	series: Series | null;
 	cost?: { amount: number; resource: string | null };
