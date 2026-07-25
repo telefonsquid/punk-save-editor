@@ -16,7 +16,9 @@ Two files come out of one sprite:
   *outline*, so scaling them up yields thin nested strokes with black between
   them — the tunnel you actually see in main_title_logo_animation.mp4.
 
-Run via scripts/extract-all.py, or directly:
+Page art like the app icon, so it runs on its own rather than through
+extract-all.py:
+
     .venv/Scripts/python.exe scripts/extract-logo.py
 """
 
@@ -50,18 +52,7 @@ def outline_mask(mark: Image.Image) -> Image.Image:
 def main() -> None:
     assets = punklib.PunkAssets(punklib.game_data_from_argv())
 
-    mark = None
-    for obj in assets.env.objects:
-        if obj.type.name != "Sprite":
-            continue
-        try:
-            data = obj.read()
-        except Exception:
-            continue
-        if (data.m_Name or "") == SPRITE_NAME:
-            mark = data.image.convert("RGBA")
-            break
-
+    mark = punklib.find_sprite(assets, SPRITE_NAME)
     if mark is None:
         punklib.warn(f"sprite {SPRITE_NAME!r} not found — did the main menu art get renamed?")
         raise SystemExit(1)

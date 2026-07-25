@@ -80,17 +80,11 @@ WINDOWS_SIZES = (16, 20, 24, 32, 40, 48, 64, 96, 128, 256)
 
 def load_ship() -> Image.Image:
 	assets = punklib.PunkAssets(punklib.game_data_from_argv())
-	for obj in assets.env.objects:
-		if obj.type.name != "Sprite":
-			continue
-		try:
-			data = obj.read()
-		except Exception:
-			continue
-		if (data.m_Name or "") == SPRITE_NAME:
-			return data.image.convert("RGBA")
-	punklib.warn(f"sprite {SPRITE_NAME!r} not found — did the ship art get renamed?")
-	raise SystemExit(1)
+	ship = punklib.find_sprite(assets, SPRITE_NAME)
+	if ship is None:
+		punklib.warn(f"sprite {SPRITE_NAME!r} not found — did the ship art get renamed?")
+		raise SystemExit(1)
+	return ship
 
 
 def classify(ship: Image.Image):

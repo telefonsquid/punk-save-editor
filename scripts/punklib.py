@@ -264,10 +264,8 @@ def resource_id(pptr) -> str | None:
     return ident if isinstance(ident, str) and ident else None
 
 
-def color_rgb(pptr) -> tuple[int, int, int] | None:
-    """Resolves a ColorAsset PPtr to 0-255 RGB."""
-    d = read_fields(pptr)
-    color = d.get("color") if d else None
+def unity_color_rgb(color) -> tuple[int, int, int] | None:
+    """A UnityEngine.Color (0-1 floats) as 0-255 RGB; alpha is dropped."""
     if color is None:
         return None
     return tuple(
@@ -275,9 +273,33 @@ def color_rgb(pptr) -> tuple[int, int, int] | None:
     )
 
 
-def hex_color(pptr) -> str | None:
-    rgb = color_rgb(pptr)
+def color_rgb(pptr) -> tuple[int, int, int] | None:
+    """Resolves a ColorAsset PPtr to 0-255 RGB."""
+    d = read_fields(pptr)
+    return unity_color_rgb(d.get("color") if d else None)
+
+
+def rgb_hex(rgb: tuple[int, int, int] | None) -> str | None:
     return "#%02x%02x%02x" % rgb if rgb else None
+
+
+def hex_color(pptr) -> str | None:
+    return rgb_hex(color_rgb(pptr))
+
+
+def find_sprite(assets, name: str):
+    """The named Sprite in the scan as an RGBA PIL image, or None. Unreadable
+    sprites are skipped the way the icon extractors always have."""
+    for obj in assets.env.objects:
+        if obj.type.name != "Sprite":
+            continue
+        try:
+            data = obj.read()
+        except Exception:
+            continue
+        if (data.m_Name or "") == name:
+            return data.image.convert("RGBA")
+    return None
 
 
 def png_data_uri(img) -> str:

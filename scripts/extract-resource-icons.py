@@ -87,14 +87,9 @@ def sprite_uri(sr_pptr) -> str | None:
 
 
 def inline_hex(color) -> str | None:
-    """An inline UnityEngine.Color (0-1 floats) as #rrggbb; alpha is dropped
-    because every tank colour is opaque and the sprite carries its own alpha."""
-    if color is None:
-        return None
-    rgb = tuple(
-        max(0, min(255, round((getattr(color, ch, 0.0) or 0.0) * 255))) for ch in ("r", "g", "b")
-    )
-    return "#%02x%02x%02x" % rgb
+    """An inline UnityEngine.Color as #rrggbb — the tank colours are opaque and
+    the sprite carries its own alpha, so dropping alpha loses nothing."""
+    return punklib.rgb_hex(punklib.unity_color_rgb(color))
 
 
 def run(assets: punklib.PunkAssets) -> None:
