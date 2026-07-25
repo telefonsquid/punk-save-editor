@@ -44,7 +44,10 @@ REPO = punklib.REPO
 STATIC_DIR = REPO / "static"
 FAVICON = REPO / "src" / "lib" / "assets" / "favicon.svg"
 
-TILE_PX = 32  # favicon canvas, giving 4px of margin around the 24x20 ship
+# Favicon canvas kept tight to the 24x20 ship — just 1px of margin — so at a
+# 16px browser tab the ship still fills the space and reads. A roomier tile shrank
+# it to an unrecognisable smudge.
+TILE_PX = 26
 MASTER = 1024  # tauri source size
 
 
@@ -90,7 +93,7 @@ def write_favicon(grid, w: int, h: int) -> None:
 	dx = (TILE_PX - w) // 2
 	dy = (TILE_PX - h) // 2
 	rects = [
-		f'<rect width="{TILE_PX}" height="{TILE_PX}" rx="4.5" fill="{hexc(TILE)}"/>'
+		f'<rect width="{TILE_PX}" height="{TILE_PX}" rx="3" fill="{hexc(TILE)}"/>'
 	]
 	# Merge each run of same-colour cells in a row into one rect: fewer, and the
 	# shared edges never hairline-crack the way abutting rects can when scaled.
@@ -131,7 +134,7 @@ def write_master(grid, w: int, h: int) -> None:
 	img = Image.new("RGBA", (MASTER, MASTER), (0, 0, 0, 0))
 	img.paste(Image.new("RGBA", (MASTER, MASTER), (*TILE, 255)), (0, 0), mask)
 
-	block = 30  # 24*30 = 720 wide, ~70% of the tile
+	block = 37  # 24*37 = 888 wide, ~87% of the tile
 	ox = (MASTER - w * block) // 2
 	oy = (MASTER - h * block) // 2
 	draw = ImageDraw.Draw(img)
