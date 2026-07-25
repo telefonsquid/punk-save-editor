@@ -1,15 +1,26 @@
-"""Build the editor's own app icon from the game's player-ship sprite.
+"""Build the editor's own icon set from the game's player-ship sprite.
 
 The game's own window icon is a soft, upscaled version of this same little ship.
 Here it is rebuilt crisp and given the editor's own accent: the ship as the game
 draws it (white outline, black hull) with its headlight band lit in PUNK orange,
-sitting on a warm near-black tile. Two outputs, both page art rather than game
-data, so they follow extract-logo.py and land outside src/lib/game:
+sitting on a warm near-black tile. All page art rather than game data, so it
+follows extract-logo.py and lands in static/ rather than src/lib/game.
 
-- `src/lib/assets/favicon.svg` — one <rect> per pixel run, so the browser tab
-  icon stays sharp at every size. The layout imports this file directly.
-- `static/app-icon.png` — a 1024px master with an anti-aliased rounded tile and
-  crisp ship pixels, the source `bun tauri icon` slices into every desktop size.
+Pixel art must never be left to the browser to shrink: nearest-neighbour
+fragments the grid and bicubic blurs it. So every small size is rendered here at
+its own integer scale (or a clean downscale where nothing else fits) and the tab
+sizes are packed into a multi-resolution .ico, letting the browser *pick* a
+hand-made bitmap instead of scaling one. The full modern set:
+
+- `static/icon.svg` — one <rect> per pixel run; the scalable master for modern
+  browsers and high-DPI tabs.
+- `static/favicon.ico` — 16/32/48 bitmaps in one file, for tab and legacy use.
+- `static/apple-touch-icon.png` — 180px on a solid tile (iOS drops transparency).
+- `static/icon-192.png` / `static/icon-512.png` — full-bleed with a safe margin
+  for the web manifest's maskable icons.
+- `static/site.webmanifest` — names the app and points at the two PNGs above.
+- `static/app-icon.png` — 1024px master that `bun tauri icon` slices into the
+  desktop set.
 
 Page art like the wordmark, so it runs on its own rather than through
 extract-all.py. After it, regenerate the desktop set: `bun tauri icon
@@ -19,6 +30,9 @@ static/app-icon.png`.
 """
 
 from __future__ import annotations
+
+import struct
+from io import BytesIO
 
 from PIL import Image, ImageDraw
 
@@ -41,14 +55,7 @@ BAND_ROWS = (8, 9)
 BAND_COLS = range(7, 17)
 
 REPO = punklib.REPO
-STATIC_DIR = REPO / "static"
-FAVICON = REPO / "src" / "lib" / "assets" / "favicon.svg"
-
-# Favicon canvas kept tight to the 24x20 ship — just 1px of margin — so at a
-# 16px browser tab the ship still fills the space and reads. A roomier tile shrank
-# it to an unrecognisable smudge.
-TILE_PX = 26
-MASTER = 1024  # tauri source size
+STATIC = REPO / "static"
 
 
 def load_ship() -> Image.Image:
@@ -67,9 +74,11 @@ def load_ship() -> Image.Image:
 
 
 def classify(ship: Image.Image):
-	"""Pixel grid -> colour per cell, or None where transparent."""
+	"""Pixel grid -> colour per cell, or None where transparent, cropped to the
+	ship's own bounds so it centres on the pixels rather than the sprite's empty
+	margin (which sat it off to one side)."""
 	px = ship.load()
-	grid: list[list[tuple[int, int, int] | None]] = []
+	grid = []
 	for y in range(ship.height):
 		row = []
 		for x in range(ship.width):
@@ -82,21 +91,69 @@ def classify(ship: Image.Image):
 			else:
 				row.append(HULL)
 		grid.append(row)
-	return grid
+
+	xs = [x for row in grid for x, c in enumerate(row) if c]
+	ys = [y for y, row in enumerate(grid) for c in row if c]
+	x0, x1, y0, y1 = min(xs), max(xs), min(ys), max(ys)
+	return [row[x0 : x1 + 1] for row in grid[y0 : y1 + 1]]
 
 
-def hexc(c: tuple[int, int, int]) -> str:
+def ship_image(grid) -> Image.Image:
+	h, w = len(grid), len(grid[0])
+	img = Image.new("RGBA", (w, h), (0, 0, 0, 0))
+	px = img.load()
+	for y, row in enumerate(grid):
+		for x, c in enumerate(row):
+			if c:
+				px[x, y] = (*c, 255)
+	return img
+
+
+def hexc(c) -> str:
 	return "#%02x%02x%02x" % c
 
 
-def write_favicon(grid, w: int, h: int) -> None:
-	dx = (TILE_PX - w) // 2
-	dy = (TILE_PX - h) // 2
-	rects = [
-		f'<rect width="{TILE_PX}" height="{TILE_PX}" rx="3" fill="{hexc(TILE)}"/>'
-	]
-	# Merge each run of same-colour cells in a row into one rect: fewer, and the
-	# shared edges never hairline-crack the way abutting rects can when scaled.
+def rounded_mask(size: int, radius: int) -> Image.Image:
+	# Draw big and shrink so the corner is anti-aliased while ship pixels stay hard.
+	s = 4
+	m = Image.new("L", (size * s, size * s), 0)
+	ImageDraw.Draw(m).rounded_rectangle(
+		[0, 0, size * s - 1, size * s - 1], radius=radius * s, fill=255
+	)
+	return m.resize((size, size), Image.LANCZOS)
+
+
+def scaled_ship(ship: Image.Image, target_w: float) -> Image.Image:
+	"""Ship at a crisp integer scale when it fits, else one clean downscale — never
+	a fractional upscale, which is what smears pixel art."""
+	sw, sh = ship.size
+	if target_w >= sw:
+		f = max(1, round(target_w / sw))
+		return ship.resize((sw * f, sh * f), Image.NEAREST)
+	r = target_w / sw
+	return ship.resize((max(1, round(sw * r)), max(1, round(sh * r))), Image.LANCZOS)
+
+
+def render(size: int, ship: Image.Image, frac: float, *, rounded: bool, radius=0.16) -> Image.Image:
+	"""One icon: the tile, then the ship centred at `frac` of the width."""
+	img = Image.new("RGBA", (size, size), (0, 0, 0, 0))
+	fill = Image.new("RGBA", (size, size), (*TILE, 255))
+	if rounded:
+		img.paste(fill, (0, 0), rounded_mask(size, max(1, round(size * radius))))
+	else:
+		img.paste(fill, (0, 0))
+	s = scaled_ship(ship, size * frac)
+	img.alpha_composite(s, ((size - s.width) // 2, (size - s.height) // 2))
+	return img
+
+
+def write_svg(grid) -> None:
+	h, w = len(grid), len(grid[0])
+	side = w + 2  # 1px of margin each side of the widest row
+	dx, dy = (side - w) // 2, (side - h) // 2
+	rects = [f'<rect width="{side}" height="{side}" rx="{round(side * 0.12)}" fill="{hexc(TILE)}"/>']
+	# Merge each run of same-colour cells in a row into one rect: fewer, and shared
+	# edges never hairline-crack the way abutting rects can when scaled.
 	for y in range(h):
 		x = 0
 		while x < w:
@@ -107,55 +164,64 @@ def write_favicon(grid, w: int, h: int) -> None:
 			run = 1
 			while x + run < w and grid[y][x + run] == c:
 				run += 1
-			rects.append(
-				f'<rect x="{dx + x}" y="{dy + y}" width="{run}" height="1" fill="{hexc(c)}"/>'
-			)
+			rects.append(f'<rect x="{dx + x}" y="{dy + y}" width="{run}" height="1" fill="{hexc(c)}"/>')
 			x += run
 	svg = (
-		f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {TILE_PX} {TILE_PX}" '
+		f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {side} {side}" '
 		f'shape-rendering="crispEdges">\n\t' + "\n\t".join(rects) + "\n</svg>\n"
 	)
-	FAVICON.parent.mkdir(parents=True, exist_ok=True)
-	FAVICON.write_text(svg, encoding="utf-8")
-	print(f"  favicon.svg: {len(rects)} rects, {len(svg)} bytes")
+	(STATIC / "icon.svg").write_text(svg, encoding="utf-8")
+	print(f"  icon.svg: {len(rects)} rects")
 
 
-def write_master(grid, w: int, h: int) -> None:
-	# Rounded tile with smooth corners: draw big, shrink the mask so the curve is
-	# anti-aliased while the ship pixels stay hard-edged.
-	scale = 4
-	mask = Image.new("L", (MASTER * scale, MASTER * scale), 0)
-	ImageDraw.Draw(mask).rounded_rectangle(
-		[0, 0, MASTER * scale - 1, MASTER * scale - 1],
-		radius=int(MASTER * scale * 0.14),
-		fill=255,
-	)
-	mask = mask.resize((MASTER, MASTER), Image.LANCZOS)
-	img = Image.new("RGBA", (MASTER, MASTER), (0, 0, 0, 0))
-	img.paste(Image.new("RGBA", (MASTER, MASTER), (*TILE, 255)), (0, 0), mask)
+def write_ico(images) -> None:
+	# A .ico is just a directory of images; embedding PNGs keeps each hand-made
+	# bitmap exactly as rendered.
+	blobs = []
+	for im in images:
+		buf = BytesIO()
+		im.save(buf, format="PNG")
+		blobs.append(buf.getvalue())
+	out = struct.pack("<HHH", 0, 1, len(images))
+	offset = 6 + 16 * len(images)
+	for im, blob in zip(images, blobs):
+		out += struct.pack("<BBBBHHII", im.width, im.height, 0, 0, 1, 32, len(blob), offset)
+		offset += len(blob)
+	(STATIC / "favicon.ico").write_bytes(out + b"".join(blobs))
+	print(f"  favicon.ico: {', '.join(str(im.width) for im in images)}")
 
-	block = 37  # 24*37 = 888 wide, ~87% of the tile
-	ox = (MASTER - w * block) // 2
-	oy = (MASTER - h * block) // 2
-	draw = ImageDraw.Draw(img)
-	for y in range(h):
-		for x in range(w):
-			c = grid[y][x]
-			if c is None:
-				continue
-			gx, gy = ox + x * block, oy + y * block
-			draw.rectangle([gx, gy, gx + block - 1, gy + block - 1], fill=(*c, 255))
 
-	STATIC_DIR.mkdir(parents=True, exist_ok=True)
-	img.save(STATIC_DIR / "app-icon.png")
-	print(f"  app-icon.png: {MASTER}x{MASTER}")
+MANIFEST = """{
+	"name": "PUNK Save Editor",
+	"short_name": "PUNK",
+	"icons": [
+		{ "src": "/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
+		{ "src": "/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+	],
+	"theme_color": "#000000",
+	"background_color": "#000000",
+	"display": "standalone"
+}
+"""
 
 
 def main() -> None:
-	ship = load_ship()
-	grid = classify(ship)
-	write_favicon(grid, ship.width, ship.height)
-	write_master(grid, ship.width, ship.height)
+	STATIC.mkdir(parents=True, exist_ok=True)
+	grid = classify(load_ship())
+	ship = ship_image(grid)
+
+	write_svg(grid)
+	# Rounded-tile tab icons at their own integer scale.
+	write_ico([render(s, ship, 0.86, rounded=True, radius=0.12) for s in (16, 32, 48)])
+	# iOS drops transparency, so a full solid tile with room to breathe.
+	render(180, ship, 0.72, rounded=False).save(STATIC / "apple-touch-icon.png")
+	# Maskable manifest icons: full-bleed, ship inside the safe centre.
+	render(192, ship, 0.62, rounded=False).save(STATIC / "icon-192.png")
+	render(512, ship, 0.62, rounded=False).save(STATIC / "icon-512.png")
+	(STATIC / "site.webmanifest").write_text(MANIFEST, encoding="utf-8")
+	# Rounded 1024 master for `bun tauri icon`.
+	render(1024, ship, 0.86, rounded=True, radius=0.14).save(STATIC / "app-icon.png")
+	print("  apple-touch-icon.png, icon-192/512.png, site.webmanifest, app-icon.png")
 
 
 if __name__ == "__main__":
