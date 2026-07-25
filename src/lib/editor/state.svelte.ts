@@ -14,6 +14,7 @@
 import { SvelteSet } from 'svelte/reactivity';
 import { isDownloadDir, pickSaveDir, type SaveDir } from '$lib/save/io';
 import { loadFile, loadSlot, saveSlot, type SaveSlot } from '$lib/save/slot';
+import { holdWait, loadFonts, now, paintFrame } from './busy';
 
 export class EditorState {
 	slot = $state.raw<SaveSlot | null>(null);
@@ -145,55 +146,6 @@ export class EditorState {
 			this.rawLoading = null;
 		}
 	};
-}
-
-/**
- * Waits for the browser to actually paint before returning. Decoding a save is
- * heavy synchronous work that blocks the main thread; without a real paint here
- * the wait overlay would mount and unmount inside one frozen frame and never
- * show. Two frames because the first fires before the pending paint, the second
- * after it has landed.
- */
-function paintFrame(): Promise<void> {
-	if (typeof requestAnimationFrame !== 'function') return Promise.resolve();
-	return new Promise((resolve) =>
-		requestAnimationFrame(() => requestAnimationFrame(() => resolve()))
-	);
-}
-
-/**
- * A small file decodes in under a tenth of a second, so the wait overlay would
- * flash up and vanish before the eye caught it and the whole page would look
- * like it never loaded. Keep the overlay up for a beat so a fast open still
- * reads as a load. A slow one already runs past this and lifts the moment it is
- * done.
- */
-const MIN_WAIT_MS = 500;
-
-function now(): number {
-	return typeof performance !== 'undefined' ? performance.now() : 0;
-}
-
-/** Wait out whatever is left of the minimum window since the overlay appeared. */
-function holdWait(shown: number): Promise<void> {
-	const left = MIN_WAIT_MS - (now() - shown);
-	return left > 0 ? new Promise((resolve) => setTimeout(resolve, left)) : Promise.resolve();
-}
-
-/**
- * The three pixel faces are `font-display: block`, so text in a face the browser
- * has not fetched yet stays invisible and then pops in the moment it lands. The
- * title face and the DOS value face are not used on the landing screen, so
- * without this they arrive only once the editor is already showing. Pull all
- * three now. A face that fails to load just falls back, so a miss never blocks.
- */
-function loadFonts(): Promise<unknown> {
-	if (typeof document === 'undefined' || !document.fonts) return Promise.resolve();
-	return Promise.all([
-		document.fonts.load("48px '000webfont'"),
-		document.fonts.load("15px '8-bit HUD'"),
-		document.fonts.load("16px 'Perfect DOS VGA 437'")
-	]).catch(() => undefined);
 }
 
 /** Dev-only escape hatch so automated tests can inject an in-memory SaveDir. */

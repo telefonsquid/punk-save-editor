@@ -4,6 +4,7 @@
 	import CrtFilter from '$lib/components/CrtFilter.svelte';
 	import ScrollBar from '$lib/components/ScrollBar.svelte';
 	import { bindFullscreenKey } from '$lib/fullscreen';
+	import { afterNavigate } from '$app/navigation';
 
 	let { children } = $props();
 
@@ -11,6 +12,11 @@
 	let screen = $state<HTMLElement | null>(null);
 
 	$effect(bindFullscreenKey);
+
+	// SvelteKit resets window scroll on navigation, but the app scrolls inside
+	// .crt-screen — without this, /changelog opens wherever the editor was
+	// scrolled to, heading off-screen.
+	afterNavigate(() => screen?.scrollTo(0, 0));
 </script>
 
 <!-- The whole app renders inside this wrapper so the CRT filter falls on every
