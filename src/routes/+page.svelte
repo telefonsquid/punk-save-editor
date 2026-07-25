@@ -178,14 +178,14 @@
 					<p class="px-4 py-2 border-2 border-edge text-muted text-ui-xs">{editor.statusMessage}</p>
 				{/if}
 
-				<!-- Any input marks the files dirty, and the version bump happens on
-				     change (blur), not on every keystroke, so in-progress decimal
-				     typing isn't clobbered. -->
+				<!-- Each input handler marks its own file dirty; the version bump
+				     happens here on change (blur), not on every keystroke, so
+				     in-progress decimal typing isn't clobbered. -->
 				<!-- Switching tabs remounts the panels below, so each section lifts itself
 				     back into view on the way in (see the reveal action). No wrapper
 				     transition here: one on top of the per-section lift would just stack
 				     two moves on the same content. -->
-				<div oninput={editor.markCurated} onchange={editor.refresh}>
+				<div onchange={editor.refresh}>
 					{#if tab === 'resources'}
 						<!-- Ship tanks, then the inventory strip, then the consumable wheel —
 						     stacked top to bottom to mirror the game's own resource screen.

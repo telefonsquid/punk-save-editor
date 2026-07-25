@@ -108,30 +108,26 @@
 	/** Flips one grid connection of a module in the raw tree. */
 	function toggleConnection(m: ModuleView, key: ConnectionKey) {
 		m[key] = !m[key];
-		editor.markCurated();
-		editor.refresh();
+		editor.touch('vault');
 	}
 
 	/** Rewrites the shape a vault module projects, in the raw tree. */
 	function setField(row: ModuleRow, kind: FieldKind, field: EffectField) {
 		if (!editor.slot) return;
 		setSavedEffectField(editor.slot.vault, row.module, MEMENTO_KEY[kind], field);
-		editor.markCurated();
-		editor.refresh();
+		editor.touch('vault');
 	}
 
 	function addModuleToVault(id: string, fields: NewModuleFields) {
 		if (!editor.slot || !id) return;
 		addModule(editor.slot.vault, id, fields);
-		editor.markCurated();
-		editor.refresh();
+		editor.touch('vault');
 	}
 
 	function removeModuleAt(index: number) {
 		if (!editor.slot) return;
 		removeModule(editor.slot.vault, index);
-		editor.markCurated();
-		editor.refresh();
+		editor.touch('vault');
 	}
 </script>
 
@@ -240,7 +236,11 @@
 											class="w-16"
 											min="0"
 											value={row.powerLevel}
-											oninput={numInput(row.module, 'powerLevel')}
+											oninput={numInput(editor, row.module, 'powerLevel', {
+												min: 0,
+												round: true,
+												file: 'vault'
+											})}
 										/>
 									</label>
 								{/if}

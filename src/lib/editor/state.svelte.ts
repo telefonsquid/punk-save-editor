@@ -42,10 +42,11 @@ export class EditorState {
 		this.version++;
 	};
 
-	/** Marks the curated-section files dirty (vault + rundata are edited together). */
-	markCurated = (): void => {
-		this.dirtyFiles.add('vault');
-		this.dirtyFiles.add('rundata');
+	/** Records a click-driven edit to `file` and repaints. Typed inputs mark
+	 * their file in the input handler and repaint on change instead. */
+	touch = (file: string): void => {
+		this.dirtyFiles.add(file);
+		this.version++;
 	};
 
 	open = async (): Promise<void> => {

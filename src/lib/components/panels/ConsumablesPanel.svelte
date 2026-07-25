@@ -24,8 +24,7 @@
 	function add(id: string) {
 		if (!editor.slot) return;
 		setConsumable(editor.slot.vault, id, 1);
-		editor.markCurated();
-		editor.refresh();
+		editor.touch('vault');
 	}
 </script>
 

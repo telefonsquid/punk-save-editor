@@ -89,8 +89,7 @@
 			const to = filledIndexOf(targetId);
 			if (from >= 0 && to >= 0) {
 				reorderConsumables(editor.slot.vault, from, to);
-				editor.markCurated();
-				editor.refresh();
+				editor.touch('vault');
 			}
 		}
 		dragId = null;
@@ -100,8 +99,7 @@
 		if (!editor.slot) return;
 		removeConsumable(editor.slot.vault, filledIndexOf(id));
 		if (pinned === id) pinned = null;
-		editor.markCurated();
-		editor.refresh();
+		editor.touch('vault');
 	}
 
 	// The +/- keys beside the count. Nudge the live vault node one step, clamped to
@@ -122,8 +120,7 @@
 		// consumable's own max, so + stops once the slot is full.
 		const el = countInputs[i];
 		if (el) el.value = String(next);
-		editor.markCurated();
-		editor.refresh();
+		editor.touch('vault');
 	}
 </script>
 
@@ -186,7 +183,12 @@
 								class="count-num"
 								bind:this={countInputs[i]}
 								value={c.amount}
-								oninput={numInput(c.node, 'amount')}
+								oninput={numInput(editor, c.node, 'amount', {
+									min: 0,
+									max: assets[c.id]?.maxCount,
+									round: true,
+									file: 'vault'
+								})}
 							/><span class="text-muted">/{assets[c.id]?.maxCount ?? '∞'}</span>
 						</span>
 						<button

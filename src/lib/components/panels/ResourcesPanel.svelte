@@ -20,15 +20,23 @@
 		({ id }) => !DISABLED_INGREDIENTS.has(id)
 	);
 
+	// Fresh row objects per recompute: a derived that handed back the same pair
+	// nodes would look unchanged to Svelte, so in-place $v edits (e.g. from the
+	// Raw tab) would never repaint here (see the snapshot rule in
+	// docs/editor-internals.md).
 	const resources = $derived.by(() => {
 		if (editor.version < 0 || !editor.slot) return [];
-		return [...getResources(editor.slot.rundata)];
+		return getResources(editor.slot.rundata).map((pair) => ({
+			pair,
+			id: pair.$k,
+			value: pair.$v
+		}));
 	});
 
 	// Money is the run's headline currency, so it sits on its own line above the
 	// rest of the strip.
-	const money = $derived(resources.find((p) => p.$k === 'Resource Money') ?? null);
-	const otherResources = $derived(resources.filter((p) => p.$k !== 'Resource Money'));
+	const money = $derived(resources.find((r) => r.id === 'Resource Money') ?? null);
+	const otherResources = $derived(resources.filter((r) => r.id !== 'Resource Money'));
 
 	// The vault only stores ingredients the player actually owns, but the UI
 	// shows every ingredient (owned or not) so counts can be raised from zero.
@@ -48,21 +56,28 @@
 	     rest wraps below, all centred. -->
 	<div class="flex flex-col items-center gap-4">
 		{#if money}
-			<label class="flex items-center gap-2" title={displayName(money.$k)}>
+			<label class="flex items-center gap-2" title={displayName(money.id)}>
 				<InlineNumber
 					size="sm"
 					step="any"
-					value={fmt1(money.$v)}
-					oninput={numInput(money, '$v')}
+					min="0"
+					value={fmt1(money.value)}
+					oninput={numInput(editor, money.pair, '$v', { min: 0, file: 'rundata' })}
 				/>
-				<ResourceIcon id={money.$k} scale={3} labeled />
+				<ResourceIcon id={money.id} scale={3} labeled />
 			</label>
 		{/if}
 		<div class="flex flex-wrap items-center justify-center gap-x-8 gap-y-4">
-			{#each otherResources as pair (pair.$k)}
-				<label class="flex items-center gap-2" title={displayName(pair.$k)}>
-					<InlineNumber size="sm" step="any" value={fmt1(pair.$v)} oninput={numInput(pair, '$v')} />
-					<ResourceIcon id={pair.$k} scale={3} labeled />
+			{#each otherResources as row (row.id)}
+				<label class="flex items-center gap-2" title={displayName(row.id)}>
+					<InlineNumber
+						size="sm"
+						step="any"
+						min="0"
+						value={fmt1(row.value)}
+						oninput={numInput(editor, row.pair, '$v', { min: 0, file: 'rundata' })}
+					/>
+					<ResourceIcon id={row.id} scale={3} labeled />
 				</label>
 			{/each}
 			<!-- Every ingredient is listed, even ones the player doesn't own yet

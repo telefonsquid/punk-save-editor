@@ -55,7 +55,9 @@
 	}
 
 	function setNumber(e: Event) {
-		const n = Number((e.currentTarget as HTMLInputElement).value);
+		const el = e.currentTarget as HTMLInputElement;
+		if (el.value === '') return; // cleared to retype | Number('') would write 0
+		const n = Number(el.value);
 		if (Number.isFinite(n)) set(n);
 	}
 

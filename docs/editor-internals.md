@@ -79,14 +79,18 @@ silently wrote the *pristine* tree (creating `.bak`s but byte-identical files). 
 - Save trees live in **`$state.raw`** (`EditorState.slot` in `$lib/editor/state.svelte.ts`). Never
   wrap the Odin trees in deep `$state` — also avoids allocating a signal per property of the ~7 MB
   `entities` tree.
-- **All inputs write straight into the raw tree** via `oninput` handlers (`numInput`, `shipResInput`
-  in `$lib/editor/inputs.ts`), never `bind:value` into a proxied path. The handler mutates the exact
-  object the writer serializes.
+- **All inputs write straight into the raw tree** through `$lib/editor/inputs.ts` (`numInput`,
+  `ingredientInput`, `setShipResource`), never `bind:value` into a proxied path. The handler mutates
+  the exact object the writer serializes — and it owns the whole editing rule for its field: the
+  empty/NaN guard, the clamp (run resources ≥ 0, ship tanks `[0, max]`, counts rounded), and marking
+  exactly the file the edit belongs to dirty. Panels pass bounds as options instead of implementing
+  them.
 - UI refresh is driven explicitly: `EditorState.version`, bumped by `editor.refresh()`, and reactive
   `SvelteSet`s (`dirtyFiles`, `loadedFiles`). Every panel's derived view reads `editor.version` so
-  edits invalidate them. `editor.markCurated()` marks `vault`+`rundata` dirty;
-  `dirtyFiles.add('entities')` for ship edits. version bumps on `change`/blur, not every `input`
-  (the delegation wrapper in `+page.svelte`), so in-progress decimal typing isn't clobbered.
+  edits invalidate them. Click-driven mutations (add/remove/reorder/toggle) call
+  `editor.touch(file)`, which marks the file and repaints in one step. For typed inputs the version
+  bumps on `change`/blur, not every `input` (the delegation wrapper in `+page.svelte`), so
+  in-progress decimal typing isn't clobbered.
 - Because a derived recompute keeps the same underlying object identity, snapshot the scalars you want
   the keyed `{#each}` to react to into fresh row objects (see the `rows` derived in
   `ShipResourcesPanel.svelte`) rather than reading `pair.$v` directly in the template.

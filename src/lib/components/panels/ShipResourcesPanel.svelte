@@ -3,6 +3,7 @@
 	import ResourceTankBar from '../ResourceTankBar.svelte';
 	import Section from '../Section.svelte';
 	import Skeleton from '../Skeleton.svelte';
+	import { setShipResource } from '$lib/editor/inputs';
 	import type { EditorState } from '$lib/editor/state.svelte';
 	import { fmtRate } from '$lib/format';
 	import { resourceArt } from '$lib/game/data';
@@ -37,17 +38,6 @@
 
 	// Rough tank widths so the placeholder reads as a stack of bars, not a blank.
 	const SKELETON_WIDTHS = ['70%', '55%', '85%', '40%'];
-
-	/** Clicking a unit sets the tank; clamp to [0, max] as the game does — a
-	 * negative value crashes the game on load. */
-	function setValue(pair: { $v: number }, max: number | undefined, next: number) {
-		let v = Math.max(0, next);
-		if (max !== undefined) v = Math.min(v, max);
-		pair.$v = v;
-		editor.dirtyFiles.add('entities');
-		editor.markCurated();
-		editor.refresh();
-	}
 </script>
 
 <Section
@@ -83,7 +73,7 @@
 							id={row.id}
 							value={row.value}
 							max={row.max}
-							onset={(n) => setValue(row.pair, row.max, n)}
+							onset={(n) => setShipResource(editor, row.pair, row.max, n)}
 						/>
 					</div>
 					<!-- Only the recharge rate rides along, always on, pinned to the far
