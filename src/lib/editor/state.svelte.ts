@@ -13,7 +13,14 @@
 
 import { SvelteSet } from 'svelte/reactivity';
 import { isDownloadDir, pickSaveDir, type SaveDir } from '$lib/save/io';
-import { loadFile, loadSlot, saveSlot, type SaveSlot } from '$lib/save/slot';
+import {
+	isMixedBackup,
+	loadFile,
+	loadSlot,
+	saveSlot,
+	type BackupReport,
+	type SaveSlot
+} from '$lib/save/slot';
 import { holdWait, loadFonts, now, paintFrame } from './busy';
 
 export class EditorState {
@@ -114,15 +121,15 @@ export class EditorState {
 		const shown = now();
 		try {
 			const names = [...this.dirtyFiles];
-			await saveSlot(this.slot, names);
+			const backup = await saveSlot(this.slot, names);
 			this.dirtyFiles.clear();
 			if (isDownloadDir(this.slot.dir)) {
 				this.slot.dir.exportChanges();
 				this.statusMessage =
-					`Downloaded "${this.slot.dir.name}-edited.zip" (${names.join(', ')} + *.bak backups). ` +
-					`Extract it into your save folder to apply the changes.`;
+					`Downloaded "${this.slot.dir.name}-edited.zip" (${names.join(', ')} + the *.bak backups). ` +
+					`Extract it into your save folder to apply the changes. ${backupNote(backup)}`;
 			} else {
-				this.statusMessage = `Saved ${names.join(', ')}. Originals were backed up as *.bak.`;
+				this.statusMessage = `Saved ${names.join(', ')}. ${backupNote(backup)}`;
 			}
 		} catch (err) {
 			this.error = (err as Error).message;
@@ -146,6 +153,31 @@ export class EditorState {
 			this.rawLoading = null;
 		}
 	};
+}
+
+/**
+ * The backup half of the save status. It says what actually happened rather
+ * than "the whole folder was backed up": a folder that already carried some
+ * *.bak files ends up with a set from two different moments, and restoring that
+ * mix is the very thing whole-folder backups are meant to prevent.
+ */
+function backupNote(report: BackupReport): string {
+	const parts: string[] = [];
+	if (isMixedBackup(report)) {
+		parts.push(
+			`Backed up ${report.created.length} more file${report.created.length === 1 ? '' : 's'} as *.bak, ` +
+				`but ${report.kept.join(', ')} already had a backup from an earlier session, so the *.bak set ` +
+				`is not one moment. Delete the old backups and save again for a single snapshot.`
+		);
+	} else if (report.created.length > 0) {
+		parts.push('The whole folder was backed up as *.bak.');
+	} else {
+		parts.push('The *.bak backups from the earlier save are unchanged.');
+	}
+	if (report.failed.length > 0) {
+		parts.push(`Could not back up ${report.failed.join(', ')} — those have no *.bak.`);
+	}
+	return parts.join(' ');
 }
 
 /** Dev-only escape hatch so automated tests can inject an in-memory SaveDir. */

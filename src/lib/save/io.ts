@@ -13,6 +13,8 @@ export interface SaveDir {
 	read(file: string): Promise<Uint8Array>;
 	write(file: string, data: Uint8Array): Promise<void>;
 	exists(file: string): Promise<boolean>;
+	/** Every file in the folder, backups included. Subfolders are ignored. */
+	list(): Promise<string[]>;
 }
 
 /**
@@ -24,7 +26,7 @@ export interface DownloadSaveDir extends SaveDir {
 	readonly downloadable: true;
 	/** Real files (excluding *.bak) written since the folder was opened. */
 	changedFiles(): string[];
-	/** Downloads a zip of the changed files and their *.bak originals. */
+	/** Downloads a zip of the changed files and every *.bak taken alongside. */
 	exportChanges(): void;
 }
 
@@ -65,7 +67,8 @@ async function pickTauri(): Promise<SaveDir | null> {
 		name,
 		read: (file) => fs.readFile(`${dir}/${file}`),
 		write: (file, data) => fs.writeFile(`${dir}/${file}`, data),
-		exists: (file) => fs.exists(`${dir}/${file}`)
+		exists: (file) => fs.exists(`${dir}/${file}`),
+		list: async () => (await fs.readDir(dir)).filter((e) => e.isFile).map((e) => e.name)
 	};
 }
 
@@ -99,6 +102,18 @@ async function pickWeb(): Promise<SaveDir | null> {
 			} catch {
 				return false;
 			}
+		},
+		list: async () => {
+			// values() ships with every engine that has showDirectoryPicker, but
+			// it isn't in the DOM lib types yet.
+			const dir = handle as unknown as {
+				values(): AsyncIterable<{ kind: string; name: string }>;
+			};
+			const names: string[] = [];
+			for await (const entry of dir.values()) {
+				if (entry.kind === 'file') names.push(entry.name);
+			}
+			return names;
 		}
 	};
 }
@@ -135,14 +150,14 @@ async function pickWebUpload(): Promise<DownloadSaveDir | null> {
 			if (!file.endsWith('.bak')) changed.add(file);
 		},
 		exists: async (file) => store.has(file),
+		list: async () => [...store.keys()],
 		changedFiles: () => [...changed],
 		exportChanges: () => {
+			// Backups of untouched files go in the zip too: they are the rest of
+			// the restore point, and this user has no other way to get them.
 			const entries: ZipEntry[] = [];
-			for (const name of changed) {
-				const data = store.get(name);
-				if (data) entries.push({ name, data });
-				const bak = store.get(`${name}.bak`);
-				if (bak) entries.push({ name: `${name}.bak`, data: bak });
+			for (const [name, data] of store) {
+				if (changed.has(name) || name.endsWith('.bak')) entries.push({ name, data });
 			}
 			downloadBlob(`${folderName}-edited.zip`, makeZip(entries), 'application/zip');
 		}

@@ -50,8 +50,8 @@
 		{#snippet downloadNote()}
 			This browser can't modify the savefiles directly. <strong class="text-amber"
 				>Download changes</strong
-			> gives you a zip — extract it into your save folder to apply it (it includes
-			<code>.bak</code> backups). Don't modify while a savefile is open currently.
+			> gives you a zip — extract it into your save folder to apply it (it includes a
+			<code>.bak</code> of every file). Don't modify while a savefile is open currently.
 		{/snippet}
 		<InfoPop note={editor.downloadMode ? downloadNote : undefined}>
 			<Button

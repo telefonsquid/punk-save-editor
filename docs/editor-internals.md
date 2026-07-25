@@ -23,7 +23,7 @@ hard project rule.
 
 ```
 src/lib/save/          the save files (nothing here knows about the UI)
-  io.ts        SaveDir  { name, read(name), write(name,bytes), exists(name) }
+  io.ts        SaveDir  { name, read(name), write(name,bytes), exists(name), list() }
                pickSaveDir() -> Tauri fs | Chromium FSA | Firefox/Safari upload+download
   zip.ts       makeZip(entries)  (store-only ZIP for the download fallback)
   lzf.ts       lzfDecompress / lzfCompress  (CLZF2 port; see save-format.md)
@@ -57,16 +57,30 @@ folder handle, or an in-memory test dir. `pickSaveDir()` picks a backend by capa
 - **Chromium** — File System Access API (`showDirectoryPicker`), in place.
 - **Firefox/Safari** — neither can write a real folder, so `pickWebUpload()` returns a
   `DownloadSaveDir`: the user picks the folder via a directory `<input>`, every file is read into an
-  in-memory `Map`, writes accumulate there, and `exportChanges()` hands back a zip (changed files +
-  their `.bak` originals) built by `zip.ts` (a from-scratch store-only ZIP writer — save files are
+  in-memory `Map`, writes accumulate there, and `exportChanges()` hands back a zip (the changed files
+  plus every `.bak`) built by `zip.ts` (a from-scratch store-only ZIP writer — save files are
   already LZF-compressed). `supportsInPlaceSave()` gates the UI; `isDownloadDir()` switches the Save
   button to "Download changes". The save codec, accessors, and `saveSlot` are unchanged — only the
   `SaveDir` differs.
 
 `loadSlot` eagerly loads `levelinfo`/`vault`/`rundata`;
 `loadFile(slot, name)` lazily loads and caches the heavier optional files (`entities`, `graph`,
-`mapicons`) into `slot.files`. `saveSlot(slot, names)` writes only the named files, backing up each
-original to `*.bak` **once** before the first overwrite.
+`mapicons`) into `slot.files`. `saveSlot(slot, names)` writes only the named files, but backs up the
+**whole folder** to `*.bak` first — every file `dir.list()` reports, each one **once**, so the backup
+set is the folder as it stood when the editor first wrote to it. Backing up only the edited files
+made an unusable restore point: the game keeps rewriting `world`/`map`/`fow` as the run continues, so
+restoring `vault`+`rundata` alone put the old ship into the new map.
+
+`saveSlot` returns a `BackupReport` (`created` / `kept` / `failed`) because a whole-folder backup can
+only be honest, not complete:
+
+- **`kept` next to `created`** (`isMixedBackup`) means the folder already carried backups — from
+  editor ≤1.0.0, which only backed up what it wrote. Those are never overwritten (they are someone's
+  restore point), so the `*.bak` set now spans two moments and the status line says so.
+- **`failed`** is a file that could not be read or copied. It does not abort the save: peripheral
+  files must not cost the user their edits. The edited files are the exception — they are backed up
+  first and a failure there throws, since overwriting a file whose original was not kept is the one
+  unrecoverable move.
 
 ## The load-bearing Svelte 5 rule: no deep `$state` on save trees
 

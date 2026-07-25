@@ -13,8 +13,8 @@
 		<div class="raw-panel-body">
 			<p class="raw-panel-note">
 				Every value the save files contain, unfiltered. The game does not validate any of this:
-				nonsensical values can corrupt the run or make it fail to load (originals are backed up
-				as <code>*.bak</code> on first save). Changes here are saved per file with the Save button
+				nonsensical values can corrupt the run or make it fail to load (the first save backs the
+				whole folder up as <code>*.bak</code>). Changes here are saved per file with the Save button
 				above.
 			</p>
 			{#each ODIN_FILES as name (name)}

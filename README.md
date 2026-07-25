@@ -26,7 +26,7 @@
 
 ## Features
 
-- **Modifies Saves in Place*** — open your save folder, change what you want, hit save. Originals are backed up as `*.bak` on first write.
+- **Modifies Saves in Place*** — open your save folder, change what you want, hit save. The first write backs the whole folder up as `*.bak`.
 - **Edit Ship Resources** — fuel, health, electrons and the rest, clamped to the maximums your module grid actually supports.
 - **Edit Resources & Consumables** — shared resources, ingredients and consumables, edited on the game's own icons and item art.
 - **Edit Modules** — add and remove vault modules, wire up connections and power cores, and paint custom area-of-effect fields.
@@ -46,7 +46,7 @@
 | v0.12.0 - v0.12.9 | ⚠️ Untested \| Might Work | 1.0.0 |
 | v0.6.0 - v0.11.0 | ❌ Untested \| Most Likely Broken | – |
 
-The editor always writes `*.bak` backups next to the files it touches, so a bad edit is always reversible.
+The first save writes a `*.bak` of every file in the folder — not just the edited ones — so reverting restores the run whole, map included.
 
 ## Screenshots
 
