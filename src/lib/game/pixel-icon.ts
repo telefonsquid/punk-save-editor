@@ -21,7 +21,7 @@
  * and height are big-endian u32s at byte offsets 16 and 20 — so decoding the
  * first 24 bytes is enough, no image loading or layout pass required.
  */
-export function pngSize(dataUri: string): { width: number; height: number } | null {
+function pngSize(dataUri: string): { width: number; height: number } | null {
 	const comma = dataUri.indexOf(',');
 	if (comma < 0) return null;
 	try {

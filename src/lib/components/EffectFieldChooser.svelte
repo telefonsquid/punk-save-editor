@@ -1,12 +1,8 @@
 <script lang="ts">
 	import CustomFieldDialog from './CustomFieldDialog.svelte';
 	import EffectFieldGrid from './EffectFieldGrid.svelte';
-	import {
-		effectFieldChoices,
-		effectFieldKey,
-		resourceColor,
-		type EffectField
-	} from '$lib/game/data';
+	import { resourceColor, type EffectField } from '$lib/game/data';
+	import { effectFieldChoices, effectFieldKey } from '$lib/game/effect-field';
 	import { customFields } from '$lib/editor/custom-fields.svelte';
 
 	// Picks the shape a power core or booster projects: every orientation the

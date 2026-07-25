@@ -1,12 +1,8 @@
 <script lang="ts">
 	import Button from './Button.svelte';
 	import EffectFieldGrid from './EffectFieldGrid.svelte';
-	import {
-		blankEffectField,
-		CUSTOM_FIELD_SIZES,
-		effectFieldProblem,
-		type EffectField
-	} from '$lib/game/data';
+	import type { EffectField } from '$lib/game/data';
+	import { blankEffectField, CUSTOM_FIELD_SIZES, effectFieldProblem } from '$lib/game/effect-field';
 
 	// Painting a shape by hand leaves behind the guarantee that every other shape
 	// in the editor carries — that the game could have rolled it. That is worth a

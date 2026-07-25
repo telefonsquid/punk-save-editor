@@ -264,15 +264,17 @@ is not markup but the rules — grouping, ordering and the effect-field kinds li
   corner, because the distinction that matters — the game could not have rolled this one — belongs on
   the shape rather than on a heading away from it. The warning that they leave the set of producible
   shapes lives in the painting modal. They work — see the hand-painted-shapes section of game-code.md for exactly why, and for the
-  square-and-odd invariants `effectFieldProblem` enforces (non-square fields make the game's own
+  square, odd and lit-centre invariants `effectFieldProblem` (in `$lib/game/effect-field.ts`)
+  enforces (non-square fields make the game's own
   `y * height + x` indexing read out of bounds and throw). A field that fails validation is never
   written: the painter's Add button is disabled and the store refuses it too. The user badge is the
   game's own health red, read from `resourceColor('Resource Health')` rather than hard-coded.
 - **The centre cell is not paintable.** It is where the module itself sits, not part of the area it
   projects, so `EffectFieldGrid` renders it as a span rather than a button when painting (and
-  `paintCell` guards it anyway). A field with a dark centre would put the module outside its own
-  effect, which no sprite the game ships can produce. It still *looks* like every other cell — only
-  its handlers differ.
+  `paintCell` guards it, and `effectFieldProblem` refuses a dark centre outright — the last matters
+  because the validator is the only gate on the localStorage load path). A field with a dark centre
+  would put the module outside its own effect, which no sprite the game ships can produce. It still
+  *looks* like every other cell — only its handlers differ.
 - **The canvas paints by dragging.** The cell you press down on decides the mode for the whole
   stroke: press a dark cell and the stroke draws, press a lit one and it erases. That is why `oncell`
   passes the value a cell should end up at rather than asking for a toggle — crossing a cell twice,

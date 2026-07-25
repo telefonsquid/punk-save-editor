@@ -1,4 +1,5 @@
-import { effectFieldKey, effectFieldProblem, type EffectField } from '$lib/game/data';
+import type { EffectField } from '$lib/game/data';
+import { effectFieldKey, effectFieldProblem } from '$lib/game/effect-field';
 
 /**
  * The shapes the player has painted themselves, kept in `localStorage`.
