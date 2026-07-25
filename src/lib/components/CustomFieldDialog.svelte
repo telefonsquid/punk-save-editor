@@ -26,7 +26,6 @@
 	let canvas = $state<EffectField>(blankEffectField(5));
 
 	const problem = $derived(effectFieldProblem(canvas));
-	const lit = $derived(canvas.data.filter((v) => v).length);
 
 	// `showModal()` is what gives the native dialog its focus trap and Esc
 	// handling, and there is no attribute equivalent — so the open state has to

@@ -171,16 +171,39 @@
 		padding-block: 0.125rem;
 	}
 
+	/* Branch rows match the file rows above them (see RawFilesPanel): DOS face,
+	   flex line so the marker centres on the label instead of riding above it,
+	   and that marker drawn here rather than left to the UA. */
 	.raw-summary {
-		font-size: var(--text-ui-xs);
-		line-height: var(--text-ui-xs--line-height);
+		display: flex;
+		align-items: center;
+		gap: 0.5rem;
+		font-family: var(--font-desc);
+		font-size: 18px;
+		line-height: 1.35;
+		letter-spacing: normal;
 		color: var(--color-stone);
 		cursor: pointer;
 		user-select: none;
 		padding-block: 0.125rem;
 	}
+	.raw-summary::-webkit-details-marker {
+		display: none;
+	}
+	.raw-summary::before {
+		content: '►';
+		color: var(--color-edge);
+	}
+	.raw-branch[open] > .raw-summary::before {
+		content: '▼';
+	}
 	.raw-summary:hover {
 		color: var(--color-accent);
+	}
+	/* Annotations keep their own size out in the leaf rows, where the type around
+	   them is the UI face; inside a branch row they follow the label. */
+	.raw-summary .raw-hint {
+		font-size: inherit;
 	}
 
 	/* Keys read quiet; the value beside them is what the eye lands on. */

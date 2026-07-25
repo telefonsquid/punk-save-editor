@@ -8,7 +8,7 @@
 </script>
 
 {#if editor.slot}
-	<div class="raw-panel" use:reveal>
+	<div class="raw-panel" use:reveal={{ delay: 120 }}>
 		<h2 class="punk-title-shadow raw-panel-title">Raw Game Data - modify at your own risk</h2>
 		<div class="raw-panel-body">
 			<p class="raw-panel-note">
@@ -24,10 +24,12 @@
 				>
 					<summary class="raw-panel-file-title">
 						{name}
+						<!-- Plain hyphens: the DOS face has no middle dot at that code
+						     point and draws a pilcrow in its place. -->
 						{#if editor.dirtyFiles.has(name)}
-							<span class="raw-panel-mod">· modified</span>
+							<span class="raw-panel-mod">- modified</span>
 						{:else if !editor.loadedFiles.has(name)}
-							<span class="raw-panel-load">· click to load</span>
+							<span class="raw-panel-load">- click to load</span>
 						{/if}
 					</summary>
 					{#if editor.loadedFiles.has(name)}
@@ -103,19 +105,43 @@
 		border: 2px solid var(--color-edge-dim);
 		padding: 0.5rem 0.75rem;
 	}
+	/* File names are data rather than interface, so they read in the DOS face the
+	   module cards use for their body copy, at its usual size and grey. The row is
+	   a flex line so the marker sits on the middle of the text: 000webfont's line
+	   box is shorter than its em box, which left the UA triangle riding high above
+	   the name. */
 	.raw-panel-file-title {
-		font-size: var(--text-ui-xs);
-		line-height: var(--text-ui-xs--line-height);
+		display: flex;
+		align-items: center;
+		gap: 0.5rem;
+		font-family: var(--font-desc);
+		font-size: 18px;
+		line-height: 1.35;
+		letter-spacing: normal;
 		color: var(--color-stone);
 		cursor: pointer;
 		user-select: none;
 	}
+	/* Being a flex box already takes the summary off `list-item` and with it the
+	   UA triangle; Safari draws its own marker that has to go separately. */
+	.raw-panel-file-title::-webkit-details-marker {
+		display: none;
+	}
+	/* The marker, redrawn in glyphs code page 437 actually carries, so it is on the
+	   same pixel grid as the name beside it. */
+	.raw-panel-file-title::before {
+		content: '►';
+		color: var(--color-edge);
+	}
+	.raw-panel-file[open] > .raw-panel-file-title::before {
+		content: '▼';
+	}
 	.raw-panel-mod {
-		font-size: var(--text-ui-xs);
+		font-size: inherit;
 		color: var(--color-accent);
 	}
 	.raw-panel-load {
-		font-size: var(--text-ui-xs);
+		font-size: inherit;
 		color: var(--color-edge);
 	}
 	.raw-panel-decoding {

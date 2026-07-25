@@ -83,6 +83,20 @@ export class EditorState {
 		}
 	};
 
+	/**
+	 * Drops the open save and returns to the title screen. Edits that were never
+	 * written are gone with it, so the caller is expected to have asked first.
+	 */
+	close = (): void => {
+		this.slot = null;
+		this.dirtyFiles.clear();
+		this.loadedFiles.clear();
+		this.error = null;
+		this.statusMessage = null;
+		this.rawLoading = null;
+		this.version++;
+	};
+
 	save = async (): Promise<void> => {
 		if (!this.slot || this.dirtyFiles.size === 0) return;
 		this.error = null;

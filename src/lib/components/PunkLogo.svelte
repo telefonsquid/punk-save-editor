@@ -47,8 +47,22 @@
 		 * away. Positioning it here measures from the wordmark itself, and
 		 * leaves the wordmark centred on the tunnel it belongs to.
 		 */
-		subtitle
-	}: { scale?: number; echoes?: number; subtitle?: Snippet } = $props();
+		subtitle,
+		/**
+		 * Makes the wordmark itself activate. Only the sprite becomes the target,
+		 * not the band around it — the band is three times the mark's height and
+		 * mostly empty, and a click that lands out there was aimed at nothing.
+		 */
+		onclick,
+		/** Names the button. Required whenever `onclick` is given. */
+		label
+	}: {
+		scale?: number;
+		echoes?: number;
+		subtitle?: Snippet;
+		onclick?: () => void;
+		label?: string;
+	} = $props();
 
 	const WIDTH = 153;
 	const HEIGHT = 39;
@@ -112,8 +126,8 @@
 	class="punk-logo relative grid w-full place-items-center overflow-hidden"
 	style:height="{bandHeight}px"
 	style:max-width="{bandWidth}px"
-	role="img"
-	aria-label="PUNK"
+	role={onclick ? undefined : 'img'}
+	aria-label={onclick ? undefined : 'PUNK'}
 >
 	<!-- The soft vertical flare sitting behind the centre of the mark. -->
 	<div class="punk-flare" aria-hidden="true"></div>
@@ -134,13 +148,19 @@
 		></div>
 	{/each}
 
-	<img
-		src="/punk-wordmark.png"
-		alt=""
-		width={WIDTH * scale}
-		height={HEIGHT * scale}
-		class="relative z-10"
-	/>
+	{#if onclick}
+		<button type="button" class="punk-logo-button relative z-10" aria-label={label} {onclick}>
+			<img src="/punk-wordmark.png" alt="" width={WIDTH * scale} height={HEIGHT * scale} />
+		</button>
+	{:else}
+		<img
+			src="/punk-wordmark.png"
+			alt=""
+			width={WIDTH * scale}
+			height={HEIGHT * scale}
+			class="relative z-10"
+		/>
+	{/if}
 
 	{#if subtitle}
 		<!-- Half the band is above the wordmark's centre line, so clearing the
@@ -182,6 +202,24 @@
 		50% {
 			opacity: var(--peak);
 		}
+	}
+
+	/* The mark keeps its own look as a button: no chrome of its own, and the
+	   pointer cue is a glow around the keyline rather than a transform, which
+	   would resample the sprite off the pixel grid. */
+	.punk-logo-button {
+		display: block;
+		padding: 0;
+		background: none;
+		border: none;
+		cursor: pointer;
+	}
+	.punk-logo-button:hover img,
+	.punk-logo-button:focus-visible img {
+		filter: drop-shadow(0 0 6px var(--color-accent));
+	}
+	.punk-logo-button:focus-visible {
+		outline: none;
 	}
 
 	/* Above the echoes so the keyline actually reads against them. */

@@ -153,6 +153,17 @@
 		overflow-x: hidden;
 		overflow-y: auto;
 		filter: url(#crt);
+
+		/* WebView2 and WebKitGTK still hand out a classic bar, which is 15px of
+		   permanent grey gutter down a screen meant to read as the game's own.
+		   ScrollBar.svelte draws an overlay one in its place. Both properties are
+		   here on purpose: the standard one for current engines, the -webkit- rule
+		   for the older WebKitGTK that ships on some Linux distros. */
+		scrollbar-width: none;
+	}
+
+	.crt-screen::-webkit-scrollbar {
+		display: none;
 	}
 
 	body {
