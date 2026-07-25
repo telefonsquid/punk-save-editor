@@ -222,10 +222,12 @@ add tags:
 
 ## Modules in the UI
 
-`components/ModuleList.svelte` renders a list of modules grouped by category, and both places that
-show modules use it: the vault section and the add-module modal (`ModulePicker.svelte`). The
-per-row controls differ, so the list takes an `actions` snippet — the vault passes connection
-toggles / power cores / remove, the picker passes an Add button.
+Modules show in two deliberately different shapes: the vault tab draws each one as the game's own
+tooltip card (`panels/ModulesPanel.svelte`), the add-module modal (`ModulePicker.svelte`) lists rows
+via `components/ModuleList.svelte` with an `actions` snippet for its Add button. What the two share
+is not markup but the rules — grouping, ordering and the effect-field kinds live once in
+`$lib/game/module-groups.ts`, and the shared copy styles (`punk-group-title`, `punk-game-desc`,
+`punk-stat*`) are layout.css utilities.
 
 - **Categories come from the game**, not a list in the editor: `ModuleData.moduleType` points at a
   `ModuleType` asset whose `displayName` is the shop category and whose `orderInShop` is the order.

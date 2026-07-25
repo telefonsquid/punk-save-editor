@@ -12,14 +12,13 @@
 	import type { EditorState } from '$lib/editor/state.svelte';
 	import {
 		assets,
-		categoryRank,
 		displayName,
 		equippableModules,
 		moduleInfo,
-		resourceRank,
 		usesPowerCore,
 		type EffectField
 	} from '$lib/game/data';
+	import { groupModules, moduleFields, type FieldKind } from '$lib/game/module-groups';
 	import { moduleStats } from '$lib/game/module-stats';
 	import {
 		addModule,
@@ -62,48 +61,14 @@
 	});
 	type ModuleRow = (typeof moduleRows)[number];
 
-	// Grouped by the module's own category in the game's shop order — the two core
-	// categories pinned to the top — so weapons, gadgets and ship modules stay
-	// apart the way the player sees them. Inside a group the resource leads and the
-	// name only breaks ties, which keeps each resource's modules adjacent.
-	const groups = $derived.by(() => {
-		const by: Record<string, { name: string; rank: number; rows: ModuleRow[] }> = {};
-		for (const row of moduleRows) {
-			const type = moduleInfo(row.id)?.type;
-			const name = type?.name ?? 'OTHER';
-			(by[name] ??= { name, rank: categoryRank(name, type?.order ?? 99), rows: [] }).rows.push(row);
-		}
-		for (const group of Object.values(by)) {
-			group.rows.sort(
-				(a, b) =>
-					resourceRank(moduleInfo(a.id)?.resource) - resourceRank(moduleInfo(b.id)?.resource) ||
-					displayName(a.id).localeCompare(displayName(b.id))
-			);
-		}
-		return Object.values(by).sort((a, b) => a.rank - b.rank || a.name.localeCompare(b.name));
-	});
+	// Same grouping and order as the picker's list — the shared rule lives in
+	// $lib/game/module-groups.
+	const groups = $derived(groupModules(moduleRows));
 
-	// The two effect-field slots a card can draw, in the game's own words.
-	type FieldKind = 'powerCores' | 'levelFields';
-	const FIELD_KINDS: { key: FieldKind; label: string }[] = [
-		{ key: 'powerCores', label: 'POWERS' },
-		{ key: 'levelFields', label: 'BOOSTS' }
-	];
 	const MEMENTO_KEY: Record<FieldKind, EffectFieldKey> = {
 		powerCores: 'powerCore',
 		levelFields: 'levelModificationField'
 	};
-
-	// The fields to actually draw on a card: the ones whose asset defines any
-	// candidate shape, with the shape the module currently projects.
-	function cardFields(row: ModuleRow) {
-		const info = moduleInfo(row.id);
-		return FIELD_KINDS.map((kind) => ({
-			...kind,
-			candidates: info?.[kind.key] ?? [],
-			value: row.fields[kind.key][0] ?? null
-		})).filter((kind) => kind.candidates.length > 0);
-	}
 
 	/** Flips one grid connection of a module in the raw tree. */
 	function toggleConnection(m: ModuleView, key: ConnectionKey) {
@@ -142,12 +107,12 @@
 		<p class="text-center text-muted text-ui-xs">Vault has no modules.</p>
 	{:else}
 		{#each groups as group (group.name)}
-			<h3 class="module-group">
+			<h3 class="punk-group-title mb-2">
 				{group.name}
-				<span class="module-group-count">({group.rows.length})</span>
+				<span class="text-edge">({group.items.length})</span>
 			</h3>
 			<div class="module-grid mb-10">
-				{#each group.rows as row (row.index)}
+				{#each group.items as row (row.index)}
 					{@const info = moduleInfo(row.id)}
 					{@const stats = moduleStats(row.id)}
 					{@const tier = row.id ? assets[row.id]?.level : undefined}
@@ -178,7 +143,7 @@
 						</header>
 
 						{#if info?.description}
-							<p class="card-desc punk-desc-shadow"><RichText text={info.description} /></p>
+							<p class="punk-game-desc punk-desc-shadow mt-2.5"><RichText text={info.description} /></p>
 						{/if}
 
 						{#if stats.length > 0}
@@ -186,10 +151,10 @@
 							     "Cost 2 per shot") reads as a list, not a run-on. -->
 							<ul class="card-stats">
 								{#each stats as stat, i (i)}
-									<li class="stat punk-desc-shadow">
+									<li class="punk-stat punk-desc-shadow">
 										{stat.label}
-										<span class="stat-val">{stat.value}</span>
-										{#if stat.resource}<span class="stat-icon"><ResourceIcon id={stat.resource} labeled /></span>{/if}
+										<span class="punk-stat-val">{stat.value}</span>
+										{#if stat.resource}<span class="punk-stat-icon"><ResourceIcon id={stat.resource} labeled /></span>{/if}
 										{#if stat.suffix}{stat.suffix}{/if}
 									</li>
 								{/each}
@@ -200,10 +165,10 @@
 							<!-- The shape pickers moved down here next to the connection toggles:
 							     both are things you change, so they live together below the line
 							     rather than dressing up the game-card body above it. -->
-							{#each cardFields(row) as kind (kind.key)}
+							{#each moduleFields(row.id, row.fields) as kind (kind.key)}
 								<EffectFieldChooser
 									candidates={kind.candidates}
-									value={kind.value}
+									value={kind.shapes[0] ?? null}
 									color={info?.color}
 									label={kind.label}
 									onchange={(field) => setField(row, kind.key, field)}
@@ -266,20 +231,6 @@
 		.module-grid {
 			grid-template-columns: repeat(2, minmax(0, 1fr));
 		}
-	}
-
-	/* Category heading in the HUD face, quiet enough to group without shouting. */
-	.module-group {
-		font-family: var(--font-title);
-		font-size: var(--text-hud-sm);
-		line-height: var(--text-hud-sm--line-height);
-		letter-spacing: var(--tracking-hud-wide);
-		text-transform: uppercase;
-		color: var(--color-muted);
-		margin-bottom: 0.5rem;
-	}
-	.module-group-count {
-		color: var(--color-edge);
 	}
 
 	/* The card itself: the game's module tooltip — a warm near-black slab a shade
@@ -345,17 +296,6 @@
 		white-space: nowrap;
 	}
 
-	/* The description is the one lowercase body copy the game's card carries, set
-	   in the DOS face the game itself uses for it (see layout.css). */
-	.card-desc {
-		margin-top: 0.625rem;
-		font-family: var(--font-desc);
-		font-size: 18px;
-		line-height: 1.35;
-		letter-spacing: normal;
-		color: var(--color-stone);
-	}
-
 	.card-stats {
 		display: flex;
 		flex-direction: column;
@@ -363,29 +303,6 @@
 		margin-top: 0.75rem;
 		list-style: none;
 		padding: 0;
-	}
-	/* The stats share the description's DOS face, forced uppercase like the game's
-	   own card, so the whole card body reads as one block of pixel copy. */
-	.stat {
-		display: flex;
-		align-items: center;
-		gap: 0.25rem;
-		font-family: var(--font-desc);
-		font-size: 18px;
-		line-height: 1.35;
-		letter-spacing: normal;
-		text-transform: uppercase;
-		color: var(--color-stone);
-	}
-	.stat-val {
-		color: var(--color-ink);
-	}
-	/* The stat words are uppercase, so their ink sits in the top of the line box
-	   while the empty descender space pads the bottom. Centring the pixel icon in
-	   that box would drop it below the letters, so nudge it up onto the caps. */
-	.stat-icon {
-		display: inline-flex;
-		transform: translateY(-2px);
 	}
 
 	/* The editor controls sit under a thin rule, kept apart from the game-card body

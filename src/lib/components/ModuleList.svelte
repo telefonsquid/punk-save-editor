@@ -1,5 +1,6 @@
 <script module lang="ts">
 	import type { EffectField } from '$lib/game/data';
+	import type { FieldKind } from '$lib/game/module-groups';
 
 	export interface ModuleItem {
 		/** Stable key for the keyed each — a vault index, or the module id. */
@@ -12,14 +13,6 @@
 		 */
 		fields?: Record<FieldKind, EffectField[]>;
 	}
-
-	/** The two kinds of effect field, named as `ModuleInfo` and `ModuleItem` hold them. */
-	export type FieldKind = 'powerCores' | 'levelFields';
-
-	const KINDS: { key: FieldKind; label: string }[] = [
-		{ key: 'powerCores', label: 'POWERS' },
-		{ key: 'levelFields', label: 'BOOSTS' }
-	];
 </script>
 
 <script lang="ts">
@@ -29,7 +22,8 @@
 	import ItemIcon from './ItemIcon.svelte';
 	import ResourceIcon from './ResourceIcon.svelte';
 	import RichText from './RichText.svelte';
-	import { assets, categoryRank, displayName, moduleInfo, resourceRank } from '$lib/game/data';
+	import { assets, displayName, moduleInfo } from '$lib/game/data';
+	import { groupModules, moduleFields } from '$lib/game/module-groups';
 	import { moduleStats } from '$lib/game/module-stats';
 
 	let {
@@ -46,58 +40,16 @@
 		onfieldchange?: (item: ModuleItem, kind: FieldKind, field: EffectField) => void;
 	} = $props();
 
-	/**
-	 * Grouped by the module's own `ModuleType` asset, in the game's shop order —
-	 * except for the two core categories, which `categoryRank` pins to the top —
-	 * so weapons/gadgets/ship modules/weapon mods stay separated the way the
-	 * player sees them in-game. A module whose type is missing lands in "OTHER".
-	 *
-	 * Inside a category the resource comes first and the name only breaks ties:
-	 * a player looking for a weapon is choosing which resource to spend long
-	 * before they care what it is called, and it keeps each resource's modules
-	 * adjacent and uniformly coloured.
-	 */
-	const groups = $derived.by(() => {
-		const by: Record<string, { name: string; rank: number; items: ModuleItem[] }> = {};
-		for (const item of items) {
-			const type = moduleInfo(item.id)?.type;
-			const name = type?.name ?? 'OTHER';
-			(by[name] ??= { name, rank: categoryRank(name, type?.order ?? 99), items: [] }).items.push(
-				item
-			);
-		}
-		for (const group of Object.values(by)) {
-			group.items.sort(
-				(a, b) =>
-					resourceRank(moduleInfo(a.id)?.resource) - resourceRank(moduleInfo(b.id)?.resource) ||
-					displayName(a.id).localeCompare(displayName(b.id))
-			);
-		}
-		return Object.values(by).sort((a, b) => a.rank - b.rank || a.name.localeCompare(b.name));
-	});
-
-	/**
-	 * The effect fields to draw under a row, one entry per kind the module's asset
-	 * defines: `shapes` is what it projects now (its own rolled shape when the
-	 * caller passed one, else the asset's candidates) and `candidates` is what it
-	 * could project, which is what the chooser offers.
-	 */
-	function fieldsOf(item: ModuleItem) {
-		const info = moduleInfo(item.id);
-		return KINDS.map((kind) => {
-			const candidates = info?.[kind.key] ?? [];
-			return { ...kind, candidates, shapes: item.fields?.[kind.key] ?? candidates };
-		}).filter((kind) => kind.candidates.length > 0);
-	}
+	const groups = $derived(groupModules(items));
 </script>
 
 {#if items.length === 0}
 	<p class="text-ui-xs text-muted">{empty}</p>
 {:else}
 	{#each groups as group (group.name)}
-		<h3 class="module-group">
+		<h3 class="punk-group-title mt-5 mb-2 first:mt-0">
 			{group.name}
-			<span class="module-group-count">({group.items.length})</span>
+			<span class="text-edge">({group.items.length})</span>
 		</h3>
 		<ul class="module-rows">
 			{#each group.items as item (item.key)}
@@ -125,13 +77,13 @@
 							{/if}
 						</div>
 						{#if info?.description}
-							<p class="row-desc punk-desc-shadow"><RichText text={info.description} /></p>
+							<p class="punk-game-desc punk-desc-shadow mt-1"><RichText text={info.description} /></p>
 						{/if}
 						<!-- Power cores and boosters act on the slots *around* them, so the
 						     shape of that area is the most important thing about them —
 						     the game shows the same diagram on their card. More than one
 						     means the module rolls a random shape when it is built. -->
-						{#each fieldsOf(item) as kind (kind.key)}
+						{#each moduleFields(item.id, item.fields) as kind (kind.key)}
 							{#if onfieldchange}
 								<EffectFieldChooser
 									candidates={kind.candidates}
@@ -155,11 +107,11 @@
 						{#if stats.length > 0}
 							<div class="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1">
 								{#each stats as stat, i (i)}
-									<span class="row-stat punk-desc-shadow">
+									<span class="punk-stat punk-desc-shadow">
 										{stat.label}
-										<span class="row-stat-val">{stat.value}</span>
+										<span class="punk-stat-val">{stat.value}</span>
 										{#if stat.resource}
-											<span class="row-stat-icon"><ResourceIcon id={stat.resource} labeled /></span>
+											<span class="punk-stat-icon"><ResourceIcon id={stat.resource} labeled /></span>
 										{/if}
 										{#if stat.suffix}{stat.suffix}{/if}
 									</span>
@@ -177,24 +129,6 @@
 {/if}
 
 <style>
-	/* Category heading in the HUD face, matched to the Modules tab's own group
-	   headings so the picker reads as the same surface. */
-	.module-group {
-		font-family: var(--font-title);
-		font-size: var(--text-hud-sm);
-		line-height: var(--text-hud-sm--line-height);
-		letter-spacing: var(--tracking-hud-wide);
-		text-transform: uppercase;
-		color: var(--color-muted);
-		margin: 1.25rem 0 0.5rem;
-	}
-	.module-group:first-child {
-		margin-top: 0;
-	}
-	.module-group-count {
-		color: var(--color-edge);
-	}
-
 	/* Rows sit apart on the game's quiet edge line rather than a cold zinc rule. */
 	.module-rows > li + li {
 		border-top: 2px solid var(--color-edge-dim);
@@ -203,39 +137,5 @@
 	.row-name {
 		font-size: var(--text-ui-xs);
 		color: var(--color-ink);
-	}
-
-	/* The description is the game's own lowercase body copy, in the DOS face the
-	   card uses for it. */
-	.row-desc {
-		margin-top: 0.25rem;
-		font-family: var(--font-desc);
-		font-size: 18px;
-		line-height: 1.35;
-		letter-spacing: normal;
-		color: var(--color-stone);
-	}
-
-	/* Stats share the description's DOS face, forced uppercase like the game's card. */
-	.row-stat {
-		display: flex;
-		align-items: center;
-		gap: 0.25rem;
-		font-family: var(--font-desc);
-		font-size: 18px;
-		line-height: 1.35;
-		letter-spacing: normal;
-		text-transform: uppercase;
-		color: var(--color-stone);
-	}
-	.row-stat-val {
-		color: var(--color-ink);
-	}
-	/* The stat words are uppercase, so their ink sits in the top of the line box
-	   while the empty descender space pads the bottom. Centring the pixel icon in
-	   that box would drop it below the letters, so nudge it up onto the caps. */
-	.row-stat-icon {
-		display: inline-flex;
-		transform: translateY(-2px);
 	}
 </style>

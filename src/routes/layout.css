@@ -267,6 +267,54 @@
 	text-shadow: 1px 1px 0 #050403;
 }
 
+@utility punk-group-title {
+	/* Category heading over a module list, in the HUD face — shared by the
+	   vault's card grid and the picker's row list so both surfaces group the
+	   same way. Margins stay with the caller. */
+	font-family: var(--font-title);
+	font-size: var(--text-hud-sm);
+	line-height: var(--text-hud-sm--line-height);
+	letter-spacing: var(--tracking-hud-wide);
+	text-transform: uppercase;
+	color: var(--color-muted);
+}
+
+@utility punk-game-desc {
+	/* The game's one lowercase body copy: module descriptions, set in the DOS
+	   face the game itself uses for them. */
+	font-family: var(--font-desc);
+	font-size: 18px;
+	line-height: 1.35;
+	letter-spacing: normal;
+	color: var(--color-stone);
+}
+
+@utility punk-stat {
+	/* One stat line on a module card, sharing the description's DOS face but
+	   forced uppercase like the game's own card. */
+	display: flex;
+	align-items: center;
+	gap: 0.25rem;
+	font-family: var(--font-desc);
+	font-size: 18px;
+	line-height: 1.35;
+	letter-spacing: normal;
+	text-transform: uppercase;
+	color: var(--color-stone);
+}
+
+@utility punk-stat-val {
+	color: var(--color-ink);
+}
+
+@utility punk-stat-icon {
+	/* The stat words are uppercase, so their ink sits in the top of the line box
+	   while the empty descender space pads the bottom. Centring the pixel icon in
+	   that box would drop it below the letters, so nudge it up onto the caps. */
+	display: inline-flex;
+	transform: translateY(-2px);
+}
+
 @utility punk-outlined {
 	/* A one-pixel black keyline in all eight directions, for text that has to
 	   stay readable on top of moving artwork (the title screen's subtitle sits
