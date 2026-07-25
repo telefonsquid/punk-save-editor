@@ -4,7 +4,7 @@
 	import { numInput } from '$lib/editor/inputs';
 	import type { EditorState } from '$lib/editor/state.svelte';
 	import { fmt1, formatDuration } from '$lib/format';
-	import { runStats } from '$lib/save/slot';
+	import { runStats } from '$lib/save/rundata';
 
 	let { editor }: { editor: EditorState } = $props();
 

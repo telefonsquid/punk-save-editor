@@ -2,7 +2,7 @@
 	import Button from './Button.svelte';
 	import ModuleList, { type FieldKind, type ModuleItem } from './ModuleList.svelte';
 	import { displayName, moduleCategory, moduleInfo, type EffectField } from '$lib/game/data';
-	import type { NewModuleFields } from '$lib/save/slot';
+	import type { NewModuleFields } from '$lib/save/vault';
 
 	let {
 		open = $bindable(false),

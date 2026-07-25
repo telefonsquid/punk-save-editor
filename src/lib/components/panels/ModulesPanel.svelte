@@ -32,7 +32,7 @@
 		type EffectFieldKey,
 		type ModuleView,
 		type NewModuleFields
-	} from '$lib/save/slot';
+	} from '$lib/save/vault';
 
 	let { editor }: { editor: EditorState } = $props();
 

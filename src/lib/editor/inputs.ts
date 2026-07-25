@@ -5,7 +5,8 @@
  * panels' event delegation, so in-progress decimal typing isn't clobbered.
  */
 
-import { addIngredient, type ResourcePair } from '$lib/save/slot';
+import type { ResourcePair } from '$lib/save/tree';
+import { setIngredientCount } from '$lib/save/vault';
 import type { EditorState } from './state.svelte';
 
 /** Writes a finite number straight into the raw tree. */
@@ -29,7 +30,7 @@ export function ingredientInput(editor: EditorState, id: string) {
 		if (el.value === '' || !Number.isFinite(n)) return;
 		const v = Math.max(0, Math.round(n));
 		if (v !== n) el.value = String(v);
-		addIngredient(editor.slot.vault, id, v);
+		setIngredientCount(editor.slot.vault, id, v);
 		editor.dirtyFiles.add('vault');
 	};
 }

@@ -13,7 +13,8 @@
 import { moduleEffectsEntry, seriesAt, slotLevelDeltas } from '$lib/game/data';
 import { isNode } from './odin';
 import type { OdinNode, OdinValue } from './odin';
-import { dictPairs, savedEffectField, type ResourcePair } from './slot';
+import { dictPairs, type ResourcePair } from './tree';
+import { savedEffectField } from './vault';
 
 function shipMemento(entities: OdinNode, type: string): OdinNode | null {
 	const ents = entities.$0;

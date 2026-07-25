@@ -28,7 +28,11 @@ src/lib/save/          the save files (nothing here knows about the UI)
   zip.ts       makeZip(entries)  (store-only ZIP for the download fallback)
   lzf.ts       lzfDecompress / lzfCompress  (CLZF2 port; see save-format.md)
   odin.ts      OdinBinaryReader.parse / .parseMembers, OdinBinaryWriter.write, EntryType, isNode
-  slot.ts      loadSlot / loadFile / saveSlot  +  typed accessors over the decoded trees
+  slot.ts      loadSlot / loadFile / saveSlot (file IO + .bak orchestration only)
+  tree.ts      generic Odin shapes: listItems / pushScalar / dictPairs / maxOdinId
+  vault.ts     vault views + mutations (ingredients, consumables, modules) — the one
+               save/ module that may consult $lib/game/data for asset defaults
+  rundata.ts   runStats / getResources
   ship.ts      shipResources + the grid walk (caps/regen) — the seed of the grid editor
 
 src/lib/game/          static game knowledge (nothing here touches a save)
@@ -91,7 +95,7 @@ silently wrote the *pristine* tree (creating `.bak`s but byte-identical files). 
 to `container[key]` on edit — `container`/`key` are captured once (props never change for a keyed
 node; the `state_referenced_locally` autofixer warning is intentionally silenced there).
 
-## Accessor conventions (slot.ts / ship.ts / game/data.ts)
+## Accessor conventions (tree.ts / vault.ts / ship.ts / game/data.ts)
 
 - `List<T>` → `listItems(node)` returns the backing `$0` array; `pushScalar` appends while maintaining
   `$types` metadata so it re-serializes.
@@ -117,7 +121,7 @@ node; the `state_referenced_locally` autofixer warning is intentionally silenced
   brings it back by deleting a string. Everything else is listed whether owned or not, since raising
   a count from zero is how you get one.
 - Consumables: the vault holds a **fixed run of 8 slots**, empty ones carrying a `null` id (the game's
-  `Vault()` seeds 8 and `RestoreFromMemento` rebuilds one slot per memento entry). `addConsumable`
+  `Vault()` seeds 8 and `RestoreFromMemento` rebuilds one slot per memento entry). `setConsumable`
   mirrors `Vault.Add` — it fills the first empty slot rather than growing the list. `reorderConsumables`
   reorders the filled slots and keeps the empties trailing, so the slot count is preserved. The UI hides
   the empty slots and offers an add button per absent consumable type instead.

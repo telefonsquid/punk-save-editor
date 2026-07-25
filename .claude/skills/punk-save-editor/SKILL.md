@@ -71,7 +71,8 @@ bun run check:data  # cross-check the generated JSONs without re-extracting
 ## Map of the code
 
 - `src/lib/save/` — the save files: `io.ts` (SaveDir), `lzf.ts` (codec), `odin.ts` (reader/writer),
-  `slot.ts` (tree accessors), `ship.ts` (entities grid walk — seed of the grid editor).
+  `slot.ts` (slot IO + `.bak`), `tree.ts` (generic Odin accessors), `vault.ts` (vault
+  views/mutations), `rundata.ts` (run views), `ship.ts` (entities grid walk — seed of the grid editor).
 - `src/lib/game/` — static game knowledge: `data.ts` (assets, names, module info/effects),
   `module-stats.ts`, `rich-text.ts`, `pixel-icon.ts`, and the generated `*.json`.
 - `src/lib/editor/` — `state.svelte.ts` (EditorState), `inputs.ts` (raw-tree input handlers).

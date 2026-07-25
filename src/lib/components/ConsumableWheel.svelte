@@ -5,8 +5,8 @@
 	import { numInput } from '$lib/editor/inputs';
 	import type { EditorState } from '$lib/editor/state.svelte';
 	import { assets, displayName } from '$lib/game/data';
-	import type { ConsumableView } from '$lib/save/slot';
-	import { getConsumables, removeConsumable, reorderConsumables } from '$lib/save/slot';
+	import type { ConsumableView } from '$lib/save/vault';
+	import { getConsumables, removeConsumable, reorderConsumables } from '$lib/save/vault';
 
 	let { editor }: { editor: EditorState } = $props();
 

@@ -5,7 +5,7 @@
 	import Section from '../Section.svelte';
 	import type { EditorState } from '$lib/editor/state.svelte';
 	import { assetsByCategory, displayName } from '$lib/game/data';
-	import { addConsumable, getConsumables } from '$lib/save/slot';
+	import { getConsumables, setConsumable } from '$lib/save/vault';
 
 	let { editor }: { editor: EditorState } = $props();
 
@@ -23,7 +23,7 @@
 
 	function add(id: string) {
 		if (!editor.slot) return;
-		addConsumable(editor.slot.vault, id, 1);
+		setConsumable(editor.slot.vault, id, 1);
 		editor.markCurated();
 		editor.refresh();
 	}

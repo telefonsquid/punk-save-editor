@@ -7,7 +7,8 @@
 	import type { EditorState } from '$lib/editor/state.svelte';
 	import { fmt1 } from '$lib/format';
 	import { assetsByCategory, displayName } from '$lib/game/data';
-	import { getResources, ingredientCounts, ingredientIds } from '$lib/save/slot';
+	import { getResources } from '$lib/save/rundata';
+	import { ingredientCounts, ingredientIds } from '$lib/save/vault';
 
 	let { editor }: { editor: EditorState } = $props();
 
