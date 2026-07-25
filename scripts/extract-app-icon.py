@@ -22,9 +22,21 @@ hand-made bitmap instead of scaling one. The full modern set:
 - `static/app-icon.png` — 1024px master that `bun tauri icon` slices into the
   desktop set.
 
+The desktop icons get the same treatment, for the same reason: `bun tauri icon`
+derives every size from the 1024px master with a smooth filter, and a four-colour
+sprite comes out of that as a 141-colour smear at the sizes Windows actually puts
+in the taskbar. So these are written here too, each rendered at its own scale:
+
+- `src-tauri/icons/icon.ico` — every size the Windows shell asks for, so it never
+  has to rescale one of ours.
+- `src-tauri/icons/{32x32,128x128,128x128@2x,icon}.png` — the Linux set.
+
+`icon.icns` is the one file still left to `bun tauri icon`, so run that FIRST and
+this second; the order matters, because this script deliberately overwrites what
+that one got wrong.
+
 Page art like the wordmark, so it runs on its own rather than through
-extract-all.py. After it, regenerate the desktop set: `bun tauri icon
-static/app-icon.png`.
+extract-all.py.
 
     .venv/Scripts/python.exe scripts/extract-app-icon.py
 """
@@ -56,6 +68,14 @@ BAND_COLS = range(7, 17)
 
 REPO = punklib.REPO
 STATIC = REPO / "static"
+TAURI = REPO / "src-tauri" / "icons"
+
+# What the Windows shell asks for. Supplying all of them is the whole fix: given
+# an exact match it blits our bitmap, and given anything else it rescales one and
+# the result is the blur this file exists to avoid. 16 and 32 are menus and
+# Explorer, 24/40/48 are the taskbar at 100/125/150% DPI, 64 through 128 the
+# large views, 256 the file dialog and the jump list.
+WINDOWS_SIZES = (16, 20, 24, 32, 40, 48, 64, 96, 128, 256)
 
 
 def load_ship() -> Image.Image:
@@ -123,13 +143,20 @@ def rounded_mask(size: int, radius: int) -> Image.Image:
 	return m.resize((size, size), Image.LANCZOS)
 
 
-def scaled_ship(ship: Image.Image, target_w: float) -> Image.Image:
+def scaled_ship(ship: Image.Image, target_w: float, tile: float | None = None) -> Image.Image:
 	"""Ship at a crisp integer scale when it fits, else one clean downscale — never
-	a fractional upscale, which is what smears pixel art."""
+	a fractional upscale, which is what smears pixel art.
+
+	`tile` is the icon's full width. Where the ship fits the tile at 1:1 but not
+	the margin the target leaves, the margin is what gives: at 24px — the size the
+	Windows taskbar reaches for — losing the margin buys the only rendering of
+	that size that stays on the pixel grid."""
 	sw, sh = ship.size
 	if target_w >= sw:
 		f = max(1, round(target_w / sw))
 		return ship.resize((sw * f, sh * f), Image.NEAREST)
+	if tile is not None and tile >= sw:
+		return ship
 	r = target_w / sw
 	return ship.resize((max(1, round(sw * r)), max(1, round(sh * r))), Image.LANCZOS)
 
@@ -142,7 +169,7 @@ def render(size: int, ship: Image.Image, frac: float, *, rounded: bool, radius=0
 		img.paste(fill, (0, 0), rounded_mask(size, max(1, round(size * radius))))
 	else:
 		img.paste(fill, (0, 0))
-	s = scaled_ship(ship, size * frac)
+	s = scaled_ship(ship, size * frac, size)
 	img.alpha_composite(s, ((size - s.width) // 2, (size - s.height) // 2))
 	return img
 
@@ -174,21 +201,49 @@ def write_svg(grid) -> None:
 	print(f"  icon.svg: {len(rects)} rects")
 
 
-def write_ico(images) -> None:
-	# A .ico is just a directory of images; embedding PNGs keeps each hand-made
-	# bitmap exactly as rendered.
+def dib(im: Image.Image) -> bytes:
+	"""One icon frame as a 32-bit DIB: the format .ico was born with, and the one
+	every Windows shell surface reads. (PNG frames are legal since Vista but not
+	honoured everywhere, and a frame the taskbar skips is a frame it rescales.)
+
+	The header claims twice the real height because a DIB icon is two stacked
+	bitmaps, colour then 1-bit transparency mask. The mask is vestigial at 32bpp —
+	the alpha channel wins — but it has to be there, so it is written as zeroes.
+	Rows run bottom-up and pixels are BGRA, both DIB conventions."""
+	w, h = im.size
+	px = im.convert("RGBA").load()
+	header = struct.pack("<IiiHHIIiiII", 40, w, h * 2, 1, 32, 0, 0, 0, 0, 0, 0)
+	colour = bytearray()
+	for y in range(h - 1, -1, -1):
+		for x in range(w):
+			r, g, b, a = px[x, y]
+			colour += bytes((b, g, r, a))
+	mask_stride = ((w + 31) // 32) * 4  # 1bpp rows pad to 4 bytes
+	return header + bytes(colour) + bytes(mask_stride * h)
+
+
+def write_ico(path, images) -> None:
+	# A .ico is just a directory of frames. 256 goes in as PNG because that is
+	# what the format expects at that size (and a raw 256px DIB is 256 KB);
+	# everything below it as a DIB, per dib() above.
 	blobs = []
 	for im in images:
-		buf = BytesIO()
-		im.save(buf, format="PNG")
-		blobs.append(buf.getvalue())
+		if im.width >= 256:
+			buf = BytesIO()
+			im.save(buf, format="PNG")
+			blobs.append(buf.getvalue())
+		else:
+			blobs.append(dib(im))
 	out = struct.pack("<HHH", 0, 1, len(images))
 	offset = 6 + 16 * len(images)
 	for im, blob in zip(images, blobs):
-		out += struct.pack("<BBBBHHII", im.width, im.height, 0, 0, 1, 32, len(blob), offset)
+		# 256 is written as 0: the directory stores each side in a single byte.
+		out += struct.pack(
+			"<BBBBHHII", im.width % 256, im.height % 256, 0, 0, 1, 32, len(blob), offset
+		)
 		offset += len(blob)
-	(STATIC / "favicon.ico").write_bytes(out + b"".join(blobs))
-	print(f"  favicon.ico: {', '.join(str(im.width) for im in images)}")
+	path.write_bytes(out + b"".join(blobs))
+	print(f"  {path.name}: {', '.join(str(im.width) for im in images)}")
 
 
 MANIFEST = """{
@@ -212,7 +267,7 @@ def main() -> None:
 
 	write_svg(grid)
 	# Rounded-tile tab icons at their own integer scale.
-	write_ico([render(s, ship, 0.86, rounded=True, radius=0.12) for s in (16, 32, 48)])
+	write_ico(STATIC / "favicon.ico", [render(s, ship, 0.86, rounded=True, radius=0.12) for s in (16, 32, 48)])
 	# iOS drops transparency, so a full solid tile with room to breathe.
 	render(180, ship, 0.72, rounded=False).save(STATIC / "apple-touch-icon.png")
 	# Maskable manifest icons: full-bleed, ship inside the safe centre.
@@ -222,6 +277,13 @@ def main() -> None:
 	# Rounded 1024 master for `bun tauri icon`.
 	render(1024, ship, 0.86, rounded=True, radius=0.14).save(STATIC / "app-icon.png")
 	print("  apple-touch-icon.png, icon-192/512.png, site.webmanifest, app-icon.png")
+
+	# The desktop set, rendered rather than downscaled. See the module docstring.
+	TAURI.mkdir(parents=True, exist_ok=True)
+	write_ico(TAURI / "icon.ico", [render(s, ship, 0.86, rounded=True, radius=0.14) for s in WINDOWS_SIZES])
+	for name, size in (("32x32.png", 32), ("128x128.png", 128), ("128x128@2x.png", 256), ("icon.png", 512)):
+		render(size, ship, 0.86, rounded=True, radius=0.14).save(TAURI / name)
+	print("  icons/32x32.png, 128x128.png, 128x128@2x.png, icon.png")
 
 
 if __name__ == "__main__":
