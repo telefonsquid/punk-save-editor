@@ -6,6 +6,36 @@
 
 ---
 
+## Releasing
+
+`CHANGELOG.md` is the single source for release notes. The app parses it at
+build time (`src/lib/changelog.ts`) for the `/changelog` page, and CI reads the
+section matching the tag into the GitHub release body. Never write release notes
+anywhere else — not in the workflow, not in the changelog page, not in the
+release on GitHub.
+
+To ship a version:
+
+1. Write its section in `CHANGELOG.md`, newest first. The heading must read
+   `## 1.1.0 — 2026-08-01` (version, em dash, ISO date); `### Added` /
+   `### Changed` / `### Fixed` groups under it are optional.
+2. `bun run version:set 1.1.0` — writes the version into `package.json`,
+   `src-tauri/tauri.conf.json`, `src-tauri/Cargo.toml` and the `Cargo.lock`
+   entry, and refuses to run if the changelog has no section for it.
+3. `bun run check && bun run lint`.
+4. Commit, then `git tag v1.1.0` and `git push origin master --tags`.
+5. The `Release` workflow builds Windows (x64 + ARM64, MSI/NSIS installers plus
+   a bare `-portable.exe`), macOS (Apple Silicon + Intel) and Linux (x64 +
+   ARM64, AppImage/deb/rpm) and attaches them all to a **draft** release. It
+   fails fast if the tag disagrees with `package.json`.
+6. Review the draft on GitHub and publish it. Publishing is the only manual
+   step; the notes are already filled in from the changelog.
+
+To re-run a failed release, delete the draft and the tag, fix, and push the tag
+again.
+
+---
+
 You are able to use the Svelte MCP server, where you have access to comprehensive Svelte 5 and SvelteKit documentation. Here's how to use the available tools effectively:
 
 ## Available Svelte MCP Tools:

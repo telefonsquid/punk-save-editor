@@ -1,0 +1,128 @@
+# Builds the desktop app for every OS/arch pair and attaches the bundles to a
+# draft GitHub release. Publish flow: bump the version in package.json,
+# src-tauri/tauri.conf.json and src-tauri/Cargo.toml, then push a tag like
+# v1.0.0. Review the draft on GitHub, write the notes, publish.
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: windows-x64
+            runner: windows-latest
+            target: x86_64-pc-windows-msvc
+            # MSI + NSIS installers, plus the bare exe uploaded as portable below.
+            args: --target x86_64-pc-windows-msvc
+            portable: x64
+          - name: windows-arm64
+            runner: windows-latest
+            target: aarch64-pc-windows-msvc
+            # Cross-compiled. WiX can't produce ARM64 MSIs, so NSIS only.
+            args: --target aarch64-pc-windows-msvc --bundles nsis
+            portable: arm64
+          - name: macos-arm64
+            runner: macos-latest
+            target: aarch64-apple-darwin
+            args: --target aarch64-apple-darwin
+          - name: macos-x64
+            runner: macos-latest
+            target: x86_64-apple-darwin
+            args: --target x86_64-apple-darwin
+          - name: linux-x64
+            runner: ubuntu-22.04
+            target: x86_64-unknown-linux-gnu
+            args: ''
+          - name: linux-arm64
+            runner: ubuntu-22.04-arm
+            target: aarch64-unknown-linux-gnu
+            args: ''
+
+    runs-on: ${{ matrix.runner }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Linux system dependencies
+        if: startsWith(matrix.name, 'linux')
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libwebkit2gtk-4.1-dev build-essential curl wget file \
+            libxdo-dev libssl-dev libayatana-appindicator3-dev librsvg2-dev patchelf
+
+      - uses: oven-sh/setup-bun@v2
+
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.target }}
+
+      - uses: swatinem/rust-cache@v2
+        with:
+          workspaces: src-tauri
+
+      - name: Install frontend dependencies
+        run: bun install --frozen-lockfile
+
+      # A tag that disagrees with the version in the app is worth failing on
+      # here rather than shipping installers that name the wrong release.
+      - name: Check the tag against the app version
+        shell: bash
+        run: |
+          version=$(bun -e 'console.log(require("./package.json").version)')
+          if [ "v$version" != "${{ github.ref_name }}" ]; then
+            echo "tag ${{ github.ref_name }} does not match package.json $version"
+            echo "run: bun run version:set $version"
+            exit 1
+          fi
+
+      # The notes come out of CHANGELOG.md, which is also what the app's
+      # /changelog page renders. Fails the build if the tag has no section.
+      - name: Read release notes from the changelog
+        id: notes
+        shell: bash
+        run: |
+          {
+            echo 'body<<PUNK_EOF'
+            bun run --silent release-notes "${{ github.ref_name }}"
+            echo 'PUNK_EOF'
+          } >> "$GITHUB_OUTPUT"
+
+      - uses: tauri-apps/tauri-action@v0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tagName: ${{ github.ref_name }}
+          releaseName: 'PUNK Save Editor v__VERSION__'
+          releaseBody: |
+            ${{ steps.notes.outputs.body }}
+
+            ---
+
+            Pick the file for your system below. The `-portable.exe` runs without
+            installation. macOS builds are unsigned: right-click the app and
+            choose Open on first launch.
+          releaseDraft: true
+          prerelease: false
+          args: ${{ matrix.args }}
+
+      # The NSIS/MSI bundles wrap this same exe. Tauri apps are self-contained,
+      # so the bare exe from the build tree is the portable version.
+      - name: Upload portable exe
+        if: startsWith(matrix.name, 'windows')
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          $version = (Get-Content package.json -Raw | ConvertFrom-Json).version
+          $dest = "punk-save-editor_${version}_${{ matrix.portable }}-portable.exe"
+          Copy-Item "src-tauri/target/${{ matrix.target }}/release/punk-save-editor.exe" $dest
+          gh release upload "${{ github.ref_name }}" $dest --clobber

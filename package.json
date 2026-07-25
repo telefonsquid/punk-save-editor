@@ -1,7 +1,8 @@
 {
 	"name": "punk-save-editor",
 	"private": true,
-	"version": "0.0.1",
+	"version": "1.0.0",
+	"license": "MIT",
 	"type": "module",
 	"scripts": {
 		"dev": "vite dev",
@@ -13,6 +14,8 @@
 		"lint": "eslint .",
 		"extract": "bun scripts/extract-all.ts",
 		"check:data": "bun scripts/check-data.ts",
+		"version:set": "bun scripts/set-version.ts",
+		"release-notes": "bun scripts/release-notes.ts",
 		"tauri": "tauri"
 	},
 	"devDependencies": {
