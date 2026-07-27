@@ -1,6 +1,6 @@
 [package]
 name = "punk-save-editor"
-version = "1.0.0"
+version = "1.0.1"
 description = "Save editor for the game PUNK"
 authors = ["Saskia Henkys"]
 edition = "2021"

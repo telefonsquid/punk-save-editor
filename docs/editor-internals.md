@@ -378,6 +378,29 @@ Details that are deliberate:
   never reports a draft or a prerelease.
 - The desktop CSP has to allow `https://api.github.com` in `connect-src` (`src-tauri/tauri.conf.json`).
 
+## HTML5 drag and drop needs two things the defaults get wrong
+
+The consumable wheel is the only place in the app that uses real HTML5 drag and drop — dragging a
+slot around the ring reorders the vault. (`EffectFieldGrid`'s paint-across-cells is pointer events,
+which none of this touches.) It shipped broken in 1.0.0 in two independent ways, both worth knowing
+before adding a second draggable anywhere:
+
+- **`"dragDropEnabled": false` on the window** (`src-tauri/tauri.conf.json`). Tauri defaults it to
+  `true`, which installs an OS-level drop target on the webview that swallows HTML5 drop events on
+  Windows — the config schema says so in as many words. The flag turns off Tauri's own file-drop
+  event, which nothing here listens for. JSON has nowhere to write that down, hence this paragraph.
+- **A `dragstart` must put something in the `dataTransfer`, and sprites must be `draggable="false"`.**
+  A drag with no payload of its own is not inert: the browser looks inside the control for something
+  draggable, finds the `<img>`, and makes *that* the drag source with the picture as the payload —
+  so Windows offered the icon to the shell and the sprite was dragged out to the desktop instead of
+  moving around the ring. Firefox is the other failure mode and refuses to start a payload-less drag
+  at all. `ItemIcon` therefore marks its `<img>` undraggable, and `ConsumableWheel.dragStart` writes
+  the consumable id as `text/plain`.
+
+Chrome will show you which of these is happening: `Input.setInterceptDrags` over CDP reports the
+payload the browser is about to hand the OS. Item art in the payload means the sprite won the
+drag-source lookup.
+
 ## Dev server note
 
 `vite.config.ts` uses `strictPort` on 5173 (Tauri's `devUrl`) but honors `$PORT` so a second dev

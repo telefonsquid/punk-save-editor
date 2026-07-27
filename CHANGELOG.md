@@ -9,6 +9,14 @@ headings matters.
 - Optional `### Added` / `### Changed` / `### Fixed` groups under it.
 - Everything else is plain bullets or short paragraphs.
 
+## 1.0.1 — 2026-07-27
+
+### Fixed
+
+- Dragging a consumable around the wheel works again in the desktop app. On
+  Windows it dropped nothing and dragged the item's icon out to the desktop
+  instead.
+
 ## 1.0.0 — 2026-07-27
 
 The first public release. Compatible with PUNK v0.12.10.
@@ -23,5 +31,4 @@ The first public release. Compatible with PUNK v0.12.10.
   including hand-painted custom fields.
 - A raw editor for every value in every Odin-serialized save file.
 - Runs as a website and as a desktop app for Windows, macOS and Linux.
-- F11 toggles fullscreen in the desktop app.
 - Originals are backed up as `*.bak` the first time a file is written.

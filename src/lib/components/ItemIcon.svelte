@@ -13,6 +13,11 @@
 	const src = $derived(id ? (iconMap[id] ?? null) : null);
 </script>
 
+<!-- Undraggable: images drag themselves by default, so an icon sitting inside a
+     draggable control becomes the drag source instead of the control — the
+     consumable wheel's slots reorder by dragging, and the sprite was being torn
+     out to the desktop rather than moved around the ring. The art is chrome
+     here, never something to drag anywhere. -->
 {#if src}
-	<img {src} alt="" style={iconStyle(src, scale)} />
+	<img {src} alt="" draggable="false" style={iconStyle(src, scale)} />
 {/if}

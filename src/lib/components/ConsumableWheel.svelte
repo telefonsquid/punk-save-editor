@@ -98,7 +98,30 @@
 		editor.touch('vault');
 	}
 
-	function drop(targetId: string | null) {
+	/**
+	 * A slot drag carries the consumable's id as its payload. A drag with none of
+	 * its own is not inert — the browser looks inside the control for something
+	 * draggable and finds the icon, so the sprite becomes the drag source and
+	 * Windows hands it to the shell as a file, dragging the picture out of the
+	 * window instead of moving the slot. (ItemIcon's img is marked undraggable
+	 * for the same reason; both halves are needed.) Firefox is the other end of
+	 * it and won't begin a drag at all without a payload.
+	 */
+	function dragStart(event: DragEvent, id: string) {
+		dragId = id;
+		event.dataTransfer?.setData('text/plain', id);
+		if (event.dataTransfer) event.dataTransfer.effectAllowed = 'move';
+	}
+
+	// A drop target has to refuse the default to be one at all. `move` also swaps
+	// the cursor off the copy badge, since nothing here is being duplicated.
+	function dragOver(event: DragEvent) {
+		event.preventDefault();
+		if (event.dataTransfer) event.dataTransfer.dropEffect = 'move';
+	}
+
+	function drop(event: DragEvent, targetId: string | null) {
+		event.preventDefault();
 		if (dragId && targetId) move(filledIndexOf(dragId), filledIndexOf(targetId));
 		dragId = null;
 	}
@@ -189,10 +212,10 @@
 						title={displayName(id)}
 						onclick={() => (pinned = pinned === id ? null : id)}
 						onkeydown={(e) => reorderKeys(e, c.id)}
-						ondragstart={() => (dragId = id)}
+						ondragstart={(e) => dragStart(e, c.id)}
 						ondragend={() => (dragId = null)}
-						ondragover={(e) => e.preventDefault()}
-						ondrop={() => drop(id)}
+						ondragover={dragOver}
+						ondrop={(e) => drop(e, id)}
 					>
 						{@render frame()}
 						<span class="diamond-icon"><ItemIcon {id} scale={2} /></span>
