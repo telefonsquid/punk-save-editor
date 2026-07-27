@@ -1,9 +1,20 @@
+import { readFileSync } from 'node:fs';
 import tailwindcss from '@tailwindcss/vite';
 import adapter from '@sveltejs/adapter-static';
 import { sveltekit } from '@sveltejs/kit/vite';
 import { defineConfig } from 'vite';
 
+const { version } = JSON.parse(
+	readFileSync(new URL('./package.json', import.meta.url), 'utf8')
+) as { version: string };
+
 export default defineConfig({
+	// The app needs its own version to tell whether the newest GitHub release is
+	// ahead of it (see lib/update.ts). package.json is the one to read: it is
+	// what `version:set` writes first and what CI checks the release tag against.
+	define: {
+		__APP_VERSION__: JSON.stringify(version)
+	},
 	// Tauri expects the dev server on a fixed port (see src-tauri/tauri.conf.json devUrl);
 	// PORT overrides it so a second dev server can run beside the default one.
 	server: {
