@@ -13,6 +13,9 @@ headings matters.
 
 ### Changed
 
+- The open save's name and its two buttons now stick to the top of the screen
+  once you scroll past them, so saving no longer means scrolling back up. The
+  buttons slide into the top right corner as the strip pins.
 - Dialogs like "Add a module" now arrive with the same rise-and-fade as the rest
   of the editor instead of appearing all at once.
 

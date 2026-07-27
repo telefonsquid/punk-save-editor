@@ -1,6 +1,5 @@
 <script lang="ts">
 	import Button from './Button.svelte';
-	import InfoPop from './InfoPop.svelte';
 	import PunkLogo from './PunkLogo.svelte';
 	import type { EditorState } from '$lib/editor/state.svelte';
 
@@ -24,8 +23,9 @@
 
 <!-- No top bar: the mark just sits centred above the tabs, smaller than on the
      title screen, so the editor still reads as PUNK's without spending a fixed
-     strip of every screen on chrome. -->
-<header class="flex flex-col items-center gap-5 mb-10 w-full">
+     strip of every screen on chrome. The strip under it (SaveBar) is a sibling
+     rather than a child — sticky travel stops at the parent's edge. -->
+<header class="flex flex-col items-center gap-5 mb-2 w-full">
 	<!-- The mark doubles as the way out: clicking it drops the open save and
 	     goes back to the title screen. -->
 	<PunkLogo scale={2} echoes={10} onclick={backToStart} label="Back to the save selection">
@@ -40,31 +40,4 @@
 			<Button variant="ghost" size="xs" onclick={() => (leaving = false)}>Cancel</Button>
 		</div>
 	{/if}
-	<!-- The open save and its save button sit centred under the mark rather
-	     than off in the tab row, so the strip below is left to the tabs
-	     alone and the two most important controls are on the centre line. -->
-	<div class="flex items-center gap-4">
-		<span class="text-muted text-ui-xs">{editor.slot?.dir.name}</span>
-		<!-- The "how downloading works" note folds behind the Download changes
-		     button, only in the download-only browsers that need it. -->
-		{#snippet downloadNote()}
-			This browser can't modify the savefiles directly. <strong class="text-amber"
-				>Download changes</strong
-			> gives you a zip — extract it into your save folder to apply it (it includes a
-			<code>.bak</code> of every file). Don't modify while a savefile is open currently.
-		{/snippet}
-		<InfoPop note={editor.downloadMode ? downloadNote : undefined}>
-			<Button
-				variant="primary"
-				size="sm"
-				onclick={editor.save}
-				disabled={!editor.dirty || editor.busy}
-			>
-				{editor.downloadMode ? 'Download changes' : 'Save changes'}
-			</Button>
-		</InfoPop>
-		<Button variant="primary" size="sm" onclick={editor.open} disabled={editor.busy}>
-			Load new save
-		</Button>
-	</div>
 </header>

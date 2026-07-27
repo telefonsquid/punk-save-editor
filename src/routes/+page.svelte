@@ -8,6 +8,7 @@
 	import RawFilesPanel from '$lib/components/panels/RawFilesPanel.svelte';
 	import ResourcesPanel from '$lib/components/panels/ResourcesPanel.svelte';
 	import RunStatsPanel from '$lib/components/panels/RunStatsPanel.svelte';
+	import SaveBar from '$lib/components/SaveBar.svelte';
 	import ShipResourcesPanel from '$lib/components/panels/ShipResourcesPanel.svelte';
 	import { EditorState } from '$lib/editor/state.svelte';
 	import { prefersReducedMotion } from 'svelte/motion';
@@ -39,6 +40,10 @@
 {:else}
 	<div class="flex-1 px-6 py-8" in:fade={{ duration: 260 * motion }}>
 		<EditorHeader {editor} />
+		<!-- A child of this div rather than of the header: the save strip pins
+		     itself to the top of the screen, and a sticky element can only travel
+		     inside its own parent, so its parent has to be the page. -->
+		<SaveBar {editor} />
 
 		<div class="mx-auto max-w-6xl">
 			<Tabs tabs={TABS} bind:current={tab} label="Editor sections" />

@@ -158,6 +158,14 @@ Two mechanisms play it, because the trigger differs:
 Nothing plays on exit, and `prefers-reduced-motion: reduce` skips the arrival
 entirely rather than shortening it — the element is simply there.
 
+The same tokens time the one motion in the app that is not an arrival: the save
+strip sliding into the top two corners as it pins
+([`SaveBar`](../src/lib/components/SaveBar.svelte)). A second duration and a
+second ease would read as a second app, so it borrows these. It travels on
+`flex-grow` — `justify-content` cannot be transitioned, so the row's free space
+is held by empty springs whose grow values cross. Reduced motion gets both
+states and no travel between them.
+
 ## Where to restyle
 
 The primitives are the design surface — restyle these, not every panel. Panels
