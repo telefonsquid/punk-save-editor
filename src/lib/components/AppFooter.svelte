@@ -1,14 +1,17 @@
 <script lang="ts">
-	// The project links, shown under every page. The desktop download only
-	// appears in a browser. Inside the desktop app it would point at what is
-	// already running.
+	// The project links, shown under every page. One of them swaps by build: a
+	// browser is offered the desktop app, and the desktop app is offered the
+	// website — each points at the copy you are not currently running.
 	import { onMount } from 'svelte';
+	import ChangelogDialog from './ChangelogDialog.svelte';
 	import { isTauri } from '$lib/save/io';
 	import { appVersion, checkForUpdate, type Update } from '$lib/update';
 
 	const REPO = 'https://github.com/telefonsquid/punk-save-editor';
+	const SITE = 'https://punk-editor.henkys.dev';
 
 	let update = $state<Update | null>(null);
+	let changelogOpen = $state(false);
 
 	// One quiet look at GitHub per launch, and only from the desktop app — see
 	// lib/update.ts. Deliberately not awaited into the markup: the footer draws
@@ -32,13 +35,26 @@
 		const { openUrl } = await import('@tauri-apps/plugin-opener');
 		await openUrl((e.currentTarget as HTMLAnchorElement).href);
 	}
+
+	// The notes open over the page instead of navigating to it: the open save
+	// lives in memory, so leaving the editor for the changelog and coming back
+	// meant picking the save folder again. It stays a real link so the URL can
+	// still be copied, opened in a tab, or followed on the page it belongs to.
+	function showChangelog(e: MouseEvent) {
+		const link = e.currentTarget as HTMLAnchorElement;
+		if (e.metaKey || e.ctrlKey || e.shiftKey || link.pathname === location.pathname) return;
+		e.preventDefault();
+		changelogOpen = true;
+	}
 </script>
 
 <footer class="text-ui-xs uppercase punk-footer">
 	<nav aria-label="Project links">
 		<a href={REPO} target="_blank" rel="noopener noreferrer" onclick={external}>GitHub</a>
-		<a href="/changelog">Changelog</a>
-		{#if !isTauri()}
+		<a href="/changelog" onclick={showChangelog}>Changelog</a>
+		{#if isTauri()}
+			<a href={SITE} target="_blank" rel="noopener noreferrer" onclick={external}>Web version</a>
+		{:else}
 			<a href="{REPO}/releases/latest" target="_blank" rel="noopener noreferrer">
 				Get the desktop app
 			</a>
@@ -57,6 +73,8 @@
 	</nav>
 	<p class="version">v{appVersion}</p>
 </footer>
+
+<ChangelogDialog bind:open={changelogOpen} />
 
 <style>
 	/* Quiet strip of links at the very bottom, pushed clear of the content. The

@@ -11,8 +11,15 @@ headings matters.
 
 ## 1.0.1 — 2026-07-27
 
+### Added
+
+- The desktop app's footer links to the web version, where the website links to
+  the desktop app.
+
 ### Changed
 
+- The changelog opens over the editor instead of replacing it, so reading it no
+  longer costs you the save you have open.
 - The open save's name and its two buttons now stick to the top of the screen
   once you scroll past them, so saving no longer means scrolling back up. The
   buttons slide into the top right corner as the strip pins.

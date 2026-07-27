@@ -377,6 +377,22 @@ Details that are deliberate:
 - A tag that is not `<n>.<n>.<n>` produces no notice rather than a wrong one, and `/releases/latest`
   never reports a draft or a prerelease.
 - The desktop CSP has to allow `https://api.github.com` in `connect-src` (`src-tauri/tauri.conf.json`).
+- The footer's other build-dependent link is the mirror of it: a browser is offered the desktop app,
+  the desktop app is offered `punk-editor.henkys.dev`.
+
+## Where the release notes are shown
+
+`CHANGELOG.md` is parsed at build time (`$lib/changelog.ts`, Vite's `?raw` — there is no server to
+fetch it from in the desktop app) and one release is drawn by `ReleaseNotes.svelte`. Two surfaces
+wrap it:
+
+- **The footer's overlay** (`ChangelogDialog`), which is what the Changelog link opens. It must not
+  be a navigation: the open save lives in memory only, so leaving the editor for a page throws it
+  away and coming back means picking the folder again. The link keeps its `href` so the URL can
+  still be copied or opened in a tab — the handler steps aside for a modified click, and for the
+  changelog page itself.
+- **`/changelog`**, the same notes as a page, one `Section` card per release. It stays because
+  CHANGELOG.md points the world at that URL.
 
 ## HTML5 drag and drop needs two things the defaults get wrong
 
