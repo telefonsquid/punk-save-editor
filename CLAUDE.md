@@ -32,10 +32,18 @@ To ship a version:
 3. `bun run check && bun run lint`.
 4. Commit, then `git tag v1.1.0` and `git push origin master --tags`.
 5. The `Release` workflow builds Windows (x64 + ARM64, MSI/NSIS installers plus
-   a bare `-portable.exe`), macOS (Apple Silicon + Intel) and Linux (x64 +
-   ARM64, AppImage/deb/rpm) and attaches them all to a **draft** release. It
-   fails fast if the tag disagrees with `package.json`.
-6. Review the draft on GitHub and publish it. Publishing is the only manual
+   a bare portable `.exe`), macOS (Apple Silicon + Intel, dmg only) and Linux
+   (x64 + ARM64, AppImage/deb/rpm) and attaches them all to a **draft** release.
+   It fails fast if the tag disagrees with `package.json`. Give it ~15 minutes —
+   the assets appear as each platform finishes, so a half-empty release page
+   part way through is the build still running, not a failure.
+6. A final `rename` job then gives every asset the same name
+   (`punk-save-editor_<version>_<os>_<arch>[_<variant>].<ext>`), because each
+   bundler otherwise names its own output — `amd64` on the deb, `x86_64` on the
+   rpm, `aarch64` on the dmg, a locale on the msi. `scripts/rename-release-assets.ts`
+   owns that mapping and is safe to re-run by hand:
+   `bun run rename-release-assets v1.1.0 [--dry-run]`.
+7. Review the draft on GitHub and publish it. Publishing is the only manual
    step; the notes are already filled in from the changelog.
 
 To re-run a failed release, delete the draft and the tag, fix, and push the tag

@@ -17,6 +17,7 @@
 		"check:data": "bun scripts/check-data.ts",
 		"version:set": "bun scripts/set-version.ts",
 		"release-notes": "bun scripts/release-notes.ts",
+		"rename-release-assets": "bun scripts/rename-release-assets.ts",
 		"tauri": "tauri"
 	},
 	"devDependencies": {

@@ -34,11 +34,14 @@ jobs:
           - name: macos-arm64
             runner: macos-latest
             target: aarch64-apple-darwin
-            args: --target aarch64-apple-darwin
+            # dmg only. "all" would add the .app.tar.gz updater bundle, which
+            # nothing consumes — the app checks for releases but never installs
+            # one (src/lib/update.ts).
+            args: --target aarch64-apple-darwin --bundles dmg
           - name: macos-x64
             runner: macos-latest
             target: x86_64-apple-darwin
-            args: --target x86_64-apple-darwin
+            args: --target x86_64-apple-darwin --bundles dmg
           - name: linux-x64
             runner: ubuntu-22.04
             target: x86_64-unknown-linux-gnu
@@ -51,14 +54,21 @@ jobs:
     runs-on: ${{ matrix.runner }}
 
     steps:
-      - uses: actions/checkout@v4
+      # v5 for Node 24. v4 still runs, but every job it touches gets a
+      # deprecation annotation that reads like a build problem in the email.
+      - uses: actions/checkout@v5
 
+      # xdg-utils is not optional: the app opens links through tauri-plugin-opener,
+      # so the AppImage bundler pulls xdg-open into the image and fails the whole
+      # build without it. The x64 runner image happens to ship it and the ARM one
+      # does not, which is why only linux-arm64 ever noticed.
       - name: Install Linux system dependencies
         if: startsWith(matrix.name, 'linux')
         run: |
           sudo apt-get update
           sudo apt-get install -y libwebkit2gtk-4.1-dev build-essential curl wget file \
-            libxdo-dev libssl-dev libayatana-appindicator3-dev librsvg2-dev patchelf
+            libxdo-dev libssl-dev libayatana-appindicator3-dev librsvg2-dev patchelf \
+            xdg-utils
 
       - uses: oven-sh/setup-bun@v2
 
@@ -116,7 +126,9 @@ jobs:
           args: ${{ matrix.args }}
 
       # The NSIS/MSI bundles wrap this same exe. Tauri apps are self-contained,
-      # so the bare exe from the build tree is the portable version.
+      # so the bare exe from the build tree is the portable version. This one is
+      # named on the spot rather than by the rename job below, since nothing here
+      # has to guess what it is.
       - name: Upload portable exe
         if: startsWith(matrix.name, 'windows')
         shell: pwsh
@@ -124,6 +136,26 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           $version = (Get-Content package.json -Raw | ConvertFrom-Json).version
-          $dest = "punk-save-editor_${version}_${{ matrix.portable }}-portable.exe"
+          $dest = "punk-save-editor_${version}_windows_${{ matrix.portable }}_portable.exe"
           Copy-Item "src-tauri/target/${{ matrix.target }}/release/punk-save-editor.exe" $dest
           gh release upload "${{ github.ref_name }}" $dest --clobber
+
+  # Every bundler names its output by its own platform convention — amd64 on a
+  # deb, x86_64 on an rpm, aarch64 on a dmg, a locale on the msi — and none of
+  # them can be told otherwise. One pass over the finished release is where the
+  # whole set can be made to match. Runs even when a build failed, so a partial
+  # release is still consistent in what it did manage to upload.
+  rename:
+    name: Normalise asset names
+    needs: build
+    if: always()
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v5
+      - uses: oven-sh/setup-bun@v2
+
+      - name: Give every asset the same version_os_arch name
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: bun run rename-release-assets "${{ github.ref_name }}"
