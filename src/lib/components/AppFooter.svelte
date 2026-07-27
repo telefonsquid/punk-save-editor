@@ -32,8 +32,13 @@
 	async function external(e: MouseEvent) {
 		if (!isTauri()) return;
 		e.preventDefault();
+		// The href has to be read before the first await: `currentTarget` is only
+		// set while the event is being dispatched and is null the moment the
+		// handler yields, so reading it after the import throws and the link goes
+		// nowhere — having already had its navigation prevented.
+		const { href } = e.currentTarget as HTMLAnchorElement;
 		const { openUrl } = await import('@tauri-apps/plugin-opener');
-		await openUrl((e.currentTarget as HTMLAnchorElement).href);
+		await openUrl(href);
 	}
 
 	// The notes open over the page instead of navigating to it: the open save
