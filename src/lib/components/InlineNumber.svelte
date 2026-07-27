@@ -11,10 +11,14 @@
 	// attribute (which this control never needs). `element` exposes the input to a
 	// caller that has to write into the box itself — the consumable stepper does,
 	// so a nudge shows even while the caret is sitting in it.
+	//
+	// It carries no fallback on purpose. A bindable prop with one refuses to be
+	// bound to an undefined value, and the stepper binds each slot into an array
+	// that starts empty — every entry is undefined until the row has rendered.
 	let {
 		class: klass = '',
 		size = 'sm',
-		element = $bindable(null),
+		element = $bindable(),
 		...rest
 	}: Omit<HTMLInputAttributes, 'size'> & {
 		size?: 'sm' | 'xs';
