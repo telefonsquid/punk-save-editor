@@ -1,5 +1,6 @@
 <script lang="ts">
 	import type { Snippet } from 'svelte';
+	import ScrollBar from './ScrollBar.svelte';
 
 	// The one place that defines what a modal looks like and how it behaves.
 	//
@@ -37,6 +38,9 @@
 
 	let dialog = $state<HTMLDialogElement | null>(null);
 
+	/** The body, handed to ScrollBar so it can draw the bar the body hides. */
+	let body = $state<HTMLElement | null>(null);
+
 	// The effect only touches the DOM; it assigns no state.
 	$effect(() => {
 		if (!dialog) return;
@@ -67,7 +71,12 @@
 		{#if header}{@render header()}{/if}
 	</div>
 
-	<div class="dialog-body">{@render children()}</div>
+	<!-- The bar is a sibling of the scroller, not a child of it, or it would ride
+	     the content it measures. This box is what it is measured against. -->
+	<div class="dialog-scroll">
+		<div class="dialog-body" bind:this={body}>{@render children()}</div>
+		<ScrollBar scroller={body} contained />
+	</div>
 
 	{#if footer}
 		<div class="dialog-band border-t-2">{@render footer()}</div>
@@ -160,10 +169,28 @@
 	/* The body scrolls, not the dialog: the bands stay put while a long list
 	   moves under them. `min-height: 0` is what lets a flex child shrink below
 	   its content and actually overflow. */
+	.dialog-scroll {
+		position: relative;
+		display: flex;
+		flex: 1;
+		min-height: 0;
+	}
+
 	.dialog-body {
 		flex: 1;
 		min-height: 0;
 		overflow-y: auto;
 		padding: 1rem 1.25rem;
+
+		/* The same trade `.crt-screen` makes, for the same reason: WebView2 and
+		   WebKitGTK draw a classic grey gutter, and a modal is the last place the
+		   app should hand out 15px of OS chrome. ScrollBar above draws the
+		   replacement. Both properties on purpose — the standard one for current
+		   engines, the -webkit- rule for older WebKitGTK. */
+		scrollbar-width: none;
+	}
+
+	.dialog-body::-webkit-scrollbar {
+		display: none;
 	}
 </style>

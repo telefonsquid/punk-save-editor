@@ -25,6 +25,8 @@ headings matters.
   buttons slide into the top right corner as the strip pins.
 - Dialogs like "Add a module" now arrive with the same rise-and-fade as the rest
   of the editor instead of appearing all at once.
+- Dialogs scroll on the app's own thin scrollbar instead of the grey one the
+  operating system draws.
 
 ### Fixed
 

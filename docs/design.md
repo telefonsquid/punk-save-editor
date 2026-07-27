@@ -130,7 +130,11 @@ the CRT `filter` — **not** the window. Three traps that follow:
   overlays ride a zero-height `position: sticky` anchor instead
   (`LoadOverlay.svelte`), or live outside the wrapper like `ScrollBar`.
 - The native scrollbar is hidden and `ScrollBar.svelte` draws an overlay one —
-  WebView2/WebKitGTK would otherwise show a permanent grey gutter.
+  WebView2/WebKitGTK would otherwise show a permanent grey gutter. Any *other*
+  scroller in the app owes the same debt: a `Dialog` body hides its native bar
+  and mounts the same component with `contained`, which draws the track over the
+  scroller's own box instead of the viewport. A new scroller means a new
+  `ScrollBar`, not a new scrollbar.
 
 ## Rhythm
 

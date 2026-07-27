@@ -11,6 +11,13 @@
 	 *
 	 * It lives OUTSIDE `.crt-screen` on purpose: inside, the CRT filter would
 	 * smear the one element that exists to be read at a glance.
+	 *
+	 * The app's screen is not the only scroller in the editor — a dialog's body
+	 * is one too, and it wore the same grey gutter for the same reason. `contained`
+	 * is what lets one bar serve both. That copy does sit inside the filter, since
+	 * a modal does; it belongs to the dialog and is smeared with it, which is a
+	 * different thing from the app's bar being smeared against a page it is not
+	 * part of.
 	 */
 
 	/** How long the bar stays up after the last scroll event. */
@@ -20,9 +27,15 @@
 	const MIN_THUMB = 32;
 
 	let {
-		/** The scrolling element. Assumed to fill the viewport, as `.crt-screen` does. */
-		scroller
-	}: { scroller: HTMLElement | null } = $props();
+		/** The scrolling element. */
+		scroller,
+		/**
+		 * Draw the track over the scroller's own box instead of over the viewport.
+		 * The caller is then responsible for a positioned ancestor that the box
+		 * matches — `Dialog` wraps its body in one.
+		 */
+		contained = false
+	}: { scroller: HTMLElement | null; contained?: boolean } = $props();
 
 	let top = $state(0);
 	let height = $state(0);
@@ -114,7 +127,7 @@
 	}
 </script>
 
-<div class="scroll-track" aria-hidden="true">
+<div class="scroll-track" class:is-contained={contained} aria-hidden="true">
 	<!-- svelte-ignore a11y_no_static_element_interactions -->
 	<div
 		class="scroll-thumb"
@@ -137,6 +150,14 @@
 		   panel underneath, so only the thumb itself takes the pointer. */
 		pointer-events: none;
 		z-index: 60;
+	}
+
+	/* Over a scroller that is not the viewport. The z-index goes with the fixed
+	   track — inside a dialog the bar has nothing to outrank, and 60 there would
+	   only invite a second stacking context to argue with. */
+	.scroll-track.is-contained {
+		position: absolute;
+		z-index: auto;
 	}
 
 	.scroll-thumb {
