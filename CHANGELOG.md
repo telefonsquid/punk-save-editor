@@ -13,8 +13,7 @@ headings matters.
 
 ### Added
 
-- The desktop app's footer links to the web version, where the website links to
-  the desktop app.
+- The desktop app's footer links to the web version in desktop mode.
 
 ### Changed
 
