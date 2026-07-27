@@ -1,0 +1,27 @@
+# Build artefacts & deps — reinstalled/rebuilt inside the image
+node_modules
+.svelte-kit
+build
+.git
+.gitignore
+
+# Desktop app — the web image never builds it, and target/ is gigabytes
+src-tauri
+
+# Asset extraction — its output is committed under src/lib/game
+.venv
+scripts/__pycache__
+
+# Not part of the site
+docs
+.github
+.claude
+.vscode
+.mcp.json
+
+# Docker / editor / OS cruft
+Dockerfile
+docker-compose.yml
+.dockerignore
+.DS_Store
+Thumbs.db

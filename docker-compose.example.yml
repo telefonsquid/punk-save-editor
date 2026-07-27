@@ -1,0 +1,15 @@
+services:
+
+  web:
+    container_name: punk-save-editor-web
+    build: .
+    ports:
+      - "3001:80" # EXPOSED-WEB-PORT:CONTAINER-PORT
+    environment:
+      - "TZ=Europe/Berlin" # force docker timezone
+    # No volumes and no secrets. Saves are opened and written in the browser
+    # on the user's own machine, the server only hands out the bundle.
+    #
+    # Serve this behind TLS. Chromium only offers the directory picker on a
+    # secure origin, otherwise every browser falls back to the .zip download.
+    restart: unless-stopped
