@@ -4,7 +4,7 @@
 
 <p align="center">
   <b>A beautiful save editor for <a href="https://store.steampowered.com/app/2707980/PUNK/">PUNK</a>.</b><br />
-  A Web & Desktop app to modify your PUNK savegames directly on disk, featuring a faithful UI/UX, advanced module editing that goes beyond the game's vanilla scope, raw game data access, and more. 
+  A web- and desktop app to modify your PUNK savegames directly on disk, featuring a faithful UI/UX, advanced module editing that goes beyond the game's vanilla scope, raw game data access, and more. 
 </p>
 
 <p align="center">
@@ -26,15 +26,15 @@
 
 ## Features
 
-- **Modifies Saves in Place*** — open your save folder, change what you want, hit save. The first write backs the whole folder up as `*.bak`.
-- **Edit Ship Resources** — fuel, health, electrons and the rest, clamped to the maximums your module grid actually supports.
-- **Edit Resources & Consumables** — shared resources, ingredients and consumables, edited on the game's own icons and item art.
-- **Edit Modules** — add and remove vault modules, wire up connections and power cores, and paint custom area-of-effect fields.
-- **Edit Raw Game Data** — every value in every save file is reachable through the raw editor
-- **Create Custom Modules** — create user-defined item grids up to a size of 9x9
-- **Faithful UI/UX** — the editor is designed to mimick the game's interface.
-- **Runs Everywhere** — as a website and as a native desktop app for Windows, macOS and Linux with x86_64, ARM and Portable builds.
-- **A reverse-engineered format, documented** — the LZF + Odin Serializer binary save format was cracked for this project and is written up in [docs/save-format.md](docs/save-format.md).
+- **Modifies Saves in Place*** – open your save folder, change what you want, hit save. The first write backs the whole folder up as `*.bak`.
+- **Edit Ship Resources** – fuel, health, electrons and the rest, clamped to the maximums your module grid actually supports.
+- **Edit Resources & Consumables** – shared resources, ingredients and consumables, edited on the game's own icons and item art.
+- **Edit Modules** – add and remove vault modules, wire up connections and power cores, and paint custom area-of-effect fields.
+- **Edit Raw Game Data** – every value in every save file is reachable through the raw editor
+- **Create Custom Modules** – create user-defined item grids up to a size of 9x9
+- **Faithful UI/UX** – the editor is designed to mimick the game's interface.
+- **Runs Everywhere** – as a website and as a native desktop app for Windows, macOS and Linux with x86_64, ARM and Portable builds.
+- **A reverse-engineered format, documented** – the LZF + Odin Serializer binary save format was cracked for this project and is written up in [docs/save-format.md](docs/save-format.md).
 
 \* *Firefox & Safari don't support writing to the local filesystem and rely on a downloadable .zip file instead.*
 
@@ -46,27 +46,21 @@
 | v0.12.0 - v0.12.9 | ⚠️ Untested \| Might Work | 1.0.0 |
 | v0.6.0 - v0.11.0 | ❌ Untested \| Most Likely Broken | – |
 
-The first save writes a `*.bak` of every file in the folder — not just the edited ones — so reverting restores the run whole, map included.
-
 ## Screenshots
 
-<table>
-  <tr>
-    <td width="50%"><img src="docs/assets/screenshot-ship-resources.png" alt="Ship resources as the game's HUD tank bars" /></td>
-    <td width="50%"><img src="docs/assets/screenshot-resources.png" alt="Currencies and ingredients" /></td>
-  </tr>
-</table>
-<table>
-  <tr>
-    <td><img src="docs/assets/screenshot-consumables.png" alt="The consumable wheel" /></td>
-    <td><img src="docs/assets/screenshot-modules.png" alt="Vault modules with connections and effect fields" /></td>
-  </tr>
-</table>
+<p align="center">
+  <img src="docs/assets/screenshot-ship-resources.png" width="49%" alt="Ship resources as the game's HUD tank bars" />
+  <img src="docs/assets/screenshot-resources.png" width="49%" alt="Currencies and ingredients" />
+</p>
+<p align="center">
+  <img src="docs/assets/screenshot-consumables.png" width="49%" alt="The consumable wheel" />
+  <img src="docs/assets/screenshot-modules.png" width="49%" alt="Vault modules with connections and effect fields" />
+</p>
 
 ## Roadmap
 
-- **Module grid editor** — place and move modules on the ship grid visually, exactly mirroring the game's ui.
-- **Map editor (maybe)** — edit the map, with the possibility of fully custom maps.
+- **Module grid editor** – place and move modules on the ship grid visually, exactly mirroring the game's ui.
+- **Map editor (maybe)** – edit the map, with the possibility of fully custom challenge maps.
 
 Ideas and bug reports are welcome in the [issues](https://github.com/telefonsquid/punk-save-editor/issues). I'm dedicated to support this project throughout the game's lifecycle.
 
@@ -100,6 +94,4 @@ See [docs/migration.md](docs/migration.md) for the full runbook, [docs/save-form
 
 ## License
 
-The editor is [MIT](LICENSE) licensed — use it, fork it, ship it, just keep the notice.
-
-That covers the code written for this project. It does not cover PUNK's own art: the item icons, module sprites and fonts under `src/lib/game/` and `static/` are extracted from the game and belong to its developer. They are here so the editor can mirror the game's interface, and are not mine to relicense.
+This project is [MIT](LICENSE) licensed. This only covers the code written for this project. It does not cover PUNK's own art: the item icons, module sprites and fonts under `src/lib/game/` and `static/` are extracted from the game and belong to its developer. They are here so the editor can mirror the game's interface, and are not mine to relicense.

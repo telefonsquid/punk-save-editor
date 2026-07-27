@@ -9,7 +9,7 @@ headings matters.
 - Optional `### Added` / `### Changed` / `### Fixed` groups under it.
 - Everything else is plain bullets or short paragraphs.
 
-## 1.0.0 — 2026-07-25
+## 1.0.0 — 2026-07-27
 
 The first public release. Compatible with PUNK v0.12.10.
 
