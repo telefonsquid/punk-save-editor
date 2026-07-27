@@ -96,6 +96,6 @@
 	.punk-regen {
 		font-family: var(--font-title);
 		letter-spacing: var(--tracking-hud);
-		color: #5fc24e;
+		color: var(--color-regen);
 	}
 </style>

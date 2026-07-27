@@ -36,16 +36,25 @@ All greys are warm — every one carries red, so stock Tailwind zinc/neutral rea
 cold and wrong next to them. The tokens (sampled values beside each in
 layout.css): `--color-void` (page), `--color-surface` (card interior),
 `--color-card` + `--color-card-edge` (the module-tooltip slab and its flat
-edge — Section, module cards and the raw panel all wear this pair),
-`--color-cell-off` (unlit effect-field cell), `--color-edge` / `--color-edge-dim`
-(control borders), `--color-ink` / `--color-muted` / `--color-stone` (text),
+edge — see `punk-slab`), `--color-cell-off` (unlit effect-field cell),
+`--color-grid-gap` (the dark between those cells), `--color-edge` /
+`--color-edge-dim` (control borders), `--color-press` (a held control's
+interior), `--color-ink` / `--color-muted` / `--color-stone` (text),
 `--color-accent` (THE interaction colour: hover, focus, active),
-`--color-amber` (inline emphasis), `--color-danger`.
+`--color-amber` (inline emphasis), `--color-danger`, `--color-regen` (the one
+green — a gain), `--color-backdrop` (behind a modal).
 
 **No hard-coded colours in components.** A hex value outside layout.css is a
 palette-retune bug waiting to happen — the only exceptions are the hard shadow
 blacks inside the `punk-*-shadow` utilities and colours that come from game
 data (`resourceColor`, module tints).
+
+This one is **enforced**, not just written down: `bun run lint` runs
+`scripts/check-style.ts`, which fails on a stock Tailwind palette class or a
+colour literal anywhere under `src/lib/components` or `src/routes` (layout.css
+excepted). It drifted three times before the check existed. A colour that is
+genuinely artwork rather than palette — the logo's sampled ramp — says so with a
+`palette-ok:` (one line) or `palette-ok-file:` comment giving the reason.
 
 ## The game pixel
 
@@ -70,15 +79,43 @@ open toward their rule). Recolour via `--frame`; fill via `--frame-fill`
 - Module sprites are tinted at extraction time instead (a CSS filter over the
   scaled bitmap would soften the pixel edges — see editor-internals.md).
 
+## The three box shapes
+
+Every surface in the editor is one of three boxes, and each is one utility:
+
+- **`punk-frame`** (above) — an interactive control the game itself draws:
+  buttons, number fields, the connection toggles.
+- **`punk-slab`** — a card. The module tooltip's shell: `--color-card` behind a
+  2px `--color-card-edge`, square corners. `Section`, the module cards, the raw
+  panel and both dialogs all wear it, so the card colours retune in one place.
+  Padding stays with the caller — a section, a card and a dialog want different
+  insets out of the same slab.
+- **`punk-field`** — a text, search or select box. The game has none, so this is
+  the editor's own: a 2px `--color-edge-dim` box that answers the pointer in the
+  same three states as everything else (quiet → accent → ink), and clears the
+  fill and blue ring `@tailwindcss/forms` puts on every input. Deliberately
+  simpler than `punk-frame`, which is four background bars per control and too
+  much paint for a raw tree running hundreds of rows deep.
+
 ## Shared text shapes
 
-`punk-group-title` (category headings), `punk-game-desc` (DOS body copy),
-`punk-stat` / `punk-stat-val` / `punk-stat-icon` (stat lines),
+`punk-panel-title` (the heading over anything slab-shaped — Section, the raw
+panel, a dialog title band, a module card's name; it sets the shape and leaves
+the *colour* to the caller, which is what lets `punk-group-title` be the same
+shape spoken quietly), `punk-group-title` (category headings), `punk-game-desc`
+(DOS body copy), `punk-stat` / `punk-stat-val` / `punk-stat-icon` (stat lines),
 `punk-title-shadow` / `punk-desc-shadow` (the game's hard offset shadows),
 `punk-outlined` (eight-shadow keyline for text over moving art),
 `punk-hud-num` (chrome-less HUD number fields). If two components need the
 same text treatment, it becomes a utility here — the ModulesPanel/ModuleList
-fork was the lesson.
+fork was the lesson, and the panel title having grown five private copies before
+`punk-panel-title` existed was the same lesson a second time.
+
+**Sizing a utility from a call site:** two utilities both declaring `font-size`
+are settled by their order in the generated sheet, which is not something a
+component may bet on. A component that needs a shared shape at another size
+declares it in its own scoped block (`Section`'s `.is-plain`, the module card's
+`.card-name`), which outranks both.
 
 ## The CRT screen
 
@@ -104,5 +141,20 @@ either.
 
 ## Where to restyle
 
-`Section` / `Button` / `NumberInput` are the design surface — restyle these
-primitives, not every panel. Panels compose them and carry only layout.
+The primitives are the design surface — restyle these, not every panel. Panels
+compose them and carry only layout.
+
+| Primitive | Owns |
+| --- | --- |
+| `Section` | the panel card and its heading (`plain` drops the card) |
+| `Dialog` | every modal: the `showModal` call, the backdrop, the title/footer bands |
+| `Button` | every button, in four loudness variants — colour never carries meaning |
+| `NumberInput` | a framed number field |
+| `InlineNumber` | a chrome-less HUD number, sized `sm`/`xs` |
+| `CounterCell` | an inventory-strip entry: HUD number plus the item's own art |
+| `TextInput` / `Select` | the editor's own text and dropdown boxes |
+| `CloseBadge` | the cross that removes what it sits on (`bare` / `boxed`) |
+| `ModuleStatLine` / `ModuleGroupHeading` | the parts every module surface shares |
+
+**Destructive actions read as destructive**: `Button variant="danger"` or a
+`CloseBadge`, never `primary`. `primary` is the call to action.

@@ -51,6 +51,11 @@ export function holdWait(shown: number): Promise<void> {
  * title face and the DOS value face are not used on the landing screen, so
  * without this they arrive only once the editor is already showing. Pull all
  * three now. A face that fails to load just falls back, so a miss never blocks.
+ *
+ * The root layout calls this at startup, which is what actually keeps the wait
+ * overlay's label readable — it is set in the title face, and fetching that only
+ * once a load began left it blank until the load ended. Calling it again per
+ * load is the guarantee, not the fetch: an already-loaded face resolves at once.
  */
 export function loadFonts(): Promise<unknown> {
 	if (typeof document === 'undefined' || !document.fonts) return Promise.resolve();

@@ -1,15 +1,17 @@
 <script lang="ts">
 	import RawTree from '../RawTree.svelte';
+	import Section from '../Section.svelte';
 	import type { EditorState } from '$lib/editor/state.svelte';
 	import { ODIN_FILES, OPAQUE_FILES } from '$lib/save/slot';
-    import { reveal } from '$lib/actions/reveal';
 
 	let { editor }: { editor: EditorState } = $props();
 </script>
 
 {#if editor.slot}
-	<div class="raw-panel" use:reveal={{ delay: 120 }}>
-		<h2 class="punk-title-shadow raw-panel-title">Raw Game Data - modify at your own risk</h2>
+	<!-- The same card every other section wears — the "at your own risk" warning
+	     lives in the title, so the frame need not shout. It lifts in behind the run
+	     stats above it rather than alongside them. -->
+	<Section title="Raw Game Data - modify at your own risk" revealDelay={120}>
 		<div class="raw-panel-body">
 			<p class="raw-panel-note">
 				Every value the save files contain, unfiltered. The game does not validate any of this:
@@ -54,34 +56,14 @@
 				serialized objects).
 			</p>
 		</div>
-	</div>
+	</Section>
 {/if}
 
 <style>
-	/* The raw editor wears the same module tooltip shell as the run-stats panel it
-	   sits under: warm near-black, square corners, the flat grey edge. The "at your
-	   own risk" warning lives in the title, so the frame need not shout. */
-	.raw-panel {
-		background-color: var(--color-card);
-		border: 2px solid var(--color-card-edge);
-	}
-
-	/* The card's own heading, in the HUD title face like every other section title. */
-	.raw-panel-title {
-		font-family: var(--font-title);
-		font-size: var(--text-hud-sm);
-		line-height: var(--text-hud-sm--line-height);
-		letter-spacing: var(--tracking-hud-wide);
-		text-transform: uppercase;
-		color: var(--color-accent);
-		padding: 1rem 1.25rem;
-	}
-
 	.raw-panel-body {
 		display: flex;
 		flex-direction: column;
 		gap: 0.75rem;
-		padding: 0 1.25rem 1.25rem;
 	}
 
 	/* Body copy in the same quiet grey the rest of the editor uses for hints. */

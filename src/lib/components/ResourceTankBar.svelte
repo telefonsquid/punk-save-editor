@@ -64,8 +64,8 @@
 		// highlight sprite — that flash reads right only for Stamina and washes out
 		// every other resource.
 		const color = showFull
-			? (art?.barColorFull ?? art?.color ?? '#ffffff')
-			: (art?.barColorEmpty ?? art?.color ?? '#665c51');
+			? (art?.barColorFull ?? art?.color ?? 'var(--color-ink)')
+			: (art?.barColorEmpty ?? art?.color ?? 'var(--color-edge)');
 		// Mask so the shared white-alpha shape takes the tint, exactly as the game
 		// multiplies the unit colour over the sprite.
 		return tintedIconStyle(src, scale, color);
@@ -76,28 +76,71 @@
 		// zero; otherwise the value becomes "up to and including this unit".
 		onset(filled === i + 1 ? i : i + 1);
 	}
+
+	/**
+	 * The bar is ONE control, not one per unit.
+	 *
+	 * Every unit used to be its own button, which put a tank between the previous
+	 * control and the next one by up to `CELL_CAP` tab stops, and made "set this
+	 * to 40" a matter of tabbing forty times. So the row carries the slider role
+	 * and the value, the units are left as pointer targets, and the keyboard gets
+	 * the arrows it would expect from a slider anywhere else.
+	 */
+	function onkeydown(event: KeyboardEvent) {
+		const step = event.shiftKey ? 10 : 1;
+		const next =
+			{
+				ArrowRight: filled + step,
+				ArrowUp: filled + step,
+				ArrowLeft: filled - step,
+				ArrowDown: filled - step,
+				PageUp: filled + 10,
+				PageDown: filled - 10,
+				Home: 0,
+				End: count
+			}[event.key] ?? null;
+		if (next === null) return;
+		event.preventDefault();
+		onset(Math.max(0, Math.min(count, next)));
+	}
 </script>
 
 <div
-	class="flex flex-col gap-[3px]"
-	role="group"
+	class="tank flex flex-col gap-[3px]"
+	role="slider"
+	tabindex="0"
 	aria-label={resourceLabel(id)}
+	aria-valuenow={filled}
+	aria-valuemin={0}
+	aria-valuemax={count}
+	aria-valuetext="{filled} of {count}"
+	{onkeydown}
 	onmouseleave={() => (hover = null)}
+	onblur={() => (hover = null)}
 >
 	{#each rows as row, r (r)}
 		<div class="flex items-end gap-[2px]">
 			{#each row as i (i)}
+				<!-- Pointer targets only: the row above is what the keyboard and a
+				     screen reader see, so a unit is neither focusable nor announced. -->
 				<button
 					type="button"
 					class="block cursor-pointer p-0"
 					style={unitStyle(i)}
-					aria-label="Set {resourceLabel(id)} to {i + 1}"
+					tabindex="-1"
+					aria-hidden="true"
 					onmouseenter={() => (hover = i)}
-					onfocus={() => (hover = i)}
-					onblur={() => (hover = null)}
 					onclick={() => commit(i)}
 				></button>
 			{/each}
 		</div>
 	{/each}
 </div>
+
+<style>
+	/* The focus ring belongs to the whole bar now that the bar is the control. */
+	.tank:focus-visible {
+		outline: var(--u) solid var(--color-accent);
+		outline-offset: var(--u);
+	}
+</style>

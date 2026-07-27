@@ -145,8 +145,8 @@
 	.punk-btn:active:not(:disabled) {
 		--frame: var(--color-ink);
 		/* Sampled from button_pressed.png, where the interior is not quite black
-		   any more — the frame's bloom spills into it. */
-		--frame-fill: #0d0906;
+		   any more — the frame's bloom spills into it (--color-press). */
+		--frame-fill: var(--color-press);
 	}
 
 	.punk-btn:disabled {

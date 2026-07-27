@@ -10,7 +10,7 @@
  */
 
 import type { ResourcePair } from '$lib/save/tree';
-import { setIngredientCount } from '$lib/save/vault';
+import { setConsumableAmount, setIngredientCount, type ConsumableView } from '$lib/save/vault';
 import type { EditorState } from './state.svelte';
 
 export interface NumInputOpts {
@@ -60,6 +60,26 @@ export function ingredientInput(editor: EditorState, id: string) {
 		if (v === null) return;
 		setIngredientCount(editor.slot.vault, id, v);
 		editor.dirtyFiles.add('vault');
+	};
+}
+
+/**
+ * For a consumable slot's count field: the amount goes into the slot on every
+ * keystroke, and the slot is emptied if the committed value is zero.
+ *
+ * Zero is not a state a slot may sit in — see `setConsumableAmount`. That rule
+ * has to wait for `change` rather than run on `input`, though: typing "0" on the
+ * way to "10" would otherwise empty the slot out from under the caret and the
+ * rest of the number would land nowhere.
+ */
+export function consumableInput(editor: EditorState, node: ConsumableView, max?: number) {
+	return {
+		oninput: numInput(editor, node, 'amount', { min: 0, max, round: true, file: 'vault' }),
+		onchange: () => {
+			if (!editor.slot || !node.consumableId || node.amount > 0) return;
+			setConsumableAmount(editor.slot.vault, node.consumableId, 0);
+			editor.touch('vault');
+		}
 	};
 }
 

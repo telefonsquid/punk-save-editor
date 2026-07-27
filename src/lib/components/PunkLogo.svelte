@@ -80,6 +80,11 @@
 
 	// Colour as a function of distance, sampled off the video: white-hot core,
 	// amber, the UI orange, then red and gone.
+	//
+	// palette-ok-file: this ramp is artwork, not palette. The seven stops are
+	// samples from main_title_logo_animation.mp4 and only mean anything as a
+	// sequence — tokenising them would put a gradient nobody can retune into the
+	// palette and gain nothing, since the logo is the only thing that draws it.
 	const RAMP = [
 		[0, '#fffbe6'],
 		[0.12, '#ffe9a0'],

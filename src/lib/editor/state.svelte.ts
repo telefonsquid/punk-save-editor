@@ -67,8 +67,9 @@ export class EditorState {
 			this.busy = true;
 			await paintFrame();
 			const shown = now();
-			// Fetch the pixel faces while the save decodes, so no title or value
-			// pops in a beat after the wait lifts (see loadFonts).
+			// Normally already done at startup (see loadFonts) and resolves at once.
+			// Repeated here so no title or value can pop in a beat after the wait
+			// lifts, whatever happened earlier.
 			const fonts = loadFonts();
 			this.slot = await loadSlot(dir);
 			this.dirtyFiles.clear();

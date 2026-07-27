@@ -1,25 +1,24 @@
 <script lang="ts">
 	import Button from '../Button.svelte';
+	import CloseBadge from '../CloseBadge.svelte';
 	import EffectFieldChooser from '../EffectFieldChooser.svelte';
 	import ItemIcon from '../ItemIcon.svelte';
+	import ModuleGroupHeading from '../ModuleGroupHeading.svelte';
 	import ModulePicker from '../ModulePicker.svelte';
+	import ModuleStatLine from '../ModuleStatLine.svelte';
 	import NumberInput from '../NumberInput.svelte';
-	import ResourceIcon from '../ResourceIcon.svelte';
 	import RichText from '../RichText.svelte';
 	import Section from '../Section.svelte';
 	import { reveal } from '$lib/actions/reveal';
 	import { numInput } from '$lib/editor/inputs';
 	import type { EditorState } from '$lib/editor/state.svelte';
+	import { displayName, equippableModules, usesPowerCore, type EffectField } from '$lib/game/data';
 	import {
-		assets,
-		displayName,
-		equippableModules,
-		moduleInfo,
-		usesPowerCore,
-		type EffectField
-	} from '$lib/game/data';
-	import { groupModules, moduleFields, type FieldKind } from '$lib/game/module-groups';
-	import { moduleStats } from '$lib/game/module-stats';
+		groupModules,
+		moduleCard,
+		moduleFields,
+		type FieldKind
+	} from '$lib/game/module-groups';
 	import {
 		addModule,
 		CONNECTION_SIDES,
@@ -107,56 +106,43 @@
 		<p class="text-center text-muted text-ui-xs">Vault has no modules.</p>
 	{:else}
 		{#each groups as group (group.name)}
-			<h3 class="punk-group-title mb-2">
-				{group.name}
-				<span class="text-edge">({group.items.length})</span>
-			</h3>
+			<ModuleGroupHeading name={group.name} count={group.items.length} class="mb-2" />
 			<div class="module-grid mb-10">
 				{#each group.items as row (row.index)}
-					{@const info = moduleInfo(row.id)}
-					{@const stats = moduleStats(row.id)}
-					{@const tier = row.id ? assets[row.id]?.level : undefined}
+					{@const card = moduleCard(row.id)}
 					<!-- One module drawn as the game's own tooltip card (module_card.png):
 					     coloured title, muted body, its effect diagram and stats — with the
 					     bits the editor lets you change sitting in a quiet footer. -->
-					<article
-						class="module-card"
-						style:--card-accent={info?.color ?? 'var(--color-edge)'}
-						use:reveal
-					>
-						<button
-							type="button"
-							class="card-x"
-							aria-label="Remove {displayName(row.id)} from the vault"
+					<article class="module-card punk-slab" use:reveal>
+						<CloseBadge
+							class="absolute top-2 right-2"
+							label="Remove {displayName(row.id)} from the vault"
 							onclick={() => removeModuleAt(row.index)}
-						>
-							<svg viewBox="0 0 8 8" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true">
-								<path d="M1 1l6 6M7 1l-6 6" />
-							</svg>
-						</button>
+						/>
 
 						<header class="card-head">
 							<ItemIcon id={row.id} scale={2} />
-							<h4 class="card-name" style:color={info?.color ?? undefined}>
-								{displayName(row.id)}{#if tier}<span class="card-tier">tier {tier}</span>{/if}
+							<h4
+								class="card-name punk-panel-title punk-title-shadow"
+								style:color={card.color ?? undefined}
+							>
+								{displayName(row.id)}{#if card.tier}<span class="card-tier">tier {card.tier}</span
+									>{/if}
 							</h4>
 						</header>
 
-						{#if info?.description}
-							<p class="punk-game-desc punk-desc-shadow mt-2.5"><RichText text={info.description} /></p>
+						{#if card.info?.description}
+							<p class="punk-game-desc punk-desc-shadow mt-2.5">
+								<RichText text={card.info.description} />
+							</p>
 						{/if}
 
-						{#if stats.length > 0}
+						{#if card.stats.length > 0}
 							<!-- One stat per line so a card with several ("Explosion 1 dmg" then
 							     "Cost 2 per shot") reads as a list, not a run-on. -->
 							<ul class="card-stats">
-								{#each stats as stat, i (i)}
-									<li class="punk-stat punk-desc-shadow">
-										{stat.label}
-										<span class="punk-stat-val">{stat.value}</span>
-										{#if stat.resource}<span class="punk-stat-icon"><ResourceIcon id={stat.resource} labeled /></span>{/if}
-										{#if stat.suffix}{stat.suffix}{/if}
-									</li>
+								{#each card.stats as stat, i (i)}
+									<li><ModuleStatLine {stat} /></li>
 								{/each}
 							</ul>
 						{/if}
@@ -169,7 +155,7 @@
 								<EffectFieldChooser
 									candidates={kind.candidates}
 									value={kind.shapes[0] ?? null}
-									color={info?.color}
+									color={card.color}
 									label={kind.label}
 									onchange={(field) => setField(row, kind.key, field)}
 								/>
@@ -233,35 +219,11 @@
 		}
 	}
 
-	/* The card itself: the game's module tooltip (see --color-card in
-	   layout.css) — a slab a shade below the surface so it recedes from the
-	   panel, square-cornered, with the flat grey edge. */
+	/* The card itself is `punk-slab` — the game's module tooltip, which is the
+	   same shell every Section wears. Only its own inset lives here. */
 	.module-card {
 		position: relative;
-		background-color: var(--color-card);
-		border: 2px solid var(--color-card-edge);
 		padding: 1rem 1.25rem;
-	}
-
-	/* Remove is a bare cross in the top-right, dim until reached for. */
-	.card-x {
-		position: absolute;
-		top: 0.5rem;
-		right: 0.5rem;
-		width: 1rem;
-		height: 1rem;
-		color: var(--color-muted);
-		background: transparent;
-		border: 0;
-		padding: 0;
-		cursor: pointer;
-	}
-	.card-x:hover {
-		color: var(--color-danger);
-	}
-	.card-x svg {
-		width: 100%;
-		height: 100%;
 	}
 
 	.card-head {
@@ -272,16 +234,13 @@
 		padding-right: 1.25rem;
 	}
 
-	/* Module name in 8-bit HUD with the game's hard right drop shadow, coloured by
-	   the module inline. A dedicated size 10% under `sm`, the way the reference
-	   sets the title a touch smaller than a section head. */
+	/* Module name in the panel-title shape, coloured by the module inline, at a
+	   dedicated size 10% under `sm` — the way the reference sets a card title a
+	   touch smaller than a section head. The drop shadow is `punk-title-shadow`
+	   on the element; only the size is this card's own. */
 	.card-name {
-		font-family: var(--font-title);
 		font-size: var(--text-hud-sm-title);
 		line-height: var(--text-hud-sm-title--line-height);
-		letter-spacing: var(--tracking-hud-wide);
-		text-transform: uppercase;
-		text-shadow: 3px 0 0 #050403;
 		overflow-wrap: anywhere;
 	}
 

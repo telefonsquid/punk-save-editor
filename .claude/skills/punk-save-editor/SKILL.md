@@ -59,7 +59,8 @@ rediscovering it:
 ```bash
 bun run dev         # dev server (port 5173, or $PORT; .claude/launch.json has autoPort)
 bun run check       # svelte-kit sync + svelte-check — the real type gate (also .svelte files)
-bun run lint        # eslint
+bun run lint        # eslint + the design-system check (scripts/check-style.ts)
+bun run check:style # just the design-system check: no stock Tailwind colours, no colour literals
 bun run build       # adapter-static production build
 bun run extract     # regenerate all game data from the installed game (docs/migration.md)
 bun run check:data  # cross-check the generated JSONs without re-extracting
@@ -67,6 +68,9 @@ bun run check:data  # cross-check the generated JSONs without re-extracting
 
 - Always run the **Svelte MCP `svelte-autofixer`** on any component you write/edit, until clean — hard
   rule. Prefer the Svelte MCP docs tools when touching Svelte 5 features.
+- **Read docs/design.md before any styling work.** `src/lib/components` is the most edited area in
+  the repo; the design system is what keeps it from forking, and `bun run lint` enforces the part of
+  it a checker can see.
 - **bun** is the package manager, never npm/yarn.
 - Verify save-affecting changes with the in-browser e2e (`window.__punkTestDir` hook) — Node tests
   can't catch proxy-layer bugs. See docs/editor-internals.md.
@@ -79,8 +83,10 @@ bun run check:data  # cross-check the generated JSONs without re-extracting
 - `src/lib/game/` — static game knowledge: `data.ts` (assets, names, module info/effects),
   `module-stats.ts`, `rich-text.ts`, `pixel-icon.ts`, and the generated `*.json`.
 - `src/lib/editor/` — `state.svelte.ts` (EditorState), `inputs.ts` (raw-tree input handlers).
-- `src/lib/components/` — `Section`/`Button`/`NumberInput` primitives (restyle these for the
-  redesign), `panels/` (one per editor section), `ModuleList`/`ModulePicker`/`RichText`/`RawTree`,
+- `src/lib/components/` — the primitives (restyle these, not the panels): `Section`, `Dialog`,
+  `Button`, `NumberInput`/`InlineNumber`/`CounterCell`, `TextInput`/`Select`, `CloseBadge`,
+  `ModuleStatLine`/`ModuleGroupHeading`. Then `panels/` (one per editor section),
+  `ModuleList`/`ModulePicker`/`RichText`/`RawTree`,
   `ResourceIcon` (all four resource art sizes)/`ItemIcon`/`EffectFieldGrid` (the area-of-effect
   diagram the game draws on power cores and boosters) + `EffectFieldChooser` (picking that shape) +
   `CustomFieldDialog` (painting one — hand-painted fields must stay **square and odd**, see

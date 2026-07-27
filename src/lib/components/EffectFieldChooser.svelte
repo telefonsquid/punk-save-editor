@@ -1,6 +1,7 @@
 <script lang="ts">
+	import CloseBadge from './CloseBadge.svelte';
 	import CustomFieldDialog from './CustomFieldDialog.svelte';
-	import EffectFieldGrid from './EffectFieldGrid.svelte';
+	import EffectFieldGrid, { DEFAULT_FIELD_SIZE } from './EffectFieldGrid.svelte';
 	import { resourceColor, type EffectField } from '$lib/game/data';
 	import { effectFieldChoices, effectFieldKey } from '$lib/game/effect-field';
 	import { customFields } from '$lib/editor/custom-fields.svelte';
@@ -32,7 +33,7 @@
 
 	// The game's own health red, taken from the resource rather than hard-coded,
 	// so the badge stays in step if the extraction ever picks up a new palette.
-	const markColor = resourceColor('Resource Health') ?? '#ff0000';
+	const markColor = resourceColor('Resource Health') ?? 'var(--color-danger)';
 
 	const currentKey = $derived(value ? effectFieldKey(value) : null);
 	const rolled = $derived(effectFieldChoices(candidates));
@@ -55,7 +56,7 @@
      shape explains the mark. -->
 {#snippet userMark()}
 	<svg
-		class="pointer-events-none absolute -top-1.5 left-1/2 size-3 -translate-x-1/2 rounded-full bg-zinc-900 p-px"
+		class="user-mark pointer-events-none absolute -top-1.5 left-1/2 size-3 -translate-x-1/2 p-px"
 		style:color={markColor}
 		viewBox="0 0 16 16"
 		fill="currentColor"
@@ -107,20 +108,12 @@
 				onselect={() => onchange(shape)}
 			/>
 			{@render userMark()}
-			<button
-				type="button"
-				class="absolute -top-[0.375rem] -right-[0.375rem] flex size-3 items-center justify-center border border-zinc-700 bg-zinc-900 text-zinc-500 hover:border-red-500 hover:text-red-400"
-				title="Delete this custom shape"
-				aria-label="Delete this custom shape"
+			<CloseBadge
+				boxed
+				class="absolute -top-[0.375rem] -right-[0.375rem]"
+				label="Delete this custom shape"
 				onclick={() => customFields.remove(key)}
-			>
-				<!-- A drawn cross rather than the × glyph: a glyph sits on the text
-				     baseline, which leaves it a pixel or two high in a box this small
-				     however the line box is centred. -->
-				<svg class="size-1.5" viewBox="0 0 8 8" fill="none" stroke="currentColor" stroke-width="1.75">
-					<path d="M1 1l6 6M7 1l-6 6" />
-				</svg>
-			</button>
+			/>
 		</span>
 	{/each}
 
@@ -129,7 +122,9 @@
 	     modal does the explaining. -->
 	<button
 		type="button"
-		class="inline-flex size-14 items-center justify-center border-2 border-dashed border-zinc-700 text-zinc-600 hover:border-amber-500 hover:text-amber-400"
+		class="add-tile inline-flex items-center justify-center"
+		style:width={DEFAULT_FIELD_SIZE}
+		style:height={DEFAULT_FIELD_SIZE}
 		title="Add custom shape"
 		aria-label="Add custom shape"
 		onclick={() => (adding = true)}
@@ -156,3 +151,29 @@
 		}}
 	/>
 {/if}
+
+<style>
+	/* The badge needs a body of its own so the figure reads against whatever cell
+	   it lands on — the card colour, so it belongs to the editor's chrome rather
+	   than to the shape. */
+	.user-mark {
+		border-radius: 9999px;
+		background-color: var(--color-card);
+	}
+
+	/* The tile that opens the painter. Dashed rather than solid so it reads as an
+	   empty slot waiting to be filled, and it takes the accent on hover like every
+	   other control. */
+	.add-tile {
+		border: 2px dashed var(--color-edge-dim);
+		color: var(--color-edge);
+		background-color: transparent;
+		cursor: pointer;
+		transition: none;
+	}
+
+	.add-tile:hover {
+		border-color: var(--color-accent);
+		color: var(--color-accent);
+	}
+</style>

@@ -1,38 +1,51 @@
 <script lang="ts">
 	import type { HTMLInputAttributes } from 'svelte/elements';
 
-	// A number with no box around it — just the big HUD digits the game prints
-	// beside a resource icon (resources.png). Editable in place: click and type.
-	// Unlike NumberInput it wears no frame; the value is the whole control, and it
-	// sizes itself to its digits so a row of these reads like the HUD counter it
-	// mimics rather than a form.
+	// A number with no box around it — just the HUD digits the game prints beside
+	// a resource icon (resources.png) or under a consumable slot. Editable in
+	// place: click and type. Unlike NumberInput it wears no frame; the value is
+	// the whole control, and it sizes itself to its digits so a row of these
+	// reads like the HUD counter it mimics rather than a form.
+	//
 	// `size` is our own font-size switch, so it shadows the input's numeric `size`
-	// attribute (which this control never needs).
+	// attribute (which this control never needs). `element` exposes the input to a
+	// caller that has to write into the box itself — the consumable stepper does,
+	// so a nudge shows even while the caret is sitting in it.
 	let {
 		class: klass = '',
-		size = 'md',
+		size = 'sm',
+		element = $bindable(null),
 		...rest
-	}: Omit<HTMLInputAttributes, 'size'> & { size?: 'md' | 'sm' } = $props();
+	}: Omit<HTMLInputAttributes, 'size'> & {
+		size?: 'sm' | 'xs';
+		element?: HTMLInputElement | null;
+	} = $props();
 </script>
 
-<input type="number" class="punk-inline-num punk-hud-num punk-inline-num-{size} {klass}" {...rest} />
+<input
+	bind:this={element}
+	type="number"
+	class="punk-inline-num punk-hud-num punk-inline-num-{size} {klass}"
+	{...rest}
+/>
 
 <style>
 	.punk-inline-num {
 		padding: 0;
 		text-align: right;
-		color: var(--color-ink);
+		color: inherit;
 		/* Grow and shrink to the digits so the icon sits right up against the number. */
 		field-sizing: content;
 		min-width: 1ch;
 	}
 
-	/* Two HUD sizes: the big counter, and a quieter one for the inventory strip. */
-	.punk-inline-num-md {
-		font-size: 25px;
-	}
+	/* Two HUD sizes: the inventory strip's counter, and a smaller one for the
+	   amount badge under a consumable slot. */
 	.punk-inline-num-sm {
 		font-size: 20px;
+	}
+	.punk-inline-num-xs {
+		font-size: 13px;
 	}
 
 	/* Editing is marked by the accent alone — no frame, and none of the forms

@@ -4,6 +4,7 @@
 	import CrtFilter from '$lib/components/CrtFilter.svelte';
 	import ScrollBar from '$lib/components/ScrollBar.svelte';
 	import { bindFullscreenKey } from '$lib/fullscreen';
+	import { loadFonts } from '$lib/editor/busy';
 	import { afterNavigate } from '$app/navigation';
 
 	let { children } = $props();
@@ -12,6 +13,16 @@
 	let screen = $state<HTMLElement | null>(null);
 
 	$effect(bindFullscreenKey);
+
+	// Pull the pixel faces the moment the app is up, not when something needs
+	// them. They are font-display: block, so text in a face still in flight is
+	// invisible rather than fallback-shaped — and the wait overlay's own label is
+	// set in the title face, which nothing before it uses. Fetching only once a
+	// load starts left that label blank for the whole load and popped it in as the
+	// overlay lifted. The landing screen has nothing to wait on, so it pays here.
+	$effect(() => {
+		loadFonts();
+	});
 
 	// SvelteKit resets window scroll on navigation, but the app scrolls inside
 	// .crt-screen — without this, /changelog opens wherever the editor was

@@ -4,7 +4,8 @@
  * both use to draw effect fields. Mirrors the game's own shop presentation.
  */
 
-import { categoryRank, displayName, moduleInfo, resourceRank, type EffectField } from './data';
+import { assets, categoryRank, displayName, moduleInfo, resourceRank, type EffectField } from './data';
+import { moduleStats } from './module-stats';
 
 /** The two kinds of effect field, named as `ModuleInfo` holds them. */
 export type FieldKind = 'powerCores' | 'levelFields';
@@ -44,6 +45,23 @@ export function groupModules<T extends { id: string | null }>(
 		);
 	}
 	return Object.values(by).sort((a, b) => a.rank - b.rank || a.name.localeCompare(b.name));
+}
+
+/**
+ * Everything a module surface prints about a module regardless of its shape —
+ * the vault's tooltip cards and the picker's rows both open with exactly these
+ * four lookups, so they are gathered here rather than repeated per template.
+ * `color` falls back to nothing; a caller decides what an uncoloured module
+ * looks like.
+ */
+export function moduleCard(id: string | null) {
+	const info = moduleInfo(id);
+	return {
+		info,
+		color: info?.color ?? null,
+		tier: id ? assets[id]?.level : undefined,
+		stats: moduleStats(id)
+	};
 }
 
 /**

@@ -1,12 +1,18 @@
 <script lang="ts">
 	import Button from './Button.svelte';
+	import InlineNumber from './InlineNumber.svelte';
 	import ItemIcon from './ItemIcon.svelte';
 	import RichText from './RichText.svelte';
-	import { numInput } from '$lib/editor/inputs';
+	import { consumableInput } from '$lib/editor/inputs';
 	import type { EditorState } from '$lib/editor/state.svelte';
 	import { assets, displayName } from '$lib/game/data';
 	import type { ConsumableView } from '$lib/save/vault';
-	import { getConsumables, removeConsumable, reorderConsumables } from '$lib/save/vault';
+	import {
+		getConsumables,
+		removeConsumable,
+		reorderConsumables,
+		setConsumableAmount
+	} from '$lib/save/vault';
 
 	let { editor }: { editor: EditorState } = $props();
 
@@ -81,18 +87,43 @@
 
 	// The count field of each drawn slot, so a +/- nudge can push the new number
 	// straight into the box the instant it is clicked, whatever the field's focus.
-	let countInputs: (HTMLInputElement | null)[] = [];
+	let countInputs: (HTMLInputElement | null)[] = $state([]);
+
+	/** Moves the consumable held in `from` to `to`, both counting filled slots. */
+	function move(from: number, to: number): void {
+		if (!editor.slot || from < 0 || to < 0 || from === to) return;
+		const filled = getConsumables(editor.slot.vault).filter((c) => c.consumableId != null);
+		if (to >= filled.length) return;
+		reorderConsumables(editor.slot.vault, from, to);
+		editor.touch('vault');
+	}
 
 	function drop(targetId: string | null) {
-		if (editor.slot && dragId && targetId && dragId !== targetId) {
-			const from = filledIndexOf(dragId);
-			const to = filledIndexOf(targetId);
-			if (from >= 0 && to >= 0) {
-				reorderConsumables(editor.slot.vault, from, to);
-				editor.touch('vault');
-			}
-		}
+		if (dragId && targetId) move(filledIndexOf(dragId), filledIndexOf(targetId));
 		dragId = null;
+	}
+
+	/**
+	 * Alt+Arrow walks a slot around the ring — the keyboard's way to do what
+	 * dragging does. Focus follows the consumable rather than the position it
+	 * left, since the thing being moved is what the user is tracking; the ring's
+	 * boxes are keyed by position, so the element has to be looked up again after
+	 * the reorder repaints.
+	 */
+	function reorderKeys(event: KeyboardEvent, id: string) {
+		if (!event.altKey) return;
+		const delta =
+			event.key === 'ArrowRight' || event.key === 'ArrowDown'
+				? 1
+				: event.key === 'ArrowLeft' || event.key === 'ArrowUp'
+					? -1
+					: 0;
+		if (!delta) return;
+		event.preventDefault();
+		move(filledIndexOf(id), filledIndexOf(id) + delta);
+		requestAnimationFrame(() =>
+			document.querySelector<HTMLElement>(`[data-slot="${CSS.escape(id)}"]`)?.focus()
+		);
 	}
 
 	function remove(id: string) {
@@ -104,17 +135,14 @@
 
 	// The +/- keys beside the count. Nudge the live vault node one step, clamped to
 	// the consumable's own max so a slot can't hold more than the game allows.
+	// Zero empties the slot — the shared rule, same as typing a zero into the box.
 	function step(node: ConsumableView, delta: number, i: number) {
-		if (!node.consumableId) return;
-		const max = assets[node.consumableId]?.maxCount ?? Infinity;
+		if (!node.consumableId || !editor.slot) return;
+		const id = node.consumableId;
+		const max = assets[id]?.maxCount ?? Infinity;
 		const next = Math.max(0, Math.min(max, (node.amount ?? 0) + delta));
-		// Stepping to zero empties the slot, same as Remove — a 0-count consumable
-		// is not something the vault should keep.
-		if (next <= 0) {
-			remove(node.consumableId);
-			return;
-		}
-		node.amount = next;
+		setConsumableAmount(editor.slot.vault, id, next);
+		if (next <= 0 && pinned === id) pinned = null;
 		// Write the number into the field as well, so a nudge shows the instant you
 		// click even if the caret is sitting in the box. The count is capped at the
 		// consumable's own max, so + stops once the slot is full.
@@ -130,14 +158,14 @@
 		     exactly where the game prints them inside the ring. -->
 		<div class="absolute top-1/2 left-1/2 w-2/5 -translate-x-1/2 -translate-y-1/2 text-center">
 			{#if centre}
-				<h3 class="punk-title-shadow text-hud-md text-ink uppercase" style="font-family: var(--font-title)">
+				<h3 class="punk-title-shadow font-title text-hud-md text-ink uppercase">
 					{displayName(centre)}
 				</h3>
 				<p class="mt-1 text-ui-xs text-muted">
 					<RichText text={assets[centre]?.description} />
 				</p>
 				<div class="mt-3 flex justify-center">
-					<Button variant="primary" size="sm" onclick={() => remove(centre)}>Remove</Button>
+					<Button variant="danger" size="sm" onclick={() => remove(centre)}>Remove</Button>
 				</div>
 			{/if}
 		</div>
@@ -155,9 +183,12 @@
 						type="button"
 						class="diamond {active ? 'is-active' : 'is-filled'}"
 						draggable="true"
+						data-slot={id}
 						aria-label={displayName(id)}
+						aria-keyshortcuts="Alt+ArrowLeft Alt+ArrowRight"
 						title={displayName(id)}
 						onclick={() => (pinned = pinned === id ? null : id)}
+						onkeydown={(e) => reorderKeys(e, c.id)}
 						ondragstart={() => (dragId = id)}
 						ondragend={() => (dragId = null)}
 						ondragover={(e) => e.preventDefault()}
@@ -177,18 +208,12 @@
 							onclick={() => step(c.node, -1, i)}>-</button
 						>
 						<span class="count">
-							<input
-								type="number"
+							<InlineNumber
+								size="xs"
 								min="0"
-								class="count-num punk-hud-num"
-								bind:this={countInputs[i]}
+								bind:element={countInputs[i]}
 								value={c.amount}
-								oninput={numInput(editor, c.node, 'amount', {
-									min: 0,
-									max: assets[c.id]?.maxCount,
-									round: true,
-									file: 'vault'
-								})}
+								{...consumableInput(editor, c.node, assets[c.id]?.maxCount)}
 							/><span class="text-muted">/{assets[c.id]?.maxCount ?? '∞'}</span>
 						</span>
 						<button
@@ -345,37 +370,18 @@
 	}
 
 	/* The count sits in its own bordered box, the way the game frames it under the
-	   slot. */
+	   slot. Square-cornered like every other box in the app — the editable number
+	   inside it is the shared InlineNumber, so it needs no chrome of its own. */
 	.count {
 		display: inline-flex;
 		align-items: baseline;
 		gap: 1px;
 		padding: 2px 7px;
 		border: 2px solid var(--color-edge-dim);
-		border-radius: 3px;
 		background-color: var(--color-surface);
 		font-family: var(--font-title);
 		font-size: 13px;
 		letter-spacing: normal;
 		color: var(--color-ink);
-	}
-
-	.count-num {
-		/* Hug the digits so the whole amount / max badge stays centred under the
-		   slot no matter how many digits the amount has. */
-		field-sizing: content;
-		min-width: 1ch;
-		padding: 0;
-		text-align: right;
-		font-size: inherit;
-		color: inherit;
-	}
-
-	.count-num:focus {
-		outline: none;
-		/* @tailwindcss/forms drops a blue focus ring on every number field; the
-		   accent recolour is the only editing cue this box needs. */
-		box-shadow: none;
-		color: var(--color-accent);
 	}
 </style>

@@ -1,6 +1,5 @@
 @import 'tailwindcss';
 @plugin '@tailwindcss/forms';
-@plugin '@tailwindcss/typography';
 
 /* PUNK uses TWO pixel faces, and which one goes where is not a stylistic call —
    it mirrors the game. Both ship inside the Unity build as TextMeshPro SDF
@@ -68,6 +67,13 @@
 	--color-danger: #85291b; /* warnings, destructive actions */
 	--color-card: #120f0c; /* the module tooltip slab, a shade below the surface (module_card.png) */
 	--color-card-edge: #302822; /* the tooltip's flat grey edge, sampled off the same capture */
+	--color-press: #0d0906; /* a held control's interior — the frame's bloom spills in (button_pressed.png) */
+	--color-regen: #5fc24e; /* a gain: the recharge rate beside a ship tank. the one green in the app */
+	/* Behind a modal, so the page reads as switched off rather than dimmed.
+	   Dialog.svelte repeats this value as a var() fallback — `::backdrop` does not
+	   inherit custom properties on older WebKitGTK. Change both together. */
+	--color-backdrop: rgb(0 0 0 / 0.8);
+	--color-grid-gap: rgb(0 0 0 / 0.6); /* the dark between effect-field cells. below cell-off, so an unlit cell still reads as a cell */
 
 	/* One game pixel. The game's cap-height-to-frame ratio is 5:1 and our
 	   capital is 15px, so one game pixel is 3 of ours. Everything sized against
@@ -255,6 +261,35 @@
 		var(--u) var(--u);
 }
 
+@utility punk-slab {
+	/* The module tooltip's shell (module_card.png): a slab a shade below the
+	   surface so it recedes from the page, square corners, and the flat grey
+	   edge. Every card-shaped surface in the editor wears it — the Section
+	   panels, the module cards, the raw-data panel — so a retune of the card
+	   colours lands everywhere at once instead of in three private copies.
+
+	   Padding stays with the caller: a section, a module card and a dialog want
+	   different insets out of the same slab. */
+	background-color: var(--color-card);
+	border: 2px solid var(--color-card-edge);
+}
+
+@utility punk-panel-title {
+	/* The heading over anything slab-shaped — Section, the raw-data panel, a
+	   dialog. In the HUD face, because the game sets its own card titles in it
+	   and everything else in 000webfont.
+
+	   The COLOUR is deliberately not set here: a panel head takes the accent,
+	   `punk-group-title` below is the same shape in muted for a category
+	   heading, and the consumable wheel's centre takes ink. One shape, three
+	   voices. */
+	font-family: var(--font-title);
+	font-size: var(--text-hud-sm);
+	line-height: var(--text-hud-sm--line-height);
+	letter-spacing: var(--tracking-hud-wide);
+	text-transform: uppercase;
+}
+
 @utility punk-cap {
 	/* Collapses the line box onto the capital, so a control's height is set by
 	   its padding and the ink it actually shows rather than by 000webfont's very
@@ -298,15 +333,43 @@
 }
 
 @utility punk-group-title {
-	/* Category heading over a module list, in the HUD face — shared by the
-	   vault's card grid and the picker's row list so both surfaces group the
-	   same way. Margins stay with the caller. */
-	font-family: var(--font-title);
-	font-size: var(--text-hud-sm);
-	line-height: var(--text-hud-sm--line-height);
-	letter-spacing: var(--tracking-hud-wide);
-	text-transform: uppercase;
+	/* Category heading over a module list — shared by the vault's card grid and
+	   the picker's row list so both surfaces group the same way. The same shape
+	   as a panel head, spoken quietly: a category is a divider, not a title.
+	   Margins stay with the caller. */
+	@apply punk-panel-title;
 	color: var(--color-muted);
+}
+
+@utility punk-field {
+	/* A text, search or select box. The game has no such control — every field
+	   it draws is a number in `punk-frame` — so this is the editor's own, and it
+	   is kept to one recipe so a filter box, a size dropdown and a raw-tree
+	   string field are visibly the same object.
+
+	   Deliberately simpler than `punk-frame`: these sit in dense rows (the raw
+	   tree runs hundreds deep) where four background bars per field is a lot of
+	   paint for a box nobody is looking at. It answers the pointer in the same
+	   three states as everything else though — quiet, accent under the pointer,
+	   ink while you type — so the language still agrees.
+
+	   The resets are for @tailwindcss/forms, which lands a white fill and a blue
+	   focus ring on every input and select in the app. */
+	border: 2px solid var(--color-edge-dim);
+	background-color: var(--color-void);
+	color: var(--color-ink);
+	transition: none;
+	&:hover:not(:disabled) {
+		border-color: var(--color-accent);
+	}
+	&:focus {
+		border-color: var(--color-ink);
+		outline: none;
+		box-shadow: none;
+	}
+	&::placeholder {
+		color: var(--color-muted);
+	}
 }
 
 @utility punk-game-desc {

@@ -1,3 +1,12 @@
+<script module lang="ts">
+	/**
+	 * The edge length every shape tile takes. Exported so the "add custom shape"
+	 * button can size itself to it and stay part of the row rather than drifting
+	 * out of step with a number written twice.
+	 */
+	export const DEFAULT_FIELD_SIZE = '3.5rem';
+</script>
+
 <script lang="ts">
 	import type { EffectField } from '$lib/game/data';
 
@@ -15,10 +24,10 @@
 	// differ only in what wraps the cells, so the cells live in a snippet.
 	let {
 		field,
-		color = '#22d3ee',
+		color = null,
 		label,
 		selected = false,
-		size = '3.5rem',
+		size = DEFAULT_FIELD_SIZE,
 		onselect,
 		oncell
 	}: {
@@ -72,7 +81,10 @@
 		}))
 	);
 
-	const fill = $derived(color ?? '#22d3ee');
+	// A module with no colour of its own falls back to the interaction colour —
+	// the diagram is still something you click, and the palette has no neutral
+	// "lit" shade that would not read as an unlit cell.
+	const fill = $derived(color ?? 'var(--color-accent)');
 	const describe = $derived(label ?? `Area of effect, ${field.width} by ${field.height} cells`);
 	// `1fr` rather than a fixed cell edge is what makes the footprint constant.
 	const columns = $derived(`repeat(${field.width}, 1fr)`);
@@ -116,15 +128,13 @@
 {#if onselect}
 	<button
 		type="button"
-		class="inline-grid gap-px p-px {selected
-			? 'ring-2 ring-offset-1 ring-offset-zinc-900'
-			: 'opacity-60 hover:opacity-100'}"
+		class="field-grid inline-grid gap-px p-px"
+		class:is-selected={selected}
 		style:width={size}
 		style:height={size}
 		style:grid-template-columns={columns}
 		style:grid-template-rows={rows}
-		style:background-color="rgb(0 0 0 / 0.6)"
-		style:--tw-ring-color={fill}
+		style:--ring={fill}
 		aria-pressed={selected}
 		aria-label={describe}
 		onclick={onselect}
@@ -135,7 +145,7 @@
 	<!-- `touch-none` keeps a finger stroke painting instead of scrolling the
 	     dialog, and `select-none` stops a mouse drag from selecting the grid. -->
 	<div
-		class="inline-grid touch-none gap-px bg-black/60 p-px select-none"
+		class="field-grid inline-grid touch-none gap-px p-px select-none"
 		style:width={size}
 		style:height={size}
 		style:grid-template-columns={columns}
@@ -147,7 +157,7 @@
 	</div>
 {:else}
 	<div
-		class="inline-grid gap-px bg-black/60 p-px"
+		class="field-grid inline-grid gap-px p-px"
 		style:width={size}
 		style:height={size}
 		style:grid-template-columns={columns}
@@ -158,3 +168,34 @@
 		{@render cellGrid(false)}
 	</div>
 {/if}
+
+<style>
+	/* The dark the cells sit on, showing through the one-pixel gaps between them.
+	   Below `--color-cell-off` so an unlit cell still reads as a cell rather than
+	   as a hole in the grid. */
+	.field-grid {
+		background-color: var(--color-grid-gap);
+		border: 0;
+		cursor: inherit;
+	}
+
+	/* Only a selectable grid is a button, and only a button dims when it is not
+	   the current pick. */
+	button.field-grid {
+		cursor: pointer;
+		opacity: 0.6;
+		transition: none;
+	}
+	button.field-grid:hover {
+		opacity: 1;
+	}
+
+	/* The current shape wears a keyline in its module's own colour, held one pixel
+	   clear of the cells by a ring of the slab behind it so the two do not touch. */
+	.is-selected {
+		opacity: 1;
+		box-shadow:
+			0 0 0 1px var(--color-card),
+			0 0 0 3px var(--ring);
+	}
+</style>

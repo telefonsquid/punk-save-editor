@@ -1,5 +1,5 @@
 <script lang="ts">
-	import InlineNumber from '../InlineNumber.svelte';
+	import CounterCell from '../CounterCell.svelte';
 	import ItemIcon from '../ItemIcon.svelte';
 	import ResourceIcon from '../ResourceIcon.svelte';
 	import Section from '../Section.svelte';
@@ -7,6 +7,7 @@
 	import type { EditorState } from '$lib/editor/state.svelte';
 	import { fmt1 } from '$lib/format';
 	import { assetsByCategory, displayName } from '$lib/game/data';
+	import type { ResourcePair } from '$lib/save/tree';
 	import { getResources } from '$lib/save/rundata';
 	import { ingredientCounts, ingredientIds } from '$lib/save/vault';
 
@@ -48,6 +49,12 @@
 		ids.forEach((id, i) => (m[id] = counts[i]));
 		return m;
 	});
+
+	// Run resources are floats the game may have written at any precision, so they
+	// display rounded but accept anything typed — the same handler for money and
+	// for the strip beside it.
+	const resourceCell = (pair: ResourcePair) =>
+		numInput(editor, pair, '$v', { min: 0, file: 'rundata' });
 </script>
 
 <Section title="Resources" subtitle="Click to modify" plain>
@@ -56,42 +63,39 @@
 	     rest wraps below, all centred. -->
 	<div class="flex flex-col items-center gap-4">
 		{#if money}
-			<label class="flex items-center gap-2" title={displayName(money.id)}>
-				<InlineNumber
-					size="sm"
-					step="any"
-					min="0"
-					value={fmt1(money.value)}
-					oninput={numInput(editor, money.pair, '$v', { min: 0, file: 'rundata' })}
-				/>
-				<ResourceIcon id={money.id} scale={3} labeled />
-			</label>
+			<CounterCell
+				label={displayName(money.id)}
+				step="any"
+				min="0"
+				value={fmt1(money.value)}
+				oninput={resourceCell(money.pair)}
+			>
+				{#snippet icon()}<ResourceIcon id={money.id} scale={3} />{/snippet}
+			</CounterCell>
 		{/if}
 		<div class="flex flex-wrap items-center justify-center gap-x-8 gap-y-4">
 			{#each otherResources as row (row.id)}
-				<label class="flex items-center gap-2" title={displayName(row.id)}>
-					<InlineNumber
-						size="sm"
-						step="any"
-						min="0"
-						value={fmt1(row.value)}
-						oninput={numInput(editor, row.pair, '$v', { min: 0, file: 'rundata' })}
-					/>
-					<ResourceIcon id={row.id} scale={3} labeled />
-				</label>
+				<CounterCell
+					label={displayName(row.id)}
+					step="any"
+					min="0"
+					value={fmt1(row.value)}
+					oninput={resourceCell(row.pair)}
+				>
+					{#snippet icon()}<ResourceIcon id={row.id} scale={3} />{/snippet}
+				</CounterCell>
 			{/each}
 			<!-- Every ingredient is listed, even ones the player doesn't own yet
 			     (shown as 0); raising a count from zero inserts it into the vault. -->
 			{#each allIngredients as { id } (id)}
-				<label class="flex items-center gap-2" title={displayName(id)}>
-					<InlineNumber
-						size="sm"
-						min="0"
-						value={ingCountById[id] ?? 0}
-						oninput={ingredientInput(editor, id)}
-					/>
-					<ItemIcon {id} scale={3} />
-				</label>
+				<CounterCell
+					label={displayName(id)}
+					min="0"
+					value={ingCountById[id] ?? 0}
+					oninput={ingredientInput(editor, id)}
+				>
+					{#snippet icon()}<ItemIcon {id} scale={3} />{/snippet}
+				</CounterCell>
 			{/each}
 		</div>
 	</div>

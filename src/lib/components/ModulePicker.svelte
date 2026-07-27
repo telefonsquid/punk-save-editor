@@ -1,6 +1,8 @@
 <script lang="ts">
 	import Button from './Button.svelte';
+	import Dialog from './Dialog.svelte';
 	import ModuleList, { type ModuleItem } from './ModuleList.svelte';
+	import TextInput from './TextInput.svelte';
 	import { displayName, moduleCategory, moduleInfo, type EffectField } from '$lib/game/data';
 	import type { FieldKind } from '$lib/game/module-groups';
 	import type { NewModuleFields } from '$lib/save/vault';
@@ -16,7 +18,6 @@
 		onadd: (id: string, fields: NewModuleFields) => void;
 	} = $props();
 
-	let dialog = $state<HTMLDialogElement | null>(null);
 	let query = $state('');
 
 	// Shape choices made while browsing. They are transient on purpose: nothing
@@ -24,16 +25,6 @@
 	// button turns it into a module. Keyed by module id, dropped when the dialog
 	// closes.
 	let picked = $state<Record<string, Partial<Record<FieldKind, EffectField>>>>({});
-
-	// `showModal()` is what gives the native dialog its focus trap and Esc
-	// handling, and there is no attribute equivalent — so the open state has to
-	// drive the imperative call, and the element reference has to be bound. The
-	// effect only touches the DOM; it assigns no state.
-	$effect(() => {
-		if (!dialog) return;
-		if (open && !dialog.open) dialog.showModal();
-		else if (!open && dialog.open) dialog.close();
-	});
 
 	const items = $derived.by(() => {
 		const needle = query.trim().toLowerCase();
@@ -79,64 +70,36 @@
 	}
 </script>
 
-<!-- `m-auto` is what centres the dialog: the UA centres a modal with its own
-     `margin: auto`, which Tailwind's preflight reset zeroes out. Square warm-black
-     slab with the game's edge, same language as the editor's own cards. -->
-<dialog
-	bind:this={dialog}
-	class="punk-dialog m-auto max-h-[85vh] w-[min(56rem,92vw)] border-2 border-edge bg-surface p-0 text-ink backdrop:bg-black/80"
+<Dialog
+	bind:open
+	title="Add a module"
+	width="56rem"
 	onclose={() => {
-		open = false;
 		query = ''; // a stale filter would hide most of the list on reopen
 		picked = {}; // shape picks belong to the browsing session, not the next one
 	}}
-	onclick={(e) => {
-		// A click that lands on the dialog element itself is the backdrop (its
-		// content fills the box, so anything else has a child as its target).
-		if (e.target === dialog) open = false;
-	}}
 >
-	<div class="flex items-center gap-3 border-b-2 border-edge-dim px-5 py-3">
-		<h2 class="font-title text-hud-sm tracking-hud-wide text-accent shrink-0 whitespace-nowrap uppercase">
-			Add a module
-		</h2>
-		<input
+	{#snippet header()}
+		<TextInput
 			type="search"
-			class="punk-search ml-auto w-56 text-ui-xs"
+			class="ml-auto w-56 text-ui-xs"
 			placeholder="Filter…"
 			aria-label="Filter modules"
 			bind:value={query}
 		/>
 		<Button variant="ghost" size="sm" onclick={() => (open = false)}>Close</Button>
-	</div>
-	<div class="max-h-[70vh] overflow-y-auto px-5 py-4">
-		<ModuleList {items} empty="No module matches that filter." onfieldchange={chooseField}>
-			{#snippet actions(item)}
-				<Button size="xs" onclick={() => add(item.id)}>Add</Button>
-			{/snippet}
-		</ModuleList>
-	</div>
-	<p class="border-t-2 border-edge-dim px-5 py-3 text-ui-xs text-muted">
-		Added with all four connections and the module's highest power-core capacity. Picking a shape
-		here only applies to the module you then add.
-	</p>
-</dialog>
+	{/snippet}
 
-<style>
-	/* The filter box wears the game's quiet edge and clears @tailwindcss/forms'
-	   white fill and blue focus ring, so it reads like the rest of the editor. */
-	.punk-search {
-		border: 2px solid var(--color-edge-dim);
-		background-color: var(--color-void);
-		color: var(--color-ink);
-		padding: 0.35rem 0.6rem;
-	}
-	.punk-search:focus {
-		outline: none;
-		box-shadow: none;
-		border-color: var(--color-accent);
-	}
-	.punk-search::placeholder {
-		color: var(--color-muted);
-	}
-</style>
+	<ModuleList {items} empty="No module matches that filter." onfieldchange={chooseField}>
+		{#snippet actions(item)}
+			<Button variant="primary" size="xs" onclick={() => add(item.id)}>Add</Button>
+		{/snippet}
+	</ModuleList>
+
+	{#snippet footer()}
+		<p class="text-ui-xs text-muted">
+			Added with all four connections and the module's highest power-core capacity. Picking a shape
+			here only applies to the module you then add.
+		</p>
+	{/snippet}
+</Dialog>

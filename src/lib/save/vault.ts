@@ -47,8 +47,6 @@ export function getConsumables(vault: OdinNode): ConsumableView[] {
 	return listItems(vault.consumables as OdinValue) as unknown as ConsumableView[];
 }
 
-const CONSUMABLE_MENTO_TYPE = 'Vault+Memento+ConsumableMento, Punk.Main';
-
 /** The vault's consumable slots split into filled and empty. Both arrays alias
  * the live slot nodes, so edits to their entries land in the tree. */
 function partitionConsumables(vault: OdinNode) {
@@ -72,30 +70,53 @@ function rebuildConsumables(
 	arr.push(...(filled as unknown as OdinValue[]), ...(empty as unknown as OdinValue[]));
 }
 
-/** Sets a consumable's amount, occupying a slot if the player didn't hold it. */
-export function setConsumable(vault: OdinNode, id: string, amount: number): void {
+/**
+ * Sets a consumable's amount, occupying a slot if the player didn't hold it.
+ * Returns false when every slot is taken and this one isn't among them.
+ *
+ * The vault keeps a fixed run of consumable slots (8), empty ones having a null
+ * id. This mirrors the game's `Vault.Add`: fill the first empty slot rather than
+ * growing the list, so the restored inventory keeps its slot count — which means
+ * a full vault has nowhere to put a ninth, and says so instead of appending a
+ * slot the game would never have written (and the wheel would never draw).
+ */
+export function setConsumable(vault: OdinNode, id: string, amount: number): boolean {
 	const slots = getConsumables(vault);
 	const existing = slots.find((c) => c.consumableId === id);
 	if (existing) {
 		existing.amount = amount;
-		return;
+		return true;
 	}
-	// The vault keeps a fixed run of consumable slots (8), empty ones having a
-	// null id. Mirror the game's Vault.Add: fill the first empty slot rather than
-	// growing the list, so the restored inventory keeps its slot count.
 	const empty = slots.find((c) => c.consumableId == null);
-	if (empty) {
-		empty.consumableId = id;
-		empty.amount = amount;
+	if (!empty) return false;
+	empty.consumableId = id;
+	empty.amount = amount;
+	return true;
+}
+
+/** Whether the vault has room for a consumable it doesn't already hold. */
+export function hasFreeConsumableSlot(vault: OdinNode): boolean {
+	return getConsumables(vault).some((c) => c.consumableId == null);
+}
+
+/**
+ * Sets a held consumable's amount, emptying its slot at zero.
+ *
+ * Zero is not a state a slot may sit in: the wheel only draws slots holding
+ * something, while "is this consumable already held" reads the id — so a slot
+ * left at 0 would vanish from the wheel *and* keep its consumable out of the add
+ * row, stranding it in the save with no way back. Stepping past zero already
+ * empties the slot; typing a zero has to mean the same thing.
+ */
+export function setConsumableAmount(vault: OdinNode, id: string, amount: number): void {
+	const filled = getConsumables(vault).filter((c) => c.consumableId != null);
+	const index = filled.findIndex((c) => c.consumableId === id);
+	if (index < 0) return;
+	if (amount <= 0) {
+		removeConsumable(vault, index);
 		return;
 	}
-	const node: OdinNode = {
-		$type: CONSUMABLE_MENTO_TYPE,
-		consumableId: id,
-		amount,
-		$types: { amount: { e: EntryType.UnnamedInt } }
-	};
-	listItems(vault.consumables as OdinValue).push(node);
+	filled[index].amount = amount;
 }
 
 /** Reorders the vault's non-empty consumables. `from`/`to` index into the

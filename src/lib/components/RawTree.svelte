@@ -113,14 +113,14 @@
 			<input
 				type="number"
 				step="any"
-				class="raw-field w-40 text-right"
+				class="punk-field raw-field w-40 text-right"
 				value={value as number}
 				oninput={setNumber}
 			/>
 		{:else if kind === 'bigint'}
 			<input
 				type="text"
-				class="raw-field w-40 text-right"
+				class="punk-field raw-field w-40 text-right"
 				value={(value as bigint).toString()}
 				oninput={setBigint}
 			/>
@@ -134,7 +134,7 @@
 		{:else if kind === 'string'}
 			<input
 				type="text"
-				class="raw-field w-72"
+				class="punk-field raw-field w-72"
 				value={value as string}
 				oninput={(e) => set(e.currentTarget.value)}
 			/>
@@ -232,24 +232,14 @@
 		color: var(--color-amber);
 	}
 
-	/* Editable fields borrow the number box's warm-black body and outline that
-	   answers the pointer, kept simpler than the full punk-frame for a dense tree. */
+	/* Editable fields are the shared `punk-field` box (layout.css); only the dense
+	   sizing this tree needs lives here. */
 	.raw-field {
 		font-family: var(--font-ui);
 		font-size: var(--text-ui-xs);
 		line-height: var(--text-ui-xs--line-height);
 		letter-spacing: -0.0425em;
-		color: var(--color-ink);
-		background-color: var(--color-void);
-		border: 2px solid var(--color-edge-dim);
 		padding: 0.125rem 0.5rem;
-	}
-	.raw-field:hover {
-		border-color: var(--color-accent);
-	}
-	.raw-field:focus {
-		border-color: var(--color-ink);
-		outline: none;
 	}
 	.raw-check {
 		width: 1rem;
@@ -257,6 +247,8 @@
 		accent-color: var(--color-accent);
 	}
 
+	/* "Show more" is chrome inside the tree rather than an editor action, so it
+	   stays a quiet line in the tree's own face instead of a full Button. */
 	.raw-more {
 		margin-block: 0.25rem;
 		font-family: var(--font-ui);
@@ -267,6 +259,7 @@
 		border: 2px solid var(--color-edge);
 		padding: 0.125rem 0.5rem;
 		cursor: pointer;
+		transition: none;
 	}
 	.raw-more:hover {
 		border-color: var(--color-accent);

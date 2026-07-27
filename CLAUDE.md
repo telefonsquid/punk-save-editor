@@ -2,7 +2,14 @@
 
 - **Language**: TypeScript
 - **Package Manager**: bun
-- **Add-ons**: eslint, tailwindcss, sveltekit-adapter, drizzle, mcp, experimental
+- **Add-ons**: eslint, tailwindcss, sveltekit-adapter (static), mcp
+
+The reference atlas is [`docs/README.md`](docs/README.md); read the doc that
+covers what you are touching before touching it. **Before any styling work,
+read [`docs/design.md`](docs/design.md)** — `src/lib/components` is the most
+edited area in the repo and the design system is what keeps it coherent.
+`bun run lint` enforces the parts of it a checker can see
+(`scripts/check-style.ts`).
 
 ---
 
