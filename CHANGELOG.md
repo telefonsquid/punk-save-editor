@@ -11,6 +11,11 @@ headings matters.
 
 ## 1.0.1 — 2026-07-27
 
+### Changed
+
+- Dialogs like "Add a module" now arrive with the same rise-and-fade as the rest
+  of the editor instead of appearing all at once.
+
 ### Fixed
 
 - Dragging a consumable around the wheel works again in the desktop app. On

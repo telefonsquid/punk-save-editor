@@ -5,6 +5,10 @@ import { prefersReducedMotion } from 'svelte/motion';
 // editor: sections and cards settle in the same way, whether reached by switching
 // tabs or by scrolling down to them.
 //
+// The distance and the two eases are the `--reveal-*` tokens in layout.css, read
+// straight out of the inline styles rather than repeated here, because a dialog
+// plays the same arrival off the same tokens without a fold to cross.
+//
 // Anyone who asked the OS to reduce motion is left untouched, so the element is
 // simply there.
 //
@@ -16,8 +20,6 @@ import { prefersReducedMotion } from 'svelte/motion';
 
 interface Pending {
 	node: HTMLElement;
-	y: number;
-	duration: number;
 	delay: number;
 }
 
@@ -30,8 +32,8 @@ let queued = false;
 const FOLD = 0.92;
 
 function play(it: Pending) {
-	const { node, duration, delay } = it;
-	node.style.transition = `opacity ${duration}ms ease-out, transform ${duration}ms cubic-bezier(0.33, 1, 0.68, 1)`;
+	const { node, delay } = it;
+	node.style.transition = `opacity var(--reveal-duration) var(--reveal-ease-fade), transform var(--reveal-duration) var(--reveal-ease)`;
 	node.style.transitionDelay = `${delay}ms`;
 	node.style.opacity = '1';
 	node.style.transform = 'none';
@@ -75,9 +77,6 @@ function schedule() {
 }
 
 interface RevealOptions {
-	/** How far below its resting place the element starts, in pixels. */
-	y?: number;
-	duration?: number;
 	/** Held-back start, for staggering a row of cards. */
 	delay?: number;
 }
@@ -85,14 +84,9 @@ interface RevealOptions {
 export function reveal(node: HTMLElement, options: RevealOptions = {}) {
 	if (prefersReducedMotion.current) return;
 
-	const it: Pending = {
-		node,
-		y: options.y ?? 48,
-		duration: options.duration ?? 360,
-		delay: options.delay ?? 0
-	};
+	const it: Pending = { node, delay: options.delay ?? 0 };
 	node.style.opacity = '0';
-	node.style.transform = `translateY(${it.y}px)`;
+	node.style.transform = `translateY(var(--reveal-rise))`;
 	node.style.willChange = 'opacity, transform';
 	waiting.add(it);
 

@@ -84,9 +84,34 @@
 
 	/* A column so the body can be the only part that scrolls. `display` has to be
 	   set on the open state alone — an unconditional `display: flex` would
-	   override the UA's `display: none` and leave a closed dialog on the page. */
+	   override the UA's `display: none` and leave a closed dialog on the page.
+	   That same attribute is what starts the arrival: a modal has no fold to
+	   cross, so opening is its equivalent of a section scrolling into view. */
 	.punk-dialog[open] {
 		display: flex;
+		animation:
+			dialog-fade var(--reveal-duration) var(--reveal-ease-fade),
+			dialog-rise var(--reveal-duration) var(--reveal-ease);
+	}
+
+	/* The editor's one arrival motion (--reveal-* in layout.css, and the sections'
+	   `reveal` action), as two animations rather than one so opacity and position
+	   keep their own eases the way the action pairs them. Only the `from` is
+	   given: the `to` is wherever the dialog already sits, which is what keeps the
+	   centring `margin: auto` out of it.
+
+	   Nothing plays on close. The rest of the app has no exit either — a section
+	   leaves with its tab — and a modal that lingers reads as slow to dismiss. */
+	@keyframes dialog-fade {
+		from {
+			opacity: 0;
+		}
+	}
+
+	@keyframes dialog-rise {
+		from {
+			transform: translateY(var(--reveal-rise));
+		}
 	}
 
 	/* `::backdrop` only started inheriting custom properties from its originating
@@ -97,6 +122,22 @@
 	.punk-dialog::backdrop {
 		/* palette-ok: --color-backdrop's own value, repeated as the fallback above. */
 		background-color: var(--color-backdrop, rgb(0 0 0 / 0.8));
+	}
+
+	/* The page dims over the same beat the dialog rises, or the black lands first
+	   and the modal looks late to its own arrival. Both tokens carry fallbacks for
+	   the same reason the colour above does. */
+	.punk-dialog[open]::backdrop {
+		animation: dialog-fade var(--reveal-duration, 360ms) var(--reveal-ease-fade, ease-out);
+	}
+
+	/* Anyone who asked the OS to keep still gets the dialog simply present, which
+	   is what the `reveal` action does for the sections. */
+	@media (prefers-reduced-motion: reduce) {
+		.punk-dialog[open],
+		.punk-dialog[open]::backdrop {
+			animation: none;
+		}
 	}
 
 	/* The off-road tone: an amber edge for a dialog whose output the game itself

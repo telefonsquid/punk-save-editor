@@ -145,6 +145,20 @@
 	   Rounded to whole pixels because it lands on a control's edge: left as a raw
 	   em it antialiases every frame bar. */
 	--cap-fix: round(0.23em, 1px);
+
+	/* One arrival motion for the whole editor — a rise-and-fade. Sections and
+	   module cards play it as they reach the fold ($lib/actions/reveal.ts), a
+	   dialog plays it as it opens (Dialog.svelte). The two are driven by
+	   different mechanisms because a modal has no fold to cross, so the numbers
+	   live here and neither owns them.
+
+	   The two eases are split on purpose: the opacity runs out flat while the
+	   position decelerates hard, which is what makes the thing look like it
+	   settles rather than slides. */
+	--reveal-rise: 48px;
+	--reveal-duration: 360ms;
+	--reveal-ease: cubic-bezier(0.33, 1, 0.68, 1);
+	--reveal-ease-fade: ease-out;
 }
 
 @layer base {

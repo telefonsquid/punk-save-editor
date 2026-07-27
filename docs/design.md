@@ -139,6 +139,25 @@ Body copy runs a deliberately tighter line-height (30px) than the
 standalone text — see the comment on `body` in layout.css before "fixing"
 either.
 
+## Arrival motion
+
+One motion, everywhere: a rise-and-fade. The distance and the two eases are the
+`--reveal-*` tokens in layout.css, and nothing restates them — retuning the
+arrival is a token change.
+
+Two mechanisms play it, because the trigger differs:
+
+- **`use:reveal`** ([`src/lib/actions/reveal.ts`](../src/lib/actions/reveal.ts))
+  for anything that arrives by scrolling — every `Section`, every module card. A
+  position sweep drives it rather than an IntersectionObserver, which would jump
+  over rows when the scrollbar is dragged; `delay` staggers one behind another.
+- **A CSS animation on `[open]`** for `Dialog`. A modal has no fold to cross, so
+  opening is its equivalent of scrolling into view. Split into two animations so
+  opacity and position keep their own eases, exactly as the action pairs them.
+
+Nothing plays on exit, and `prefers-reduced-motion: reduce` skips the arrival
+entirely rather than shortening it — the element is simply there.
+
 ## Where to restyle
 
 The primitives are the design surface — restyle these, not every panel. Panels
