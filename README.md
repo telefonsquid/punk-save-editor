@@ -26,14 +26,13 @@
 
 ## Features
 
-- **Modifies Saves in Place*** – open your save folder, change what you want, hit save. The first write backs the whole folder up as `*.bak`.
-- **Edit Ship Resources** – fuel, health, electrons and the rest, clamped to the maximums your module grid actually supports.
-- **Edit Resources & Consumables** – shared resources, ingredients and consumables, edited on the game's own icons and item art.
-- **Edit Modules** – add and remove vault modules, wire up connections and power cores, and paint custom area-of-effect fields.
-- **Edit Raw Game Data** – every value in every save file is reachable through the raw editor
-- **Create Custom Modules** – create user-defined item grids up to a size of 9x9
+- **Modifies Saves in Place*** – open your save folder, change what you want, hit save.
+- **Edit Ingredients, Ship Resources & Consumables** – health, money, bombs, powerstars, it's all there.
+- **Edit Modules** – add/remove vault modules, edit connections & max power cores.
+- **Edit Raw Game Data** – every value in every save file is reachable through the raw editor.
+- **Create Custom Modules** – create user-defined item grids up to a size of 9x9.
 - **Faithful UI/UX** – the editor is designed to mimick the game's interface.
-- **Runs Everywhere** – as a website and as a native desktop app for Windows, macOS and Linux with x86_64, ARM and Portable builds.
+- **Runs Everywhere** – as a website or desktop app for Windows, macOS and Linux with x86_64, ARM and portable builds.
 - **A reverse-engineered format, documented** – the LZF + Odin Serializer binary save format was cracked for this project and is written up in [docs/save-format.md](docs/save-format.md).
 
 \* *Firefox & Safari don't support writing to the local filesystem and rely on a downloadable .zip file instead.*
@@ -42,20 +41,24 @@
 
 | PUNK version | Status | Editor Version |
 | --- | --- | --- |
-| v0.12.10 | ✅ Supported | 1.0.0 |
-| v0.12.0 - v0.12.9 | ⚠️ Untested \| Might Work | 1.0.0 |
+| v0.12.10 | ✅ Supported | 1.0.0 - 1.0.1 |
+| v0.12.0 - v0.12.9 | ⚠️ Untested \| Might Work | 1.0.0 - 1.0.1 |
 | v0.6.0 - v0.11.0 | ❌ Untested \| Most Likely Broken | – |
 
 ## Screenshots
 
+<!-- floated instead of centered inline — github's logged-out css resets images to
+     display:block, which stacks a centered pair onto two lines -->
 <p align="center">
-  <img src="docs/assets/screenshot-ship-resources.png" width="49%" alt="Ship resources as the game's HUD tank bars" />
-  <img src="docs/assets/screenshot-resources.png" width="49%" alt="Currencies and ingredients" />
+  <img src="docs/assets/screenshot-ship-resources.png" width="49%" align="left" alt="Ship resources as the game's HUD tank bars" />
+  <img src="docs/assets/screenshot-resources.png" width="49%" align="right" alt="Currencies and ingredients" />
 </p>
+<br clear="all" />
 <p align="center">
-  <img src="docs/assets/screenshot-consumables.png" width="49%" alt="The consumable wheel" />
-  <img src="docs/assets/screenshot-modules.png" width="49%" alt="Vault modules with connections and effect fields" />
+  <img src="docs/assets/screenshot-consumables.png" width="49%" align="left" alt="The consumable wheel" />
+  <img src="docs/assets/screenshot-modules.png" width="49%" align="right" alt="Vault modules with connections and effect fields" />
 </p>
+<br clear="all" />
 
 ## Roadmap
 

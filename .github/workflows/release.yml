@@ -118,9 +118,9 @@ jobs:
 
             ---
 
-            Pick the file for your system below. The `-portable.exe` runs without
-            installation. macOS builds are unsigned: right-click the app and
-            choose Open on first launch.
+            ℹ️ On Windows and not sure what to pick? Expand the asset list below and download the file ending in `_windows_x64_portable.exe` — it runs without installing anything.
+
+            macOS builds are unsigned: right-click the app and choose Open on first launch, or macOS refuses it outright.
           releaseDraft: true
           prerelease: false
           args: ${{ matrix.args }}

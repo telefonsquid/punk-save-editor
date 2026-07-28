@@ -125,10 +125,7 @@ export class EditorState {
 			const backup = await saveSlot(this.slot, names);
 			this.dirtyFiles.clear();
 			if (isDownloadDir(this.slot.dir)) {
-				this.slot.dir.exportChanges();
-				this.statusMessage =
-					`Downloaded "${this.slot.dir.name}-edited.zip" (${names.join(', ')} + the *.bak backups). ` +
-					`Extract it into your save folder to apply the changes. ${backupNote(backup)}`;
+				this.slot.dir.exportChanges(); // the browser's own download prompt is confirmation enough
 			} else {
 				this.statusMessage = `Saved ${names.join(', ')}. ${backupNote(backup)}`;
 			}
