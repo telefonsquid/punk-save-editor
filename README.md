@@ -48,13 +48,12 @@
 ## Screenshots
 
 <p align="center">
-  <img src="docs/assets/screenshot-ship-resources.png" width="49%" align="left" alt="Ship resources as the game's HUD tank bars" />
-  <img src="docs/assets/screenshot-resources.png" width="49%" align="right" alt="Currencies and ingredients" />
+  <img src="docs/assets/screenshot-ship-resources.png" width="49%" alt="Ship resources as the game's HUD tank bars" />
+  <img src="docs/assets/screenshot-resources.png" width="49%" alt="Currencies and ingredients" />
 </p>
-<br clear="all" />
 <p align="center">
-  <img src="docs/assets/screenshot-consumables.png" width="49%" align="left" alt="The consumable wheel" />
-  <img src="docs/assets/screenshot-modules.png" width="49%" align="right" alt="Vault modules with connections and effect fields" />
+  <img src="docs/assets/screenshot-consumables.png" width="49%" alt="The consumable wheel" />
+  <img src="docs/assets/screenshot-modules.png" width="49%" alt="Vault modules with connections and effect fields" />
 </p>
 
 ## Roadmap
