@@ -221,6 +221,12 @@
 	   browser's own monospace looks out of place beside everything else. */
 	code {
 		font-family: var(--font-ui);
+		/* A Windows path has no spaces to break at, so a folder named in a dialog
+		   would otherwise run straight out the side of it. `anywhere` rather than
+		   `break-word`: it is the value that also shrinks the min-content size, and
+		   without that a `<code>` in a flex row refuses to get narrower than its
+		   longest unbreakable run no matter what wrapping it is allowed. */
+		overflow-wrap: anywhere;
 	}
 }
 
