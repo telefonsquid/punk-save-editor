@@ -9,12 +9,22 @@ headings matters.
 - Optional `### Added` / `### Changed` / `### Fixed` groups under it.
 - Everything else is plain bullets or short paragraphs.
 
-## 1.0.2 — 2026-07-27
+## 1.1.0 — 2026-07-29
+
+### Added
+
+- Backups & Backup Manager
+- Savefiles can be restored from Backup
+- Added togglable Interface Sounds
+- Options Menu
+
+### Changed
+
+- .bak files are now obsolete, backups are saved as zip
 
 ### Fixed
 
-- The footer links work again in the desktop app. GitHub, the web version and
-  the update notice all did nothing when clicked.
+- Footer Links not working on the Desktop App
 
 ## 1.0.1 — 2026-07-27
 
