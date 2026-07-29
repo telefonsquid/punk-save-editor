@@ -1,6 +1,8 @@
 <script lang="ts">
+	import BackupPrompt from '$lib/components/BackupPrompt.svelte';
 	import EditorHeader from '$lib/components/EditorHeader.svelte';
 	import LoadOverlay from '$lib/components/LoadOverlay.svelte';
+	import RestoreDialog from '$lib/components/RestoreDialog.svelte';
 	import Tabs, { type Tab } from '$lib/components/Tabs.svelte';
 	import TitleScreen from '$lib/components/TitleScreen.svelte';
 	import ConsumablesPanel from '$lib/components/panels/ConsumablesPanel.svelte';
@@ -35,6 +37,12 @@
 	<LoadOverlay label={editor.busyLabel} {motion} />
 {/if}
 
+<!-- Outside the branch below, unlike every other dialog: putting a backup back
+     is the one thing here that does not need a save open, and the title screen
+     is where somebody who just lost one starts. It opens over whichever of the
+     two is showing. -->
+<RestoreDialog {editor} />
+
 {#if !editor.slot}
 	<TitleScreen {editor} />
 {:else}
@@ -45,15 +53,27 @@
 		     inside its own parent, so its parent has to be the page. -->
 		<SaveBar {editor} />
 
+		<!-- Asked once, just after the save above finished loading. -->
+		<BackupPrompt {editor} />
+
 		<div class="mx-auto max-w-6xl">
 			<Tabs tabs={TABS} bind:current={tab} label="Editor sections" />
 
 			<div class="space-y-6 py-8">
+				<!-- Failures only. Nothing announces a success — the screen already
+				     shows it.
+
+				     The backup line is here as well as inside the two dialogs, because
+				     Backup is also a button on the strip above with no dialog behind
+				     it. Each dialog drops the error as it closes, so this never shows
+				     one the user has already read and dismissed. -->
 				{#if editor.error}
 					<p class="px-4 py-2 border-2 border-danger text-danger text-ui-xs">{editor.error}</p>
 				{/if}
-				{#if editor.statusMessage}
-					<p class="px-4 py-2 border-2 border-edge text-muted text-ui-xs">{editor.statusMessage}</p>
+				{#if editor.backups.error}
+					<p class="px-4 py-2 border-2 border-danger text-danger text-ui-xs">
+						{editor.backups.error}
+					</p>
 				{/if}
 
 				<!-- Each input handler marks its own file dirty; the version bump

@@ -5,6 +5,8 @@
 </script>
 
 <script lang="ts">
+	import { sound } from '$lib/sound.svelte';
+
 	// The settings-menu tab strip from tabs.png / tabs_hover.png. The shape is
 	// the whole idea: a rule runs the full width of the strip, every tab is a
 	// three-sided box standing on it, and the current tab punches a hole in the
@@ -41,6 +43,9 @@
 		const next = tabs[(i + delta + tabs.length) % tabs.length];
 		current = next.id;
 		document.getElementById(`tab-${next.id}`)?.focus();
+		// Stepping along the strip is a selection changing, which is the sound the
+		// game plays for it — clicking a tab outright is the one that reads as OK.
+		sound.play('hover');
 	}
 </script>
 
@@ -55,7 +60,13 @@
 			role="tab"
 			aria-selected={active}
 			tabindex={active ? 0 : -1}
-			onclick={() => (current = tab.id)}
+			onclick={() => {
+				sound.play('click');
+				current = tab.id;
+			}}
+			onpointerenter={(e) => {
+				if (e.pointerType !== 'touch' && !active) sound.play('hover');
+			}}
 			{onkeydown}
 		>
 			{tab.label}

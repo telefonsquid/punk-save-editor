@@ -1,4 +1,6 @@
 <script lang="ts">
+	import { sound } from '$lib/sound.svelte';
+
 	// The small cross that removes the thing it sits on — a module from the vault,
 	// a painted shape from the library. Two looks, one control: `bare` for a cross
 	// floating in a card's corner, `boxed` for one that has to read as a badge on
@@ -15,12 +17,14 @@
 		label,
 		onclick,
 		boxed = false,
+		disabled = false,
 		class: klass = ''
 	}: {
 		/** Names the action, e.g. "Remove DANDELION from the vault". */
 		label: string;
 		onclick: () => void;
 		boxed?: boolean;
+		disabled?: boolean;
 		class?: string;
 	} = $props();
 </script>
@@ -30,7 +34,14 @@
 	class="close-badge {boxed ? 'is-boxed' : 'is-bare'} {klass}"
 	aria-label={label}
 	title={label}
-	{onclick}
+	{disabled}
+	onclick={() => {
+		sound.play('click');
+		onclick();
+	}}
+	onpointerenter={(e) => {
+		if (!disabled && e.pointerType !== 'touch') sound.play('hover');
+	}}
 >
 	<svg viewBox="0 0 8 8" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true">
 		<path d="M1 1l6 6M7 1l-6 6" />
@@ -50,8 +61,15 @@
 		transition: none;
 	}
 
-	.close-badge:hover {
+	.close-badge:hover:not(:disabled) {
 		color: var(--color-danger);
+	}
+
+	/* Same dimming Button uses, so a control that is out of reach reads the same
+	   whichever shape it wears. */
+	.close-badge:disabled {
+		cursor: default;
+		opacity: 0.5;
 	}
 
 	.is-bare {
@@ -71,7 +89,7 @@
 		border: 1px solid var(--color-edge-dim);
 		background-color: var(--color-card);
 	}
-	.is-boxed:hover {
+	.is-boxed:hover:not(:disabled) {
 		border-color: var(--color-danger);
 	}
 	.is-boxed svg {

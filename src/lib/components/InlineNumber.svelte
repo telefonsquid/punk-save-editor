@@ -1,5 +1,6 @@
 <script lang="ts">
 	import type { HTMLInputAttributes } from 'svelte/elements';
+	import { sound } from '$lib/sound.svelte';
 
 	// A number with no box around it — just the HUD digits the game prints beside
 	// a resource icon (resources.png) or under a consumable slot. Editable in
@@ -19,17 +20,28 @@
 		class: klass = '',
 		size = 'sm',
 		element = $bindable(),
+		onclick,
 		...rest
 	}: Omit<HTMLInputAttributes, 'size'> & {
 		size?: 'sm' | 'xs';
 		element?: HTMLInputElement | null;
 	} = $props();
+
+	// The number is a control you click, so it answers the pointer like every
+	// other one — the same tick a tank unit or a connection cell makes. Reaching
+	// it by keyboard is silent on purpose: focus arriving is `hover`'s job
+	// elsewhere, and Tab through a strip of these would be a drum roll.
+	function clicked(e: MouseEvent & { currentTarget: EventTarget & HTMLInputElement }) {
+		sound.play('close');
+		onclick?.(e);
+	}
 </script>
 
 <input
 	bind:this={element}
 	type="number"
 	class="punk-inline-num punk-hud-num punk-inline-num-{size} {klass}"
+	onclick={clicked}
 	{...rest}
 />
 

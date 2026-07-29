@@ -42,7 +42,9 @@
 	{#if addableConsumables.length > 0}
 		<div class="flex flex-wrap justify-center gap-2 mt-4 pt-4 border-edge-dim border-t-2">
 			{#each addableConsumables as { id } (id)}
-				<Button size="sm" onclick={() => add(id)}>
+				<!-- The wheel's own tick, not the generic OK: putting a consumable in
+				     the vault is the same edit as taking one out. -->
+				<Button size="sm" sound="close" onclick={() => add(id)}>
 					<ItemIcon {id} />
 					Add {displayName(id)}
 				</Button>

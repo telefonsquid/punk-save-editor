@@ -13,6 +13,7 @@
 		reorderConsumables,
 		setConsumableAmount
 	} from '$lib/save/vault';
+	import { sound } from '$lib/sound.svelte';
 
 	let { editor }: { editor: EditorState } = $props();
 
@@ -72,6 +73,14 @@
 	// slot is picked — hovering does nothing.
 	let pinned = $state<string | null>(null);
 	const centre = $derived(pinned);
+
+	// A slot is the game's own wheel diamond rather than a `Button`, so it plays
+	// its click itself — same tick as the tank bars, the connection cells and the
+	// number fields.
+	function pick(id: string) {
+		sound.play('close');
+		pinned = pinned === id ? null : id;
+	}
 
 	// Index into the vault's filled slots (id set), which is what reorder/remove
 	// count — read from the raw vault, not the display list, so hiding a zeroed
@@ -163,7 +172,12 @@
 		if (!node.consumableId || !editor.slot) return;
 		const id = node.consumableId;
 		const max = assets[id]?.maxCount ?? Infinity;
-		const next = Math.max(0, Math.min(max, (node.amount ?? 0) + delta));
+		const held = node.amount ?? 0;
+		const next = Math.max(0, Math.min(max, held + delta));
+		// A key at either end of the clamp has nothing to do, and neither ticking
+		// nor dirtying the vault for it is honest — a full slot's + is a no-op.
+		if (next === held) return;
+		sound.play('close');
 		setConsumableAmount(editor.slot.vault, id, next);
 		if (next <= 0 && pinned === id) pinned = null;
 		// Write the number into the field as well, so a nudge shows the instant you
@@ -188,7 +202,12 @@
 					<RichText text={assets[centre]?.description} />
 				</p>
 				<div class="mt-3 flex justify-center">
-					<Button variant="danger" size="sm" onclick={() => remove(centre)}>Remove</Button>
+					<!-- Taking a consumable out of the vault is a wheel edit, so it makes
+					     the wheel's noise rather than the generic OK — same as the Add row
+					     under it. -->
+					<Button variant="danger" size="sm" sound="close" onclick={() => remove(centre)}>
+						Remove
+					</Button>
 				</div>
 			{/if}
 		</div>
@@ -210,7 +229,7 @@
 						aria-label={displayName(id)}
 						aria-keyshortcuts="Alt+ArrowLeft Alt+ArrowRight"
 						title={displayName(id)}
-						onclick={() => (pinned = pinned === id ? null : id)}
+						onclick={() => pick(c.id)}
 						onkeydown={(e) => reorderKeys(e, c.id)}
 						ondragstart={(e) => dragStart(e, c.id)}
 						ondragend={() => (dragId = null)}

@@ -27,12 +27,13 @@
 ## Features
 
 - **Modifies Saves in Place*** – open your save folder, change what you want, hit save.
+- **Backup & Restore** – zip the whole save folder in one click, and put any archive back from a list of them.
 - **Edit Ingredients, Ship Resources & Consumables** – health, money, bombs, powerstars, it's all there.
 - **Edit Modules** – add/remove vault modules, edit connections & max power cores.
 - **Edit Raw Game Data** – every value in every save file is reachable through the raw editor.
 - **Create Custom Modules** – create user-defined item grids up to a size of 9x9.
 - **Faithful UI/UX** – the editor is designed to mimick the game's interface.
-- **Runs Everywhere** – as a website or desktop app for Windows, macOS and Linux with x86_64, ARM and portable builds.
+- **Runs Everywhere** – as a website or desktop app for Windows/macOS/Linux with x86_64/ARM/portable builds.
 - **A reverse-engineered format, documented** – the LZF + Odin Serializer binary save format was cracked for this project and is written up in [docs/save-format.md](docs/save-format.md).
 
 \* *Firefox & Safari don't support writing to the local filesystem and rely on a downloadable .zip file instead.*

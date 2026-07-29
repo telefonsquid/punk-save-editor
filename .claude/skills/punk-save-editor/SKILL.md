@@ -77,16 +77,25 @@ bun run check:data  # cross-check the generated JSONs without re-extracting
 
 ## Map of the code
 
-- `src/lib/save/` — the save files: `io.ts` (SaveDir), `lzf.ts` (codec), `odin.ts` (reader/writer),
-  `slot.ts` (slot IO + `.bak`), `tree.ts` (generic Odin accessors), `vault.ts` (vault
+- `src/lib/save/` — the save files: `platform.ts` (which runtime, and the folder plumbing all three
+  share), `io.ts` (SaveDir), `lzf.ts` (codec), `odin.ts` (reader/writer),
+  `slot.ts` (slot IO), `zip.ts` + `backup.ts` + `backup-folder.ts` (whole-folder zip backups and
+  restore), `tree.ts` (generic Odin accessors), `vault.ts` (vault
   views/mutations), `rundata.ts` (run views), `ship.ts` (entities grid walk — seed of the grid editor).
 - `src/lib/game/` — static game knowledge: `data.ts` (assets, names, module info/effects),
-  `module-stats.ts`, `rich-text.ts`, `pixel-icon.ts`, and the generated `*.json`.
-- `src/lib/editor/` — `state.svelte.ts` (EditorState), `inputs.ts` (raw-tree input handlers).
+  `module-stats.ts`, `rich-text.ts`, `pixel-icon.ts`, and the generated `*.json` (including
+  `ui-sounds.json`, the game's own UI sounds).
+- `src/lib/sound.svelte.ts` — plays those sounds (`sound.play('click')`) and owns the switch that
+  governs them. Sound follows the primitive, never the panel — see docs/design.md.
+- `src/lib/editor/` — `state.svelte.ts` (EditorState), `backup.svelte.ts` (BackupState: backups and
+  restores, as `editor.backups`), `settings.svelte.ts` (the backup folder and the ask-on-load flag,
+  one singleton because the footer outlives the editor), `inputs.ts` (raw-tree input handlers).
 - `src/lib/components/` — the primitives (restyle these, not the panels): `Section`, `Dialog`,
   `Button`, `NumberInput`/`InlineNumber`/`CounterCell`, `TextInput`/`Select`, `CloseBadge`,
   `ModuleStatLine`/`ModuleGroupHeading`. Then `panels/` (one per editor section),
   `ModuleList`/`ModulePicker`/`RichText`/`RawTree`,
+  `BackupPrompt`/`RestoreDialog`/`OptionsDialog` (the backup surfaces) +
+  `BackupFolderRow`/`DownloadOnlyNote` (the two pieces of them that appear twice),
   `ResourceIcon` (all four resource art sizes)/`ItemIcon`/`EffectFieldGrid` (the area-of-effect
   diagram the game draws on power cores and boosters) + `EffectFieldChooser` (picking that shape) +
   `CustomFieldDialog` (painting one — hand-painted fields must stay **square and odd**, see

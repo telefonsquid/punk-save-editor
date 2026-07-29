@@ -1,6 +1,6 @@
 [package]
 name = "punk-save-editor"
-version = "1.0.1"
+version = "1.1.0"
 description = "Save editor for the game PUNK"
 authors = ["Saskia Henkys"]
 edition = "2021"
@@ -22,6 +22,8 @@ tauri = { version = "2", features = [] }
 tauri-plugin-opener = "2"
 tauri-plugin-fs = "2.5.1"
 tauri-plugin-dialog = "2.7.1"
+# Keeps the folder access the dialog hands out; see the note in src/lib.rs.
+tauri-plugin-persisted-scope = "2.3.7"
 
 # Only for the taskbar icon; see `taskbar_icon` in src/lib.rs.
 [target.'cfg(windows)'.dependencies]

@@ -1,10 +1,15 @@
 /**
- * Save-folder IO that works in every runtime:
- * - Tauri desktop app: @tauri-apps/plugin-dialog + @tauri-apps/plugin-fs (in-place)
- * - Chromium browsers: File System Access API (in-place)
- * - Firefox/Safari: upload the folder, edit in memory, download the changes (fallback)
+ * Save-folder IO. Which runtime can do what, and the plumbing under each, is
+ * `platform.ts`; this module is what a *save folder* is on top of it.
+ *
+ * Tauri and Chromium edit the folder in place. Firefox and Safari cannot write
+ * a folder at all, so they upload one, edit it in memory, and download the
+ * changes back — `DownloadSaveDir`.
  */
 
+import { dirFrom, pickDirectory, runtime, type DirOps } from './platform';
+import { recallDir, rememberDir } from './remember';
+import { REQUIRED_FILES } from './slot';
 import { makeZip, type ZipEntry } from './zip';
 
 export interface SaveDir {
@@ -17,6 +22,9 @@ export interface SaveDir {
 	list(): Promise<string[]>;
 }
 
+/** The part of a save folder an archive can be packed from. */
+export type ReadableDir = Pick<SaveDir, 'name' | 'read' | 'list'>;
+
 /**
  * A SaveDir whose writes accumulate in memory instead of hitting the disk,
  * because the browser can't write folders in place. Changes are handed back to
@@ -24,23 +32,23 @@ export interface SaveDir {
  */
 export interface DownloadSaveDir extends SaveDir {
 	readonly downloadable: true;
-	/** Real files (excluding *.bak) written since the folder was opened. */
+	/** Real files written since the folder was opened. */
 	changedFiles(): string[];
-	/** Downloads a zip of the changed files and every *.bak taken alongside. */
-	exportChanges(): void;
-}
-
-export function isTauri(): boolean {
-	return typeof window !== 'undefined' && '__TAURI_INTERNALS__' in window;
+	/** Downloads a zip of the changed files to extract over the save folder. */
+	exportChanges(): Promise<void>;
+	/**
+	 * The folder as it was uploaded, before the editor wrote anything.
+	 *
+	 * A backup is a restore point, and the point worth returning to is the one
+	 * the game left — not the one this session has been editing. In place that
+	 * distinction needs no code, because the edits aren't on disk until Save; in
+	 * memory they are indistinguishable unless the original is kept aside.
+	 */
+	asUploaded(): ReadableDir;
 }
 
 export function isDownloadDir(dir: SaveDir): dir is DownloadSaveDir {
 	return (dir as DownloadSaveDir).downloadable === true;
-}
-
-/** True when the runtime can read AND write the save folder in place. */
-export function supportsInPlaceSave(): boolean {
-	return isTauri() || (typeof window !== 'undefined' && 'showDirectoryPicker' in window);
 }
 
 /**
@@ -49,77 +57,65 @@ export function supportsInPlaceSave(): boolean {
  * cancelled.
  */
 export async function pickSaveDir(): Promise<SaveDir | null> {
-	if (isTauri()) return pickTauri();
-	if (typeof window !== 'undefined' && 'showDirectoryPicker' in window) return pickWeb();
-	return pickWebUpload();
-}
-
-async function pickTauri(): Promise<SaveDir | null> {
-	const { open } = await import('@tauri-apps/plugin-dialog');
-	const fs = await import('@tauri-apps/plugin-fs');
-	const dir = await open({
-		directory: true,
-		title: 'Select a PUNK save folder (e.g. save001)'
-	});
-	if (dir === null) return null;
-	const name = dir.replaceAll('\\', '/').split('/').filter(Boolean).pop() ?? dir;
-	return {
-		name,
-		read: (file) => fs.readFile(`${dir}/${file}`),
-		write: (file, data) => fs.writeFile(`${dir}/${file}`, data),
-		exists: (file) => fs.exists(`${dir}/${file}`),
-		list: async () => (await fs.readDir(dir)).filter((e) => e.isFile).map((e) => e.name)
-	};
-}
-
-async function pickWeb(): Promise<SaveDir | null> {
-	let handle: FileSystemDirectoryHandle;
-	try {
-		handle = await (
-			window as unknown as {
-				showDirectoryPicker(o: { mode: string }): Promise<FileSystemDirectoryHandle>;
-			}
-		).showDirectoryPicker({ mode: 'readwrite' });
-	} catch (err) {
-		if ((err as Error).name === 'AbortError') return null;
-		throw err;
-	}
-	return {
-		name: handle.name,
-		read: async (file) => {
-			const f = await (await handle.getFileHandle(file)).getFile();
-			return new Uint8Array(await f.arrayBuffer());
-		},
-		write: async (file, data) => {
-			const writable = await (await handle.getFileHandle(file, { create: true })).createWritable();
-			await writable.write(data as unknown as ArrayBuffer);
-			await writable.close();
-		},
-		exists: async (file) => {
-			try {
-				await handle.getFileHandle(file);
-				return true;
-			} catch {
-				return false;
-			}
-		},
-		list: async () => {
-			// values() ships with every engine that has showDirectoryPicker, but
-			// it isn't in the DOM lib types yet.
-			const dir = handle as unknown as {
-				values(): AsyncIterable<{ kind: string; name: string }>;
-			};
-			const names: string[] = [];
-			for await (const entry of dir.values()) {
-				if (entry.kind === 'file') names.push(entry.name);
-			}
-			return names;
-		}
-	};
+	if (runtime() === 'download') return pickWebUpload();
+	const picked = await pickDirectory('Select a PUNK save folder (e.g. save001)');
+	if (!picked) return null;
+	// Written down here rather than by the caller, because this is the one place
+	// a save folder is chosen and a folder that was chosen is exactly what is
+	// worth coming back to. Nothing reopens it on its own — see below.
+	await rememberDir('save', picked.ref);
+	return saveDir(picked.name, picked.ops);
 }
 
 /**
- * Firefox/Safari fallback: the user picks the folder via a directory <input>,
+ * The save folder from an earlier session, reopened — and only when it is still
+ * there and readable *without asking anyone anything*.
+ *
+ * That last part is the whole contract. This runs on the way into the title
+ * screen, where nothing has been clicked: it must not open a picker, and it must
+ * not ask for a permission, so a Chromium handle whose grant lapsed with the
+ * last tab reads as no folder rather than as a prompt. `exists` answers false
+ * for a file it is not allowed to look at, which folds "no permission" into the
+ * same answer as "not there any more" — and both mean the same thing to whoever
+ * called: ask the user.
+ *
+ * The three files are `loadSlot`'s own gate, asked early. A folder the game has
+ * since deleted, or one that was never a save, must not be quietly reopened and
+ * then fail with an error nobody's click asked for.
+ */
+export async function rememberedSaveDir(): Promise<SaveDir | null> {
+	// Nothing is remembered where the folder was uploaded rather than opened:
+	// the files came through an `<input>` and live only in this page's memory.
+	if (runtime() === 'download') return null;
+	const ref = await recallDir('save');
+	if (!ref) return null;
+	const { name, ops } = dirFrom(ref);
+	const dir = saveDir(name, ops);
+	try {
+		for (const required of REQUIRED_FILES) {
+			if (!(await dir.exists(required))) return null;
+		}
+	} catch {
+		// A folder that has moved, a drive that is not mounted, a scope the fs
+		// plugin no longer holds: no folder, no error, nobody asked.
+		return null;
+	}
+	return dir;
+}
+
+/**
+ * A save folder over any in-place backend. No `grant()`: either it was just
+ * picked, so its access is as live as the click that asked for it, or it came
+ * from `rememberedSaveDir`, which hands back nothing it could not already read.
+ * Only the *backup* folder — reached from a click, long after it was chosen —
+ * has a grant to renew.
+ */
+function saveDir(name: string, ops: DirOps): SaveDir {
+	return { name, read: ops.read, write: ops.write, exists: ops.exists, list: ops.list };
+}
+
+/**
+ * Firefox/Safari fallback: the user picks the folder via a directory `<input>`,
  * every file is read into memory, and edits are written to the in-memory store.
  * `exportChanges()` zips the changed files back for the user to copy in.
  */
@@ -127,15 +123,18 @@ async function pickWebUpload(): Promise<DownloadSaveDir | null> {
 	const picked = await promptDirectoryUpload();
 	if (!picked) return null;
 
-	const store = new Map<string, Uint8Array>();
+	const uploaded = new Map<string, Uint8Array>();
 	let folderName = 'save';
 	for (const file of picked) {
 		const parts = file.webkitRelativePath.split('/');
 		if (parts.length > 1) folderName = parts[0];
 		const base = parts[parts.length - 1];
-		store.set(base, new Uint8Array(await file.arrayBuffer()));
+		uploaded.set(base, new Uint8Array(await file.arrayBuffer()));
 	}
 
+	// The live folder starts as a copy of the upload and diverges from it with
+	// the first write; `uploaded` is never touched again.
+	const store = new Map(uploaded);
 	const changed = new Set<string>();
 	return {
 		name: folderName,
@@ -147,19 +146,29 @@ async function pickWebUpload(): Promise<DownloadSaveDir | null> {
 		},
 		write: async (file, data) => {
 			store.set(file, data);
-			if (!file.endsWith('.bak')) changed.add(file);
+			changed.add(file);
 		},
 		exists: async (file) => store.has(file),
 		list: async () => [...store.keys()],
 		changedFiles: () => [...changed],
-		exportChanges: () => {
-			// Backups of untouched files go in the zip too: they are the rest of
-			// the restore point, and this user has no other way to get them.
+		asUploaded: () => ({
+			name: folderName,
+			list: async () => [...uploaded.keys()],
+			read: async (file) => {
+				const bytes = uploaded.get(file);
+				if (!bytes) throw new Error(`'${file}' is not in the selected folder`);
+				return bytes;
+			}
+		}),
+		exportChanges: async () => {
+			// Only the files that changed. The rest of the folder is the user's own
+			// copy, untouched — and a whole-folder restore point is what a backup
+			// archive is for (backup.ts), not what saving is expected to hand out.
 			const entries: ZipEntry[] = [];
 			for (const [name, data] of store) {
-				if (changed.has(name) || name.endsWith('.bak')) entries.push({ name, data });
+				if (changed.has(name)) entries.push({ name, data });
 			}
-			downloadBlob(`${folderName}-edited.zip`, makeZip(entries), 'application/zip');
+			downloadBlob(`${folderName}-edited.zip`, await makeZip(entries), 'application/zip');
 		}
 	};
 }
@@ -184,7 +193,8 @@ function promptDirectoryUpload(): Promise<File[] | null> {
 	});
 }
 
-function downloadBlob(filename: string, data: Uint8Array, type: string): void {
+/** Hands the user a file the only way a browser can. Also used by backup-folder.ts. */
+export function downloadBlob(filename: string, data: Uint8Array, type: string): void {
 	const url = URL.createObjectURL(new Blob([data as BlobPart], { type }));
 	const a = document.createElement('a');
 	a.href = url;

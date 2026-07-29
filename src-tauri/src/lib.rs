@@ -66,6 +66,13 @@ pub fn run() {
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_fs::init())
+        // Picking a folder in the dialog is what grants the app access to it —
+        // the static fs scope in capabilities/default.json only covers the
+        // game's own save directory. That grant lives in memory, so without
+        // this the backup folder the user chose once would be unreadable the
+        // next time the app starts. This writes the grants beside the app's
+        // config and puts them back at launch.
+        .plugin(tauri_plugin_persisted_scope::init())
         .setup(|_app| {
             #[cfg(windows)]
             {

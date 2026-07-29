@@ -1,6 +1,7 @@
 <script lang="ts">
 	import type { Snippet } from 'svelte';
 	import ScrollBar from './ScrollBar.svelte';
+	import { sound } from '$lib/sound.svelte';
 
 	// The one place that defines what a modal looks like and how it behaves.
 	//
@@ -10,9 +11,10 @@
 	//
 	// The shell is the same warm slab the editor's cards wear, square-cornered,
 	// with a title band on top and an optional footer band below. `tone` recolours
-	// the edge: `warn` marks a dialog that leaves the guarantees the rest of the
-	// app keeps (the custom-shape painter), and is the only reason the edge is
-	// ever anything but the standard one.
+	// the edge, and `warn` is its one value: it marks a dialog that leaves the
+	// guarantees the rest of the app keeps — the custom-shape painter, and the two
+	// confirms in the restore browser, one overwriting a save folder and the other
+	// deleting an archive, with nothing behind either.
 	let {
 		open = $bindable(false),
 		title,
@@ -41,11 +43,16 @@
 	/** The body, handed to ScrollBar so it can draw the bar the body hides. */
 	let body = $state<HTMLElement | null>(null);
 
-	// The effect only touches the DOM; it assigns no state.
+	// The effect only touches the DOM; it assigns no state. The open sound is the
+	// game's own vault screen arriving, played over the same beat as the rise
+	// below; its closing half rides the `onclose` event rather than this effect,
+	// because Esc closes the element itself and never reaches the branch here.
 	$effect(() => {
 		if (!dialog) return;
-		if (open && !dialog.open) dialog.showModal();
-		else if (!open && dialog.open) dialog.close();
+		if (open && !dialog.open) {
+			dialog.showModal();
+			sound.play('open');
+		} else if (!open && dialog.open) dialog.close();
 	});
 </script>
 
@@ -58,6 +65,7 @@
 	style:width="min({width}, 92vw)"
 	onclose={() => {
 		open = false;
+		sound.play('close');
 		onclose?.();
 	}}
 	onclick={(e) => {

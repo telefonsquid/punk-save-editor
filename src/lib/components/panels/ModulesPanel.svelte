@@ -31,6 +31,7 @@
 		type ModuleView,
 		type NewModuleFields
 	} from '$lib/save/vault';
+	import { sound } from '$lib/sound.svelte';
 
 	let { editor }: { editor: EditorState } = $props();
 
@@ -69,9 +70,14 @@
 		levelFields: 'levelModificationField'
 	};
 
-	/** Flips one grid connection of a module in the raw tree. */
+	/**
+	 * Flips one grid connection of a module in the raw tree. The cell is a
+	 * stateful toggle rather than a `Button`, so — like the tank bars and the
+	 * wheel — it plays its own sound instead of inheriting one.
+	 */
 	function toggleConnection(m: ModuleView, key: ConnectionKey) {
 		m[key] = !m[key];
+		sound.play('close');
 		editor.touch('vault');
 	}
 

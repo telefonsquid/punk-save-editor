@@ -37,7 +37,7 @@
 	{#if leaving}
 		<div class="flex items-center gap-3">
 			<p class="text-amber text-ui-xs">Unsaved changes. Click the mark again to discard them.</p>
-			<Button variant="ghost" size="xs" onclick={() => (leaving = false)}>Cancel</Button>
+			<Button variant="ghost" size="xs" onclick={() => (leaving = false)}>Discard</Button>
 		</div>
 	{/if}
 </header>

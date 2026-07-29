@@ -12,7 +12,7 @@
  * no releases all mean the same thing to the reader — there is nothing to say.
  */
 
-import { isTauri } from './save/io';
+import { isTauri } from './save/platform';
 
 const REPO = 'telefonsquid/punk-save-editor';
 

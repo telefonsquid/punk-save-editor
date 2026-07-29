@@ -1,6 +1,7 @@
 <script lang="ts">
 	import type { Snippet } from 'svelte';
 	import type { HTMLButtonAttributes } from 'svelte/elements';
+	import { sound, type SoundName } from '$lib/sound.svelte';
 
 	// The one place that defines what editor buttons look like (the grid
 	// connection toggles are the deliberate exception — they're stateful
@@ -45,22 +46,61 @@
 		xs: 'punk-btn-xs text-ui-xs'
 	};
 
+	// The game's buttons carry a `ButtonSounds` component with two sfx names on
+	// it: one for activating the button, one for landing on it. Both are borrowed
+	// here, so the sound follows the control rather than being remembered at
+	// every call site. `sound` overrides the click for the handful of buttons the
+	// game has a more specific noise for — the picker's Add is a module being
+	// placed, not a generic OK.
 	let {
 		variant = 'outline',
 		size = 'md',
+		sound: clickSound = 'click',
 		children,
+		disabled = false,
+		onclick,
+		onpointerenter,
+		onfocus,
 		...rest
 	}: {
 		variant?: keyof typeof VARIANTS;
 		size?: keyof typeof SIZES;
+		sound?: SoundName;
 		children: Snippet;
 	} & HTMLButtonAttributes = $props();
+
+	// The game plays its select sound from `ISelectHandler`, which fires when
+	// gamepad or keyboard focus lands on a control. A pointer has no equivalent
+	// event, so both halves of "the control is now under you" are covered: the
+	// pointer entering, and focus arriving *visibly* — `:focus-visible` is what
+	// keeps a click from sounding twice, since clicking also focuses.
+	function hover(e: PointerEvent) {
+		// A tap synthesizes a pointerenter that a click follows immediately.
+		if (e.pointerType !== 'touch') sound.play('hover');
+	}
+
+	function focused(e: FocusEvent & { currentTarget: HTMLButtonElement }) {
+		if (e.currentTarget.matches(':focus-visible')) sound.play('hover');
+	}
 </script>
 
 <button
 	type="button"
 	class="punk-btn punk-frame punk-cap inline-flex items-center justify-center gap-2
 	       uppercase {VARIANTS[variant]} {SIZES[size]}"
+	{disabled}
+	onclick={(e) => {
+		sound.play(clickSound);
+		onclick?.(e);
+	}}
+	onpointerenter={(e) => {
+		if (!disabled) hover(e);
+		onpointerenter?.(e);
+	}}
+	onfocus={(e) => {
+		focused(e);
+		onfocus?.(e);
+	}}
 	{...rest}
 >
 	{@render children()}

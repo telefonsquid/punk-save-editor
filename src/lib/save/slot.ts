@@ -1,7 +1,13 @@
 /**
  * Loading and saving a PUNK save slot: decodes the LZF+Odin files into
- * editable trees and writes them back. Only the files the editor changes are
- * rewritten, but the first write backs up the whole folder to `*.bak`.
+ * editable trees and writes them back. Only the files the editor changed are
+ * rewritten.
+ *
+ * Nothing here backs anything up. Restore points are whole-folder zip archives
+ * taken deliberately (`./backup`), because a save is one moment and the game
+ * keeps rewriting `world`/`map`/`fow` underneath it — the per-file `*.bak`
+ * copies this used to leave behind were a restore point that put an old ship
+ * into a map that had moved on.
  *
  * The typed views over the decoded trees live beside this module:
  * `./tree` (generic Odin shapes), `./vault`, `./rundata`, `./ship`.
@@ -35,6 +41,27 @@ export const ODIN_FILES = [
 /** Save files that exist but cannot be edited as an Odin tree. */
 export const OPAQUE_FILES = ['world', 'fow', 'map', 'scanner'] as const;
 
+/**
+ * The files without which a folder is not a save. This is the gate `loadSlot`
+ * applies on open, and `backup.ts` applies to an archive before restoring it —
+ * one list, because an archive that would not open as a save must not be
+ * written over one that does.
+ */
+export const REQUIRED_FILES = ['levelinfo', 'vault', 'rundata'] as const;
+
+/**
+ * Whether bytes are an LZF+Odin tree — the same decode `loadSlot` does, asked
+ * as a question. A file name proves nothing about an archive's contents, so a
+ * restore checks the bytes it is about to commit to.
+ */
+export function decodesAsOdin(bytes: Uint8Array): boolean {
+	try {
+		return isNode(OdinBinaryReader.parse(lzfDecompress(bytes)));
+	} catch {
+		return false;
+	}
+}
+
 async function loadOdin(dir: SaveDir, file: string): Promise<OdinNode> {
 	const value = OdinBinaryReader.parse(lzfDecompress(await dir.read(file)));
 	if (!isNode(value)) throw new Error(`${file}: unexpected root value`);
@@ -42,7 +69,7 @@ async function loadOdin(dir: SaveDir, file: string): Promise<OdinNode> {
 }
 
 export async function loadSlot(dir: SaveDir): Promise<SaveSlot> {
-	for (const required of ['levelinfo', 'vault', 'rundata']) {
+	for (const required of REQUIRED_FILES) {
 		if (!(await dir.exists(required))) {
 			throw new Error(`Not a PUNK save folder: missing '${required}' file`);
 		}
@@ -62,78 +89,15 @@ export async function loadFile(slot: SaveSlot, name: string): Promise<OdinNode> 
 	return (slot.files[name] = await loadOdin(slot.dir, name));
 }
 
-/** What a save did about backups, so the UI can say so honestly. */
-export interface BackupReport {
-	/** Files copied to `<name>.bak` by this save. */
-	created: string[];
-	/** Files left alone because they already had a `.bak`. */
-	kept: string[];
-	/** Files that could not be backed up. Never includes an edited file. */
-	failed: string[];
-}
-
-/** True when the backups are of two different moments — see `backupFolder`. */
-export function isMixedBackup(report: BackupReport): boolean {
-	return report.created.length > 0 && report.kept.length > 0;
-}
-
-/**
- * Copies every file in the save folder to `<name>.bak`, skipping the ones that
- * already have a backup — so the *.bak set is the folder as it stood the first
- * time the editor wrote to it.
- *
- * The whole folder, not just the edited files: a save is one state. `world`,
- * `map` and `fow` are rewritten by the game as the run continues, so backing up
- * only `vault` and `rundata` would restore a ship into a map that has moved on.
- *
- * Two things the report exists for, because neither may be papered over:
- * - A folder that already carries some backups (from an editor version that
- *   only backed up what it wrote) gets the rest snapshotted *now*, hours of
- *   play later. `created` and `kept` both non-empty means exactly that, and the
- *   old backups are never overwritten — they are someone's restore point.
- * - A file that cannot be read is no reason to drop the user's edits, so it is
- *   reported rather than thrown. The files being overwritten are the exception:
- *   those are backed up first and a failure there aborts the save, since
- *   overwriting a file whose original we failed to keep is the one unrecoverable
- *   move.
- */
-async function backupFolder(dir: SaveDir, edited: readonly string[]): Promise<BackupReport> {
-	let listed: string[] = [];
-	try {
-		listed = await dir.list();
-	} catch {
-		// A folder that won't enumerate still gets its edited files backed up.
-	}
-	const report: BackupReport = { created: [], kept: [], failed: [] };
-	// `edited` first, so the backups that must not fail happen before the rest.
-	for (const name of new Set([...edited, ...listed])) {
-		if (name.endsWith('.bak')) continue;
-		if (await dir.exists(`${name}.bak`)) {
-			report.kept.push(name);
-			continue;
-		}
-		try {
-			await dir.write(`${name}.bak`, await dir.read(name));
-			report.created.push(name);
-		} catch (err) {
-			if (edited.includes(name)) throw err;
-			report.failed.push(name);
-		}
-	}
-	return report;
-}
-
-/** Writes the given loaded files back, after a one-time *.bak of the folder. */
+/** Writes the given loaded files back over the ones in the save folder. */
 export async function saveSlot(
 	slot: SaveSlot,
 	names: readonly string[] = ['vault', 'rundata']
-): Promise<BackupReport> {
+): Promise<void> {
 	for (const name of names) {
 		if (!slot.files[name]) throw new Error(`'${name}' is not loaded`);
 	}
-	const report = await backupFolder(slot.dir, names);
 	for (const name of names) {
 		await slot.dir.write(name, lzfCompress(OdinBinaryWriter.write(slot.files[name])));
 	}
-	return report;
 }

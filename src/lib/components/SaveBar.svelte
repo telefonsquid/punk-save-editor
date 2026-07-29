@@ -58,8 +58,9 @@
 {#snippet downloadNote()}
 	This browser can't modify the savefiles directly. <strong class="text-amber"
 		>Download changes</strong
-	> gives you a zip — extract it into your save folder to apply it (it includes a
-	<code>.bak</code> of every file). Don't modify while a savefile is open currently.
+	> gives you a zip of the files you edited — extract it into your save folder to apply it. Backup
+	hands you the whole folder the same way; putting one back has to be done by hand here. Don't modify
+	the save while it's open in the game.
 {/snippet}
 
 <div class="save-bar" class:is-stuck={stuck} bind:this={bar}>
@@ -78,6 +79,18 @@
 				{editor.downloadMode ? 'Download changes' : 'Save changes'}
 			</Button>
 		</InfoPop>
+		<!-- Backup and Restore are the pair the save folder itself is edited with,
+		     so they sit beside Save rather than behind a menu. Restore is hidden
+		     where it cannot work: a browser that can't write the folder can only
+		     hand the archive back as a download. -->
+		<Button variant="outline" size="sm" onclick={editor.backups.take} disabled={editor.busy}>
+			Backup
+		</Button>
+		{#if editor.backups.canRestore}
+			<Button variant="outline" size="sm" onclick={editor.backups.browse} disabled={editor.busy}>
+				Restore
+			</Button>
+		{/if}
 		<Button variant="primary" size="sm" onclick={editor.open} disabled={editor.busy}>
 			Load new save
 		</Button>
@@ -156,10 +169,14 @@
 		flex-grow: 1;
 	}
 
+	/* Four controls is more than a narrow window fits on one line, and the row
+	   wraps toward its own corner rather than stretching the strip. */
 	.bar-actions {
 		display: flex;
+		flex-wrap: wrap;
+		justify-content: flex-end;
 		align-items: center;
-		gap: 1rem;
+		gap: 0.75rem 1rem;
 	}
 
 	/* Anyone who asked the OS to keep still gets both states, just without the

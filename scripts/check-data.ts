@@ -15,6 +15,7 @@ import itemIcons from '../src/lib/game/item-icons.json';
 import moduleEffects from '../src/lib/game/module-effects.json';
 import moduleInfo from '../src/lib/game/module-info.json';
 import resourceIcons from '../src/lib/game/resource-icons.json';
+import uiSounds from '../src/lib/game/ui-sounds.json';
 
 const assets = assetNames as Record<string, AssetInfo>;
 const icons = itemIcons as Record<string, string>;
@@ -105,6 +106,25 @@ for (const id of [...byCategory('Consumable'), ...byCategory('Ingredient')]) {
 	if (!(id in icons)) warnings.push(`${assets[id].category} ${id} has no item icon`);
 }
 
+// --- the borrowed UI sounds must stay small enough to inline ---
+// Each is a trimmed blip of a couple of hundred milliseconds. If a game audio
+// pass repoints one of these names at a music bed, the app would carry it in the
+// bundle and play it over a click, so size is the thing worth watching. Whether
+// a sound went *missing* is caught twice already — the extractor warns, and
+// `bun run check` fails wherever the vanished key is played.
+const MAX_CLIP_BYTES = 64 * 1024;
+let soundBytes = 0;
+for (const [key, sfx] of Object.entries(uiSounds as Record<string, { sfx: string; clips: { uri: string }[] }>)) {
+	for (const clip of sfx.clips) {
+		// A data URI's payload is base64, so three bytes per four characters.
+		const bytes = Math.floor((clip.uri.length - clip.uri.indexOf(',') - 1) * 0.75);
+		soundBytes += bytes;
+		if (bytes > MAX_CLIP_BYTES) {
+			warnings.push(`ui sound ${key} (${sfx.sfx}) is ${Math.round(bytes / 1024)} kB — too long for a UI blip?`);
+		}
+	}
+}
+
 const counts = Object.entries(
 	Object.values(assets).reduce<Record<string, number>>((acc, a) => {
 		acc[a.category] = (acc[a.category] ?? 0) + 1;
@@ -118,6 +138,9 @@ console.log(`check-data: ${Object.keys(assets).length} assets (${counts})`);
 console.log(
 	`  ${modules.length} modules (${modules.length - unequippable} equippable), ` +
 		`${Object.keys(icons).length} item icons, ${Object.keys(resIcons).length} resource icon sets`
+);
+console.log(
+	`  ${Object.keys(uiSounds).length} UI sounds, ${Math.round(soundBytes / 1024)} kB of audio`
 );
 for (const w of warnings) console.warn(`  warning: ${w}`);
 for (const e of errors) console.error(`  ERROR: ${e}`);

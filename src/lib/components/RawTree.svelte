@@ -127,7 +127,7 @@
 		{:else if kind === 'boolean'}
 			<input
 				type="checkbox"
-				class="raw-check"
+				class="punk-check"
 				checked={value as boolean}
 				onchange={(e) => set(e.currentTarget.checked)}
 			/>
@@ -240,11 +240,6 @@
 		line-height: var(--text-ui-xs--line-height);
 		letter-spacing: -0.0425em;
 		padding: 0.125rem 0.5rem;
-	}
-	.raw-check {
-		width: 1rem;
-		height: 1rem;
-		accent-color: var(--color-accent);
 	}
 
 	/* "Show more" is chrome inside the tree rather than an editor action, so it

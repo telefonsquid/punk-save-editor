@@ -9,7 +9,7 @@
  * In a real browser this stays out of the way and lets the browser have the key.
  */
 
-import { isTauri } from './save/io';
+import { isTauri } from './save/platform';
 
 /** Binds F11 while the app is running in Tauri. Returns the teardown. */
 export function bindFullscreenKey(): () => void {

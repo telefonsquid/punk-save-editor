@@ -15,9 +15,10 @@ bun run extract "D:/some/other/Punk_Data"
 It runs, in order:
 
 1. `scripts/extract-all.py` — loads the whole `Punk_Data` folder into **one** UnityPy scan
-   (`scripts/punklib.py`) and runs all five extractors against it, regenerating every JSON in
+   (`scripts/punklib.py`) and runs all six extractors against it, regenerating every JSON in
    `src/lib/game/`. The Unity version is **auto-detected from the game files**, so an engine bump
-   needs no edit.
+   needs no edit. `extract-ui-sounds.py` is the only one with an outside dependency (`ffmpeg`, for
+   the MP3 encode); without it that one step is skipped and the rest of the run is unaffected.
 2. `scripts/extract-module-effects.ts` — decodes the Odin-serialized module effects dumped in
    step 1 (`scripts/module-effects-raw.json`, gitignored).
 3. `scripts/check-data.ts` — cross-checks the five generated JSONs against each other
@@ -39,6 +40,10 @@ current save, and commit the regenerated data.
 | `has no HUD icon` / `has no item icon` | check-data | Art gap in the game data; the UI falls back to text. Fine unless it's something the player sees constantly. |
 | `effect field of X is WxH, must be odd-sized` (ERROR) | check-data | An effect-field sprite lost its odd dimensions, which breaks the centre cell. The game logs `"Power core has invalid size"` on the same condition, so the sprite itself is wrong — not the extractor. |
 | `no bar, barCompact…` | extract-resource-icons | A resource lost one of its four art sizes. Only `icon` really matters to the editor; Money never had a large `bar`. |
+| `the game no longer has an sfx named X` | extract-ui-sounds | An audio pass renamed or dropped a UI sound. Pick the new name for that event in `PALETTE`; until you do, `bun run check` fails wherever the editor plays it, which is the point. |
+| `X has no playable clip` | extract-ui-sounds | The sfx exists but its distribution is empty, so the game itself plays silence for it (`UI/Back` is like this today). Not a fault — but the editor drops that sound, so pick another name if the event needs one. |
+| `ffmpeg not on PATH` | extract-ui-sounds | Only the sounds are skipped; `ui-sounds.json` keeps whatever it had. Install ffmpeg and re-run just that script if the game's audio changed. |
+| `ui sound X is N kB — too long for a UI blip?` | check-data | A borrowed name now points at something long. The clips are inlined in the bundle and played over a click, so check what the game does with it now. |
 
 ## Known blast radii (what an update can break, and where the guard is)
 

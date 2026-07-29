@@ -15,13 +15,13 @@
 		<div class="raw-panel-body">
 			<p class="raw-panel-note">
 				Every value the save files contain, unfiltered. The game does not validate any of this:
-				nonsensical values can corrupt the run or make it fail to load (the first save backs the
-				whole folder up as <code>*.bak</code>). Changes here are saved per file with the Save button
-				above.
+				nonsensical values can corrupt the run or make it fail to load, so take a
+				<strong class="text-amber">Backup</strong> first. Changes here are saved per file with the Save
+				button above.
 			</p>
 			{#each ODIN_FILES as name (name)}
 				<details
-					class="raw-panel-file"
+					class="punk-row raw-panel-file"
 					ontoggle={(e) => editor.openRawFile(name, e.currentTarget.open)}
 				>
 					<summary class="raw-panel-file-title">
@@ -72,21 +72,12 @@
 		line-height: var(--text-ui-xs--line-height);
 		color: var(--color-muted);
 	}
-	.raw-panel-note code {
-		color: var(--color-stone);
-	}
 	.raw-panel-foot {
 		font-size: var(--text-ui-xs);
 		line-height: var(--text-ui-xs--line-height);
 		color: var(--color-edge);
 	}
 
-	/* Each file is its own quiet slab inside the card, square like the frame. */
-	.raw-panel-file {
-		background-color: var(--color-void);
-		border: 2px solid var(--color-edge-dim);
-		padding: 0.5rem 0.75rem;
-	}
 	/* File names are data rather than interface, so they read in the DOS face the
 	   module cards use for their body copy, at its usual size and grey. The row is
 	   a flex line so the marker sits on the middle of the text: 000webfont's line

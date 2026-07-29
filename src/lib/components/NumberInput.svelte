@@ -1,5 +1,6 @@
 <script lang="ts">
 	import type { HTMLInputAttributes } from 'svelte/elements';
+	import { sound } from '$lib/sound.svelte';
 
 	// The one place that defines what an editable number field looks like.
 	// `class` sets the width (default w-24; the Cores field passes w-16).
@@ -16,10 +17,23 @@
 	// field just pins a height and lets line-height place the digits — no cap-fix.
 	// number_input.png is a 4x capture (4px = one game pixel): the frame is 14u
 	// tall around a digit a little under 5u, which is 8-bit HUD at its small size.
-	let { class: klass = 'w-24', ...rest }: HTMLInputAttributes = $props();
+	let { class: klass = 'w-24', onclick, ...rest }: HTMLInputAttributes = $props();
+
+	// Same tick as its frameless twin, for the same reason: the two are one
+	// control wearing two faces, and only one of them making a noise would read
+	// as a bug in whichever panel drew the quiet one.
+	function clicked(e: MouseEvent & { currentTarget: EventTarget & HTMLInputElement }) {
+		sound.play('close');
+		onclick?.(e);
+	}
 </script>
 
-<input type="number" class="punk-num punk-frame punk-hud-num text-center {klass}" {...rest} />
+<input
+	type="number"
+	class="punk-num punk-frame punk-hud-num text-center {klass}"
+	onclick={clicked}
+	{...rest}
+/>
 
 <style>
 	.punk-num {

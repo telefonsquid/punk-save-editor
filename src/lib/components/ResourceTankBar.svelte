@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { resourceArt, resourceLabel } from '$lib/game/data';
 	import { tintedIconStyle } from '$lib/game/pixel-icon';
+	import { sound } from '$lib/sound.svelte';
 
 	// One ship-resource tank drawn the way the game's HUD draws it (ship-resources.png):
 	// a run of unit shapes, the full ones bright, the rest a hollow outline. The two
@@ -71,10 +72,25 @@
 		return tintedIconStyle(src, scale, color);
 	}
 
+	/**
+	 * The one way out of this component, whichever input asked. Both callers can
+	 * name a value the bar is already at — the arrows at either end, a click on
+	 * the unit past the last one — and a bar that ticks without moving reads as
+	 * an edit that didn't take, so the sound follows the change rather than the
+	 * press. The tick is the vault screen's own, the sound every editing control
+	 * in the app makes.
+	 */
+	function set(next: number) {
+		const v = Math.max(0, Math.min(count, next));
+		if (v === filled) return;
+		sound.play('close');
+		onset(v);
+	}
+
 	function commit(i: number) {
 		// Clicking the last full unit empties it, so the bar can be dragged down to
 		// zero; otherwise the value becomes "up to and including this unit".
-		onset(filled === i + 1 ? i : i + 1);
+		set(filled === i + 1 ? i : i + 1);
 	}
 
 	/**
@@ -101,7 +117,7 @@
 			}[event.key] ?? null;
 		if (next === null) return;
 		event.preventDefault();
-		onset(Math.max(0, Math.min(count, next)));
+		set(next);
 	}
 </script>
 

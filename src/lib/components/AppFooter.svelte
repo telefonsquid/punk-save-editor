@@ -4,7 +4,9 @@
 	// website — each points at the copy you are not currently running.
 	import { onMount } from 'svelte';
 	import ChangelogDialog from './ChangelogDialog.svelte';
-	import { isTauri } from '$lib/save/io';
+	import OptionsDialog from './OptionsDialog.svelte';
+	import { settings } from '$lib/editor/settings.svelte';
+	import { isTauri } from '$lib/save/platform';
 	import { appVersion, checkForUpdate, type Update } from '$lib/update';
 
 	const REPO = 'https://github.com/telefonsquid/punk-save-editor';
@@ -12,6 +14,8 @@
 
 	let update = $state<Update | null>(null);
 	let changelogOpen = $state(false);
+	let optionsOpen = $state(false);
+	let optionsError = $state<string | null>(null);
 
 	// One quiet look at GitHub per launch, and only from the desktop app — see
 	// lib/update.ts. Deliberately not awaited into the markup: the footer draws
@@ -51,12 +55,38 @@
 		e.preventDefault();
 		changelogOpen = true;
 	}
+
+	// The folder is read back here rather than by an effect inside the dialog, so
+	// the lookup belongs to the click that asked for it — the same reason the
+	// restore browser reads its list from whatever opened it.
+	async function showOptions() {
+		optionsOpen = true;
+		optionsError = null;
+		await settings.recall();
+	}
+
+	// Options is the one place the backup folder is reached with no save open, so
+	// there is no BackupState to report into — the footer outlives the editor.
+	// The picker's own refusals (no gesture left, storage blocked) are worth
+	// saying, because otherwise the click looks like it did nothing at all.
+	async function chooseBackupFolder() {
+		optionsError = null;
+		try {
+			await settings.repick();
+		} catch (err) {
+			optionsError = (err as Error).message;
+		}
+	}
 </script>
 
 <footer class="text-ui-xs uppercase punk-footer">
 	<nav aria-label="Project links">
 		<a href={REPO} target="_blank" rel="noopener noreferrer" onclick={external}>GitHub</a>
 		<a href="/changelog" onclick={showChangelog}>Changelog</a>
+		<!-- A button, not a link: there is no options page to fall back to, and a
+		     link that goes nowhere is a link that cannot be middle-clicked, copied
+		     or trusted. It wears the same quiet grey as its neighbours. -->
+		<button type="button" onclick={showOptions}>Options</button>
 		{#if isTauri()}
 			<a href={SITE} target="_blank" rel="noopener noreferrer" onclick={external}>Web version</a>
 		{:else}
@@ -80,6 +110,7 @@
 </footer>
 
 <ChangelogDialog bind:open={changelogOpen} />
+<OptionsDialog bind:open={optionsOpen} onchoose={chooseBackupFolder} error={optionsError} />
 
 <style>
 	/* Quiet strip of links at the very bottom, pushed clear of the content. The
@@ -104,12 +135,26 @@
 		row-gap: 0.75rem;
 	}
 
-	a {
+	/* The Options button is one of the links as far as the row is concerned, so it
+	   is styled with them rather than beside them. Tailwind's reset strips a
+	   button's chrome and hands it the footer's face and size — but it also sets
+	   `text-transform: none`, which is not inherited back, so the row's `uppercase`
+	   stops at the button unless it is said again here. 000webfont is caps-only, so
+	   without this the label rides the lowercase code points' metrics. */
+	a,
+	button {
 		color: var(--color-muted);
 	}
 
+	button {
+		text-transform: inherit;
+		cursor: pointer;
+	}
+
 	a:hover,
-	a:focus-visible {
+	a:focus-visible,
+	button:hover,
+	button:focus-visible {
 		color: var(--color-accent);
 	}
 

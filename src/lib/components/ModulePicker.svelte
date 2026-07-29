@@ -92,7 +92,7 @@
 
 	<ModuleList {items} empty="No module matches that filter." onfieldchange={chooseField}>
 		{#snippet actions(item)}
-			<Button variant="primary" size="xs" onclick={() => add(item.id)}>Add</Button>
+			<Button variant="primary" size="xs" sound="place" onclick={() => add(item.id)}>Add</Button>
 		{/snippet}
 	</ModuleList>
 

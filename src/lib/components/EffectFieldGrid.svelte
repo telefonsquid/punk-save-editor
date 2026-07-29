@@ -9,6 +9,7 @@
 
 <script lang="ts">
 	import type { EffectField } from '$lib/game/data';
+	import { sound } from '$lib/sound.svelte';
 
 	// The area-of-effect diagram the game draws on a power core / booster card
 	// (ModuleEffectFieldWidget: a grid of `width` columns, one cell per bool,
@@ -137,7 +138,11 @@
 		style:--ring={fill}
 		aria-pressed={selected}
 		aria-label={describe}
-		onclick={onselect}
+		onclick={() => {
+			// The game's own sound for choosing a module's shape on the grid.
+			sound.play('select');
+			onselect();
+		}}
 	>
 		{@render cellGrid(false)}
 	</button>

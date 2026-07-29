@@ -79,9 +79,9 @@ open toward their rule). Recolour via `--frame`; fill via `--frame-fill`
 - Module sprites are tinted at extraction time instead (a CSS filter over the
   scaled bitmap would soften the pixel edges — see editor-internals.md).
 
-## The three box shapes
+## The four box shapes
 
-Every surface in the editor is one of three boxes, and each is one utility:
+Every surface in the editor is one of four boxes, and each is one utility:
 
 - **`punk-frame`** (above) — an interactive control the game itself draws:
   buttons, number fields, the connection toggles.
@@ -96,6 +96,23 @@ Every surface in the editor is one of three boxes, and each is one utility:
   fill and blue ring `@tailwindcss/forms` puts on every input. Deliberately
   simpler than `punk-frame`, which is four background bars per control and too
   much paint for a raw tree running hundreds of rows deep.
+- **`punk-row`** — one entry in a list of things you can act on: a raw file, a
+  backup archive. `punk-field`'s box on a row rather than an input, on
+  `--color-void` so it reads as a well inside whatever slab holds it. Unlike
+  `punk-slab` it carries its own padding, because a row's inset is part of the
+  shape rather than a decision each list makes — two lists of rows at different
+  insets stop reading as the same control. Layout stays with the caller: an
+  archive row is a flex line, a raw file is a `<details>`.
+
+The row was the box-shape lesson: the raw file list and the restore list each
+hand-rolled the same edge, fill and inset before it existed, exactly as five
+private copies of the panel title preceded `punk-panel-title`.
+
+**`punk-check` is the one control that is deliberately none of them.** A
+checkbox stays the platform's, with `--color-accent` painted on and sized to sit
+on a line of `--text-ui-xs`. Drawing it by hand would mean redrawing the tick,
+the indeterminate state and the focus ring, and this is the single control where
+the OS version is the one people can already read.
 
 ## Shared text shapes
 
@@ -169,6 +186,35 @@ second ease would read as a second app, so it borrows these. It travels on
 `flex-grow` — `justify-content` cannot be transitioned, so the row's free space
 is held by empty springs whose grow values cross. Reduced motion gets both
 states and no travel between them.
+
+## Sound
+
+The controls make the game's own noises — `UI/OK` under a click, `UI/Step` under a pointer landing
+on one, the vault screen's open and close under a dialog and its close again under every edit. Six
+sounds, ripped from the game's
+`AudioDatabase` and played by `$lib/sound.svelte.ts`; the whole thing is switchable off in Options,
+and how it works is in
+[editor-internals.md](editor-internals.md#the-interface-sounds).
+
+What matters here is that **sound follows the primitive, exactly like styling does**. `Button`,
+`Dialog`, `CloseBadge`, `Tabs` and `EffectFieldGrid` each play their own; a panel composing them
+says nothing about sound and gets it right by default. The editing controls that are *not* buttons
+carry their own for the same reason — a tank unit, a wheel slot, a connection cell, a number field
+being clicked — since there is no shared component underneath them to inherit one from. They all
+play `close`: the game gives an edit no sound of its own, and the vault screen's is the one that
+sits under a value being set without announcing anything about it.
+
+A control that plays a sound plays it **when it changes something**, not when it is pressed. The
+tank bars and the wheel's `+`/`-` keys both clamp, so either can be pressed with nothing left to do,
+and a control that ticks without moving reads as an edit that didn't take.
+
+The one lever a caller has is `Button`'s `sound` prop, for the handful of buttons the game has a
+more specific noise for than "OK" — the module picker's **Add** is a module being placed, and
+adding or removing a consumable is the wheel edit it belongs to, not a generic confirmation.
+
+Sound obeys the same rule as colour: it never carries meaning. There is no error noise and no
+success noise, because the game has neither, and because a tool that chimes at you when a save is
+written is a tool that has to be muted. The palette says *where you are*, not *how it went*.
 
 ## Where to restyle
 

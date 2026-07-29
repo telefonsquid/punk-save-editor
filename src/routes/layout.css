@@ -386,6 +386,36 @@
 	}
 }
 
+@utility punk-row {
+	/* One entry in a list of things you can act on — a raw file, a backup
+	   archive. `punk-field`'s box, on a row rather than an input: same 2px
+	   `--color-edge-dim` edge, same quiet-to-accent answer to the pointer, on
+	   `--color-void` so it reads as a well inside whatever slab it sits in.
+
+	   It carries its own padding, unlike `punk-slab`, because a row's inset is
+	   part of the shape rather than a decision each list makes — two lists of
+	   rows at different insets would not read as the same control. Layout is
+	   still the caller's: `.archive-row` is a flex line, a raw file is a
+	   `<details>`. */
+	border: 2px solid var(--color-edge-dim);
+	background-color: var(--color-void);
+	padding: 0.5rem 0.75rem;
+	&:hover {
+		border-color: var(--color-accent);
+	}
+}
+
+@utility punk-check {
+	/* A checkbox. The game has none either, and unlike `punk-field` this one is
+	   left as the platform control with the accent painted on: a hand-drawn box
+	   would have to redraw the tick, the indeterminate state and the focus ring,
+	   and a checkbox is the one control where the OS version is the one people
+	   can already read. Sized to sit on a line of `--text-ui-xs`. */
+	width: 1rem;
+	height: 1rem;
+	accent-color: var(--color-accent);
+}
+
 @utility punk-game-desc {
 	/* The game's one lowercase body copy: module descriptions, set in the DOS
 	   face the game itself uses for them. */
