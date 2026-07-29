@@ -24,7 +24,7 @@ headings matters.
 
 ### Fixed
 
-- Footer Links not working on the Desktop App
+- Footer Links now work on the Desktop App
 
 ## 1.0.1 — 2026-07-27
 
