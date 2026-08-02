@@ -42,7 +42,7 @@
 
 | PUNK version | Status | Editor Version |
 | --- | --- | --- |
-| v0.12.10 | ✅ Supported | 1.0.0 - 1.1.0 |
+| v0.12.10 - v0.12.11 | ✅ Supported | 1.0.0 - 1.1.0 |
 | v0.12.0 - v0.12.9 | ⚠️ Untested \| Might Work | 1.0.0 - 1.1.0 |
 | v0.6.0 - v0.11.0 | ❌ Untested \| Most Likely Broken | – |
 
