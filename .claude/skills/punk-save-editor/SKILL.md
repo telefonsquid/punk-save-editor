@@ -29,6 +29,9 @@ rediscovering it:
 - **[docs/design.md](../../../docs/design.md)** — the design system: the three game fonts and their
   pixel grids, the palette tokens, the game pixel `--u`, integer-scaled art, the shared `punk-*`
   utilities, and the `.crt-screen` scroller traps. Read before any styling work.
+- **[docs/grid-editor.md](../../../docs/grid-editor.md)** — the visual module-grid editor: the
+  game's grid model (clusters, power, validation, slot generation) as verified in the decompiled
+  code, the sim/save/UI architecture, and what each milestone shipped.
 
 ## Golden rules (violating these corrupts saves or crashes the game)
 
@@ -80,16 +83,20 @@ bun run check:data  # cross-check the generated JSONs without re-extracting
 - `src/lib/save/` — the save files: `platform.ts` (which runtime, and the folder plumbing all three
   share), `io.ts` (SaveDir), `lzf.ts` (codec), `odin.ts` (reader/writer),
   `slot.ts` (slot IO), `zip.ts` + `backup.ts` + `backup-folder.ts` (whole-folder zip backups and
-  restore), `tree.ts` (generic Odin accessors), `vault.ts` (vault
-  views/mutations), `rundata.ts` (run views), `ship.ts` (entities grid walk — seed of the grid editor).
-- `src/lib/game/` — static game knowledge: `data.ts` (assets, names, module info/effects),
+  restore), `tree.ts` (generic Odin accessors + `reidNode` for cross-file node moves), `vault.ts`
+  (vault views/mutations), `rundata.ts` (run views), `grid.ts` (the module grid in `entities`:
+  owners, snapshots, mutations), `ship.ts` (exact caps/regen via the grid simulation).
+- `src/lib/game/` — static game knowledge: `data.ts` (assets, names, module info/effects, slot
+  types), `grid-rules.ts` (the module-grid simulation ported from the game — docs/grid-editor.md),
   `module-stats.ts`, `rich-text.ts`, `pixel-icon.ts`, and the generated `*.json` (including
   `ui-sounds.json`, the game's own UI sounds).
 - `src/lib/sound.svelte.ts` — plays those sounds (`sound.play('click')`) and owns the switch that
   governs them. Sound follows the primitive, never the panel — see docs/design.md.
 - `src/lib/editor/` — `state.svelte.ts` (EditorState), `backup.svelte.ts` (BackupState: backups and
-  restores, as `editor.backups`), `settings.svelte.ts` (the backup folder and the ask-on-load flag,
-  one singleton because the footer outlives the editor), `inputs.ts` (raw-tree input handlers).
+  restores, as `editor.backups`), `grid.svelte.ts` (GridEditorState: the grid editor's carry, paint
+  brush, undo stack and derived simulation), `settings.svelte.ts` (the backup folder and the
+  ask-on-load flag, one singleton because the footer outlives the editor), `inputs.ts` (raw-tree
+  input handlers).
 - `src/lib/components/` — the primitives (restyle these, not the panels): `Section`, `Dialog`,
   `Button`, `NumberInput`/`InlineNumber`/`CounterCell`, `TextInput`/`Select`, `CloseBadge`,
   `ModuleStatLine`/`ModuleGroupHeading`. Then `panels/` (one per editor section),
@@ -99,7 +106,11 @@ bun run check:data  # cross-check the generated JSONs without re-extracting
   `ResourceIcon` (all four resource art sizes)/`ItemIcon`/`EffectFieldGrid` (the area-of-effect
   diagram the game draws on power cores and boosters) + `EffectFieldChooser` (picking that shape) +
   `CustomFieldDialog` (painting one — hand-painted fields must stay **square and odd**, see
-  docs/game-code.md; the saved library lives in `$lib/editor/custom-fields.svelte.ts`).
+  docs/game-code.md; the saved library lives in `$lib/editor/custom-fields.svelte.ts`) +
+  `ConnectionToggles` (a module's N/E/S/W cells, shared by the vault cards and the grid editor).
+  `grid/` is the **module-grid editor** overlay: `GridEditor` (full-viewport dialog), `GridCanvas`
+  (pan/zoom board), `GridModuleTile`, `GridHoverCard`, `VaultDock`, `ModuleEditDialog` — the
+  feature's own doc is **docs/grid-editor.md**.
 - `src/routes/+page.svelte` — composition only.
 - `scripts/` — `punklib.py` (shared extraction lib) + extractors; **`bun run extract`** regenerates
   everything and validates (`scripts/check-data.ts`). See docs/migration.md.

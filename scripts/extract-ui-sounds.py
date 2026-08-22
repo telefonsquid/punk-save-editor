@@ -64,9 +64,14 @@ PALETTE = {
     # The vault screen opening and closing; the editor's dialogs do the same job.
     "open": "UI/Grid/Open",
     "close": "UI/Grid/Close",
-    # The two module sounds, borrowed by the module picker for the same events.
+    # The module sounds. `select` is also what the game plays when a grid move
+    # starts or is cancelled (`startMoveSfx`/`cancelMoveSfx` point at it), and
+    # `place` is the `gridPlacementSfx` of every module except POWER CORE,
+    # whose own is `placeCore`. `fail` is the grid's refused-drop buzz.
     "select": "UI/Grid/ModuleSelected",
     "place": "UI/Grid/ModulePlaced",
+    "placeCore": "UI/Grid/PowerCorePlacement",
+    "fail": "UI/Grid/PlacementFailed",
 }
 
 # Below this the sample is silence: -70 dBFS in 16-bit, i.e. the noise floor of
@@ -77,20 +82,6 @@ THRESHOLD = round(32768 * 10 ** (-70 / 20))
 TAIL_SECONDS = 0.03
 
 BITRATE = "64k"
-
-
-def audio_database(assets: punklib.PunkAssets) -> dict | None:
-    """The one AudioDatabase asset's fields, or None if the scan found none."""
-    for obj in assets.env.objects:
-        if obj.type.name != "MonoBehaviour":
-            continue
-        if assets.script_class(obj) != "AudioDatabase":
-            continue
-        try:
-            return obj.read(check_read=False).__dict__
-        except Exception:
-            continue
-    return None
 
 
 def trim(wav_bytes: bytes) -> tuple[bytes, float, float]:
@@ -164,7 +155,7 @@ def run(assets: punklib.PunkAssets) -> None:
     if not shutil.which("ffmpeg"):
         punklib.warn("ffmpeg not on PATH — skipping ui-sounds.json (it is unchanged)")
         return
-    db = audio_database(assets)
+    db = punklib.audio_database(assets)
     if db is None:
         punklib.warn("no AudioDatabase asset found — skipping ui-sounds.json")
         return

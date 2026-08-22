@@ -69,6 +69,7 @@
 	--color-card-edge: #302822; /* the tooltip's flat grey edge, sampled off the same capture */
 	--color-press: #0d0906; /* a held control's interior — the frame's bloom spills in (button_pressed.png) */
 	--color-regen: #5fc24e; /* a gain: the recharge rate beside a ship tank. the one green in the app */
+	--color-power: #3fd7d0; /* the grid's power-core badge (n/max under a main module), sampled from infinite-grid-empty.png */
 	/* Behind a modal, so the page reads as switched off rather than dimmed.
 	   Dialog.svelte repeats this value as a var() fallback — `::backdrop` does not
 	   inherit custom properties on older WebKitGTK. Change both together. */

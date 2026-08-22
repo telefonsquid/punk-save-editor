@@ -51,6 +51,20 @@ interface Sound {
 
 const catalogue = uiSounds as Record<SoundName, Sound>;
 
+/**
+ * The editor sound filed under a game sfx *name*, for data that references
+ * sounds that way — a module's own `gridPlacementSfx`. Falls back when the
+ * name is not part of the borrowed palette.
+ */
+export function soundForSfx(sfxName: string | null | undefined, fallback: SoundName): SoundName {
+	if (sfxName) {
+		for (const [key, entry] of Object.entries(catalogue)) {
+			if (entry.sfx === sfxName) return key as SoundName;
+		}
+	}
+	return fallback;
+}
+
 const STORAGE_KEY = 'punk-save-editor:sounds';
 
 /** Prerendering has no storage; the app itself always does (`ssr = false`). */

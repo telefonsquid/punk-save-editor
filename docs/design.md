@@ -190,8 +190,9 @@ states and no travel between them.
 ## Sound
 
 The controls make the game's own noises — `UI/OK` under a click, `UI/Step` under a pointer landing
-on one, the vault screen's open and close under a dialog and its close again under every edit. Six
-sounds, ripped from the game's
+on one, the grid screen's open and close under a dialog and its close again under every edit, and
+the grid screen's own pick-up, placement and refusal under the grid editor. Eight sounds, ripped
+from the game's
 `AudioDatabase` and played by `$lib/sound.svelte.ts`; the whole thing is switchable off in Options,
 and how it works is in
 [editor-internals.md](editor-internals.md#the-interface-sounds).
@@ -214,7 +215,9 @@ adding or removing a consumable is the wheel edit it belongs to, not a generic c
 
 Sound obeys the same rule as colour: it never carries meaning. There is no error noise and no
 success noise, because the game has neither, and because a tool that chimes at you when a save is
-written is a tool that has to be muted. The palette says *where you are*, not *how it went*.
+written is a tool that has to be muted. The palette says *where you are*, not *how it went*. The
+one buzz in it — `fail`, under a drop the grid rules refuse — is not an exception: it is the game's
+own sound for that exact interaction, played at game parity, not a status channel.
 
 ## Where to restyle
 
@@ -231,6 +234,7 @@ compose them and carry only layout.
 | `CounterCell` | an inventory-strip entry: HUD number plus the item's own art |
 | `TextInput` / `Select` | the editor's own text and dropdown boxes |
 | `CloseBadge` | the cross that removes what it sits on (`bare` / `boxed`) |
+| `ConnectionToggles` | a module's N/E/S/W connection cells (vault cards and the grid editor's dialog) |
 | `ModuleStatLine` / `ModuleGroupHeading` | the parts every module surface shares |
 
 **Destructive actions read as destructive**: `Button variant="danger"` or a
