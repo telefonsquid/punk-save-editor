@@ -1,0 +1,55 @@
+{
+ "Active": {
+  "canBePowered": true,
+  "compatibleModuleTypes": [
+   "GADGETS"
+  ],
+  "gridPlacementRectSize": 0,
+  "countInPlacementRect": 0
+ },
+ "Embedded": {
+  "canBePowered": true,
+  "compatibleModuleTypes": [
+   "Embedded"
+  ],
+  "gridPlacementRectSize": 0,
+  "countInPlacementRect": 0
+ },
+ "Invalid": {
+  "canBePowered": false,
+  "compatibleModuleTypes": [],
+  "gridPlacementRectSize": 5,
+  "countInPlacementRect": 2
+ },
+ "LevelUp": {
+  "canBePowered": true,
+  "compatibleModuleTypes": [
+   "WEAPON MODS",
+   "POWER",
+   "UPGRADES",
+   "BOOSTERS"
+  ],
+  "gridPlacementRectSize": 5,
+  "countInPlacementRect": 2,
+  "levelDelta": 1
+ },
+ "Normal": {
+  "canBePowered": true,
+  "compatibleModuleTypes": [
+   "UPGRADES",
+   "WEAPON MODS",
+   "POWER",
+   "BOOSTERS"
+  ],
+  "gridPlacementRectSize": 0,
+  "countInPlacementRect": 0
+ },
+ "Weapon": {
+  "canBePowered": true,
+  "compatibleModuleTypes": [
+   "WEAPONS"
+  ],
+  "gridPlacementRectSize": 0,
+  "countInPlacementRect": 0
+ }
+}

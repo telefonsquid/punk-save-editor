@@ -8,13 +8,14 @@
  * renumbered enum leaking ordinals. Errors (exit 1) are relationships the app
  * relies on; warnings are known-lopsided game data worth eyeballing.
  */
-import type { AssetInfo, ModuleEffectsEntry, ModuleInfo } from '../src/lib/game/data';
+import type { AssetInfo, ModuleEffectsEntry, ModuleInfo, SlotTypeInfo } from '../src/lib/game/data';
 import { EFFECT_KIND_VALUES } from '../src/lib/game/effect-kinds';
 import assetNames from '../src/lib/game/asset-names.json';
 import itemIcons from '../src/lib/game/item-icons.json';
 import moduleEffects from '../src/lib/game/module-effects.json';
 import moduleInfo from '../src/lib/game/module-info.json';
 import resourceIcons from '../src/lib/game/resource-icons.json';
+import slotTypes from '../src/lib/game/slot-types.json';
 import uiSounds from '../src/lib/game/ui-sounds.json';
 
 const assets = assetNames as Record<string, AssetInfo>;
@@ -98,6 +99,40 @@ for (const [id, m] of Object.entries(effects)) {
 for (const id of Object.keys(moduleEffects.slotLevelDeltas)) {
 	if (assets[id]?.category !== 'SlotType') {
 		errors.push(`slotLevelDeltas has ${id}, which asset-names does not list as a SlotType`);
+	}
+}
+
+// --- slot-types.json must cover the SlotType assets and agree with the rest ---
+// The grid simulation resolves every cell through this file (falling back to
+// Normal), compares module types by name against module-info's type.name, and
+// the ship walk's level deltas must not disagree with slotLevelDeltas.
+const slots = slotTypes as Record<string, SlotTypeInfo>;
+for (const id of byCategory('SlotType')) {
+	if (!(id in slots)) errors.push(`slot type ${id} missing from slot-types.json`);
+}
+for (const id of Object.keys(slots)) {
+	if (assets[id]?.category !== 'SlotType') {
+		errors.push(`slot-types.json has ${id}, which asset-names does not list as a SlotType`);
+	}
+}
+if (!slots['Normal']) errors.push(`slot-types.json has no 'Normal' entry — the simulation's fallback`);
+const typeNames = new Set(
+	Object.values(infos)
+		.map((m) => m.type?.name)
+		.filter(Boolean)
+);
+for (const [id, slot] of Object.entries(slots)) {
+	for (const name of slot.compatibleModuleTypes) {
+		if (!typeNames.has(name)) errors.push(`slot type ${id} accepts unknown module type '${name}'`);
+	}
+	const delta = (moduleEffects.slotLevelDeltas as Record<string, number>)[id] ?? 0;
+	if ((slot.levelDelta ?? 0) !== delta) {
+		errors.push(`slot type ${id}: levelDelta ${slot.levelDelta ?? 0} disagrees with slotLevelDeltas ${delta}`);
+	}
+}
+for (const [id, m] of Object.entries(infos)) {
+	for (const name of m.augments ?? []) {
+		if (!typeNames.has(name)) errors.push(`module ${id} augments unknown module type '${name}'`);
 	}
 }
 

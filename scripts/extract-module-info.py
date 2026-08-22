@@ -114,6 +114,11 @@ def run(assets: punklib.PunkAssets) -> None:
         if pid:
             color_to_resource[pid] = a.id
 
+    # gridPlacementSfx is a guid; the sfx *name* is the stable identity the
+    # sound extraction keys on, so resolve it here (see punklib.audio_database).
+    db = punklib.audio_database(assets)
+    sfx_names = {s.__dict__.get("guid"): s.__dict__.get("name") for s in (db or {}).get("sfxs") or []}
+
     modules: dict[str, dict] = {}
     for a in assets.modules():
         level = a.d.get("powerLevel")
@@ -127,6 +132,27 @@ def run(assets: punklib.PunkAssets) -> None:
             "weapon": weapon_stats(a.d.get("weapon")),
             "resource": color_to_resource.get(punklib.path_id(a.d.get("color")) or 0),
         }
+        # Three grid-editor fields, written only where they say anything.
+        # `augments` is the cluster rule: the module types a main module accepts
+        # in its cluster (the grid's "Incompatible augmentation" check), named
+        # by the same identity as `type` above. `placeSfx` is the sound the game
+        # plays when this module lands on the grid. `cls` marks the ModuleData
+        # subclasses, whose grid behaviour differs (a SpawnMinionModule's
+        # cluster recalculates stats from the main module alone).
+        augments = [
+            name
+            for name in (
+                punklib.module_type_name(p) for p in a.d.get("supportedAugmentationTypes") or []
+            )
+            if name
+        ]
+        if augments:
+            modules[a.id]["augments"] = augments
+        place_sfx = sfx_names.get(a.d.get("gridPlacementSfx"))
+        if place_sfx:
+            modules[a.id]["placeSfx"] = place_sfx
+        if a.cls and a.cls != "ModuleData":
+            modules[a.id]["cls"] = a.cls
 
     punklib.write_json(punklib.DATA_DIR / "module-info.json", modules)
     matched = sum(1 for m in modules.values() if m["resource"])

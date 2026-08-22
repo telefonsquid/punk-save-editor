@@ -143,11 +143,11 @@ evaluated at the module's effective level. The effect carries a `FloatSeries del
 `Add: baseValue + change*(L-1)` or `Multiply: baseValue * change^(L-1)` (`FloatSeries.GetElement`,
 index = level-1). `slot.ts:shipResourceCaps` mirrors this.
 
-Caveats the editor accepts: power/connectivity is **not** simulated (the game only counts *powered,
-connected* modules via `ModuleCluster`), so an unpowered module parked on the grid still contributes —
-the computed cap is an **upper bound**, exact for valid layouts. Reproducing power routing would mean
-porting `ModuleCluster.RefreshPoweredSlots` / `ModuleGrid.OnModulesChanged` — the plan if grid editing
-ever needs exactness.
+Power and connectivity **are** simulated: `$lib/game/grid-rules.ts` ports
+`ModuleCluster.RefreshPoweredSlots` / `ModuleGrid.OnModulesChanged` (plus the five validation checks
+of `ModuleGridPreview` and `RandomizeSlots`), so only powered, connected modules count and a booster
+only boosts while powered itself — the computed caps are exact, invalid layouts included. The
+condensed model and the port's architecture live in [grid-editor.md](grid-editor.md).
 
 ### Resource regeneration
 

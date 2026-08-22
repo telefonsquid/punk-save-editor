@@ -14,6 +14,7 @@ import itemIcons from './item-icons.json';
 import moduleEffectsJson from './module-effects.json';
 import moduleInfoJson from './module-info.json';
 import resourceIconsJson from './resource-icons.json';
+import slotTypesJson from './slot-types.json';
 
 export interface AssetInfo {
 	category: string;
@@ -240,6 +241,15 @@ export interface ModuleInfo {
 	levelFields: EffectField[];
 	weapon: WeaponStats | null;
 	resource: string | null;
+	/** Module types this module accepts in its cluster when it is the main
+	 * module — the grid's "Incompatible augmentation" rule. Absent when empty. */
+	augments?: string[];
+	/** Name of the sfx the game plays when this module lands on the grid. */
+	placeSfx?: string;
+	/** The `ModuleData` subclass, for the ones whose grid behaviour differs
+	 * (`SpawnMinionModuleData` clusters recalculate stats from the main alone).
+	 * Absent for the plain base class. */
+	cls?: string;
 }
 
 /**
@@ -319,6 +329,36 @@ export function categoryRank(name: string, shopOrder: number): number {
 export function usesPowerCore(id: string | null | undefined): boolean {
 	if (moduleCategory(id) === 'POWER') return false;
 	return (moduleInfo(id)?.powerCores.length ?? 0) > 0;
+}
+
+// ---------------------------------------------------------------------------
+// Slot types (slot-types.json — what a grid cell's type means)
+// ---------------------------------------------------------------------------
+
+/**
+ * What a `ModuleSlotType` does to its cell (scripts/extract-slot-types.py):
+ * whether a power core can power it, which module categories may sit on it
+ * (named as `ModuleInfo.type.name` names them), the level bonus it grants,
+ * and the parameters `ModuleGrid.RandomizeSlots` generates it with.
+ */
+export interface SlotTypeInfo {
+	canBePowered: boolean;
+	compatibleModuleTypes: string[];
+	gridPlacementRectSize: number;
+	countInPlacementRect: number;
+	levelDelta?: number;
+}
+
+/** Every slot type's behaviour, keyed by the id the save's `slotTypes` dict stores. */
+export const slotTypes = slotTypesJson as Record<string, SlotTypeInfo>;
+
+/**
+ * Slot-type data for a cell's stored id. Falls back to `Normal` — the game's
+ * `GetSlotType` returns it for any cell not in the dict, so the whole infinite
+ * grid outside the save's entries is normal cells.
+ */
+export function slotTypeInfo(id: string | null | undefined): SlotTypeInfo {
+	return (id ? slotTypes[id] : undefined) ?? slotTypes['Normal'];
 }
 
 // Effect-field geometry (orientations, blank fields, validation) lives in

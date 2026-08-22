@@ -3,18 +3,18 @@
  * that recomputes what the game never saves — per-resource max capacity and
  * recharge rate, both derived from the modules installed on the ship grid.
  *
- * This is the seed of the module-grid recreation: it already reads the grid's
- * module positions, slot types and booster fields. What it does *not* yet
- * simulate is power/connectivity (`ModuleCluster.RefreshPoweredSlots`), so an
- * unpowered module parked on the grid still counts — an upper bound, exact for
- * valid layouts.
+ * The walk runs the full grid simulation (`$lib/game/grid-rules`), so the
+ * numbers are exact: only powered, connected modules count, and a booster only
+ * boosts while it is powered itself — mirroring `ModuleGrid.OnRecalculateStats`
+ * cluster by cluster.
  */
 
-import { moduleEffectsEntry, seriesAt, slotLevelDeltas } from '$lib/game/data';
+import { moduleEffectsEntry, moduleInfo, seriesAt } from '$lib/game/data';
+import { simulateGrid } from '$lib/game/grid-rules';
+import { gridOwners, snapshotGrid } from './grid';
 import { isNode } from './odin';
-import type { OdinNode, OdinValue } from './odin';
+import type { OdinNode } from './odin';
 import { dictPairs, type ResourcePair } from './tree';
-import { savedEffectField } from './vault';
 
 function shipMemento(entities: OdinNode, type: string): OdinNode | null {
 	const ents = entities.$0;
@@ -35,53 +35,35 @@ export function shipResources(entities: OdinNode): ResourcePair[] {
 }
 
 /**
- * Sums one kind of module effect across every module installed on the ship grid,
- * each evaluated at its effective level (asset level + LevelUp slots + neighbour
- * level-boost fields — this is what a booster module does).
+ * Sums one kind of module effect the way `ModuleGrid.OnRecalculateStats` runs
+ * them: per cluster, over its powered and connected members, each at its
+ * simulated effective level — except a cluster whose main module spawns
+ * minions, which the game recalculates from the main module alone.
+ *
+ * Iterating per cluster rather than a merged set is deliberate: a module
+ * reached by two clusters (possible in a hand-edited layout) runs its effects
+ * twice in the game, so it counts twice here.
  */
 function sumGridEffects(entities: OdinNode, kind: string): Map<string, number> {
 	const totals = new Map<string, number>();
-	const gridOwner = shipMemento(entities, 'ModuleGridOwner');
-	const gridValue = (gridOwner?.gridMemento ?? null) as OdinValue;
-	const grid = isNode(gridValue) ? gridValue : null;
-	if (!grid) return totals;
-	const modules = dictPairs(grid.modules);
-	const vec = (v: unknown) => ({ x: (v as OdinNode).$0 as number, y: (v as OdinNode).$1 as number });
-	const key = (x: number, y: number) => `${x},${y}`;
+	const owner = gridOwners(entities).find((o) => o.entityId === 'Ship');
+	if (!owner) return totals;
+	const view = snapshotGrid(owner.grid);
+	const sim = simulateGrid(view);
 
-	const levelDeltas = new Map<string, number>();
-	for (const pair of dictPairs(grid.slotTypes)) {
-		const delta = slotLevelDeltas[pair.$v as string];
-		if (!delta) continue;
-		const { x, y } = vec(pair.$k);
-		levelDeltas.set(key(x, y), (levelDeltas.get(key(x, y)) ?? 0) + delta);
-	}
-	for (const pair of modules) {
-		const field = savedEffectField((pair.$v as OdinNode).levelModificationField as OdinValue);
-		if (!field) continue;
-		const { x, y } = vec(pair.$k);
-		const { width: w, height: h, data: bools } = field;
-		// mirrors ModuleEffectField.GetPositionsRelative (including its y*height indexing)
-		for (let fx = 0; fx < w; fx++) {
-			for (let fy = 0; fy < h; fy++) {
-				if (!bools[fy * h + fx]) continue;
-				const k = key(x + fx - Math.floor(w / 2), y + fy - Math.floor(h / 2));
-				levelDeltas.set(k, (levelDeltas.get(k) ?? 0) + 1);
+	for (const cluster of sim.clusters) {
+		const minionMain = cluster.main && moduleInfo(cluster.main.id)?.cls === 'SpawnMinionModuleData';
+		const cells = minionMain ? [cluster.rootKey] : cluster.poweredMembers;
+		for (const key of cells) {
+			const module = view.modules.get(key);
+			const info = moduleEffectsEntry(module?.id);
+			if (!info) continue;
+			const level = sim.levels.get(key) ?? info.level;
+			const idx = Math.max(0, level - 1);
+			for (const e of info.effects) {
+				if (e.kind !== kind || !e.resource || !e.series) continue;
+				totals.set(e.resource, (totals.get(e.resource) ?? 0) + seriesAt(e.series, idx));
 			}
-		}
-	}
-
-	for (const pair of modules) {
-		const memento = pair.$v as OdinNode;
-		const info = moduleEffectsEntry(memento.moduleDataId as string);
-		if (!info) continue;
-		const { x, y } = vec(pair.$k);
-		let level = info.level;
-		if (info.canBeBoosted) level += levelDeltas.get(key(x, y)) ?? 0;
-		const idx = Math.max(0, level - 1);
-		for (const e of info.effects) {
-			if (e.kind !== kind || !e.resource || !e.series) continue;
-			totals.set(e.resource, (totals.get(e.resource) ?? 0) + seriesAt(e.series, idx));
 		}
 	}
 	return totals;

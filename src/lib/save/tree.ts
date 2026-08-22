@@ -49,6 +49,54 @@ export function isPrimitiveArray(v: OdinValue | null | undefined): v is OdinPrim
 }
 
 /**
+ * Renumbers every `$id` in a subtree past the target tree's highest, remapping
+ * `$ref`s inside the subtree along the way.
+ *
+ * Needed whenever a node moves *between files*: the writer serializes ids
+ * verbatim, each file is its own id space, and both are densely numbered — so
+ * a vault module inserted into `entities` unchanged would collide with an
+ * existing id there and silently repoint any `$ref` that resolves through it.
+ */
+export function reidNode(node: OdinValue, targetRoot: OdinValue): void {
+	let next = maxOdinId(targetRoot) + 1;
+	const remapped = new Map<number, number>();
+	const renumber = (value: OdinValue): void => {
+		if (typeof value !== 'object' || value === null) return;
+		if (Array.isArray(value)) {
+			for (const child of value) renumber(child);
+			return;
+		}
+		if (!isNode(value)) return;
+		if (typeof value.$id === 'number') {
+			remapped.set(value.$id, next);
+			value.$id = next++;
+		}
+		for (const [key, child] of Object.entries(value)) {
+			if (key !== '$types') renumber(child as OdinValue);
+		}
+	};
+	renumber(node);
+
+	const remapRefs = (value: OdinValue): void => {
+		if (typeof value !== 'object' || value === null) return;
+		if (Array.isArray(value)) {
+			for (const child of value) remapRefs(child);
+			return;
+		}
+		const ref = (value as { $ref?: unknown }).$ref;
+		if (typeof ref === 'number' && remapped.has(ref)) {
+			(value as { $ref: number }).$ref = remapped.get(ref)!;
+			return;
+		}
+		if (!isNode(value)) return;
+		for (const [key, child] of Object.entries(value)) {
+			if (key !== '$types') remapRefs(child as OdinValue);
+		}
+	};
+	remapRefs(node);
+}
+
+/**
  * Highest `$id` used anywhere in a tree. A node the editor adds must claim an
  * unused one: Odin resolves internal references (`$ref`) through these ids, so
  * reusing one would silently repoint an existing reference at the new node.

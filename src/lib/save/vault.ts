@@ -232,14 +232,17 @@ function effectFieldNode(field: EffectField | null | undefined, allocId: () => n
 }
 
 /**
- * Replaces the shape a module in the vault projects.
+ * Replaces the shape a module projects — in the vault or on a grid.
  *
  * An existing field node is rewritten **in place** rather than swapped out: its
  * `$id` is what any `$ref` elsewhere in the tree resolves through, so replacing
- * the node would leave those references pointing at nothing.
+ * the node would leave those references pointing at nothing. `tree` is the
+ * whole file the module lives in (`vault`, or `entities` for a grid module);
+ * it only matters when the module has no field yet and a node must be built
+ * with fresh ids.
  */
 export function setSavedEffectField(
-	vault: OdinNode,
+	tree: OdinNode,
 	module: ModuleView,
 	key: EffectFieldKey,
 	field: EffectField
@@ -253,7 +256,7 @@ export function setSavedEffectField(
 		existing.height = field.height;
 		return;
 	}
-	let nextId = maxOdinId(vault) + 1;
+	let nextId = maxOdinId(tree) + 1;
 	module[key] = effectFieldNode(field, () => nextId++);
 }
 
@@ -261,28 +264,34 @@ export function setSavedEffectField(
 export type NewModuleFields = Partial<Record<EffectFieldKey, EffectField | null>>;
 
 /**
- * Appends a module to the vault, mirroring what the game stores for one the
- * player picked up (`Module.CreateMemento`). All four connections are enabled so
- * it can be attached anywhere on the grid, and the power level defaults to the
- * asset's maximum. Both effect fields are rebuilt from the extracted sprite
- * grids — without its power core the module would provide none at all when
- * placed, and a BOOSTER CORE without its level field would boost nothing.
+ * Builds a fresh `Module+Memento` node, mirroring what the game stores for one
+ * the player picked up (`Module.CreateMemento`). All four connections are
+ * enabled so it can be attached anywhere on the grid, and the power level
+ * defaults to the asset's maximum. Both effect fields are rebuilt from the
+ * extracted sprite grids — without its power core the module would provide
+ * none at all when placed, and a BOOSTER CORE without its level field would
+ * boost nothing.
  *
+ * `tree` is whichever tree the node is destined for — its `$id`s are allocated
+ * past that tree's highest, so hand the *whole* file's root, not a subtree.
  * `fields` overrides either shape, which is how the picker applies the
  * orientation the user chose before pressing Add.
  */
-export function addModule(vault: OdinNode, moduleDataId: string, fields: NewModuleFields = {}): void {
+export function newModuleNode(
+	tree: OdinNode,
+	moduleDataId: string,
+	fields: NewModuleFields = {}
+): OdinNode {
 	const info = moduleInfo(moduleDataId);
-	// Every node the editor adds claims ids after the highest one in the tree;
-	// each field costs two (the ModuleEffectField and its bool array).
-	let nextId = maxOdinId(vault) + 1;
+	// Each field costs two ids (the ModuleEffectField and its bool array).
+	let nextId = maxOdinId(tree) + 1;
 	const allocId = () => nextId++;
 	// The game draws a random shape out of each distribution; absent a choice the
 	// editor takes the first, which is one of the draws the game could make.
 	const chosen = (key: EffectFieldKey, fallback: EffectField | undefined) =>
 		key in fields ? fields[key] : fallback;
 
-	const node: OdinNode = {
+	return {
 		$type: MODULE_MEMENTO_TYPE,
 		$id: allocId(),
 		moduleDataId,
@@ -298,7 +307,11 @@ export function addModule(vault: OdinNode, moduleDataId: string, fields: NewModu
 		powerLevel: info?.powerLevel?.[1] ?? 1,
 		$types: { powerLevel: { e: EntryType.UnnamedInt } }
 	};
-	listItems(vault.modules as OdinValue).push(node);
+}
+
+/** Appends a freshly built module to the vault (see `newModuleNode`). */
+export function addModule(vault: OdinNode, moduleDataId: string, fields: NewModuleFields = {}): void {
+	listItems(vault.modules as OdinValue).push(newModuleNode(vault, moduleDataId, fields));
 }
 
 /** Removes the module at `index` from the vault's module list. */

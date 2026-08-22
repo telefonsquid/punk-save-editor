@@ -264,6 +264,34 @@ def resource_id(pptr) -> str | None:
     return ident if isinstance(ident, str) and ident else None
 
 
+def audio_database(assets: "PunkAssets") -> dict | None:
+    """The one AudioDatabase asset's fields, or None if the scan found none.
+    Shared: extract-ui-sounds reads the clips out of it, extract-module-info
+    resolves each module's `gridPlacementSfx` guid to the sfx *name* — names
+    are what survives an audio pass, guids are what the scenes store."""
+    for obj in assets.env.objects:
+        if obj.type.name != "MonoBehaviour":
+            continue
+        if assets.script_class(obj) != "AudioDatabase":
+            continue
+        try:
+            return obj.read(check_read=False).__dict__
+        except Exception:
+            continue
+    return None
+
+
+def module_type_name(pptr) -> str | None:
+    """The one identity a ModuleType has across the generated JSONs — its
+    displayName, falling back to the asset name — so module/slot compatibility
+    is a string comparison in the app. Must stay in step with module_type()
+    in extract-module-info.py, which names a module's own type the same way."""
+    d = read_fields(pptr)
+    if d is None:
+        return None
+    return d.get("displayName") or d.get("m_Name") or None
+
+
 def unity_color_rgb(color) -> tuple[int, int, int] | None:
     """A UnityEngine.Color (0-1 floats) as 0-255 RGB; alpha is dropped."""
     if color is None:
