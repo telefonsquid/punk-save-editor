@@ -10,6 +10,7 @@ Reverse-engineering notes and architecture for this editor. Start with the
 | [editor-internals.md](editor-internals.md) | How the SvelteKit app is wired: the `$state.raw` save-tree rule that saves depend on, the save/game/editor layer split, generated-data pipelines, and in-browser e2e testing. |
 | [migration.md](migration.md) | The game-update runbook: `bun run extract`, what every warning means, and the known blast radii of an update. |
 | [design.md](design.md) | The design system: the three game fonts and their pixel grids, the palette tokens, the game pixel `--u`, integer-scaled art, the shared `punk-*` utilities, the borrowed interface sounds, and the `.crt-screen` scroller traps. |
+| [grid-editor.md](grid-editor.md) | The visual module-grid editor: the game's grid model (clusters, power, validation, slot generation) as verified in the decompiled code, the sim/save/UI architecture, and the milestone plan. |
 
 **Golden rules** (each explained in the docs):
 
