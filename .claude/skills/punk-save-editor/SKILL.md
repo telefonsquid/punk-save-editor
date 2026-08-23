@@ -90,12 +90,13 @@ bun run check:data  # cross-check the generated JSONs without re-extracting
   simulation).
 - `src/lib/game/` — static game knowledge: `data.ts` (assets, names, module info/effects, slot
   types), `grid-rules.ts` (the module-grid simulation ported from the game — docs/grid-editor.md),
-  `module-stats.ts`, `rich-text.ts`, `pixel-icon.ts`, and the generated `*.json` (including
+  `module-stats.ts`, `rich-text.ts`, `pixel-icon.ts`, `grid-icons.ts` (the module grid's own pixel
+  art, extracted as SVG paths — docs/grid-editor.md), and the generated `*.json` (including
   `ui-sounds.json`, the game's own UI sounds).
 - `src/lib/sound.svelte.ts` — plays those sounds (`sound.play('click')`) and owns the switch that
   governs them. Sound follows the primitive, never the panel — see docs/design.md.
 - `src/lib/editor/` — `state.svelte.ts` (EditorState), `backup.svelte.ts` (BackupState: backups and
-  restores, as `editor.backups`), `grid.svelte.ts` (GridEditorState: the grid editor's carry, paint
+  restores, as `editor.backups`), `grid.svelte.ts` (GridEditorState: the grid editor's carry, slot
   brush, undo stack and derived simulation), `settings.svelte.ts` (the backup folder and the
   ask-on-load flag, one singleton because the footer outlives the editor), `inputs.ts` (raw-tree
   input handlers).
@@ -111,8 +112,8 @@ bun run check:data  # cross-check the generated JSONs without re-extracting
   docs/game-code.md; the saved library lives in `$lib/editor/custom-fields.svelte.ts`) +
   `ConnectionToggles` (a module's N/E/S/W cells, shared by the vault cards and the grid editor).
   `grid/` is the **module-grid editor** overlay: `GridEditor` (full-viewport dialog), `GridCanvas`
-  (pan/zoom board), `GridModuleTile`, `GridHoverCard`, `VaultDock`, `ModuleEditDialog` — the
-  feature's own doc is **docs/grid-editor.md**.
+  (pan/zoom board), `GridModuleTile`, `GridHoverCard`, `VaultDock`, `ModuleEditDialog`,
+  `PixelSprite` (the game's grid art) — the feature's own doc is **docs/grid-editor.md**.
 - `src/routes/+page.svelte` — composition only.
 - `scripts/` — `punklib.py` (shared extraction lib) + extractors; **`bun run extract`** regenerates
   everything and validates (`scripts/check-data.ts`). See docs/migration.md.

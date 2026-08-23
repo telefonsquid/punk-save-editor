@@ -8,7 +8,7 @@
 import { moduleInfo, type EffectField } from '$lib/game/data';
 import { EntryType, isNode } from './odin';
 import type { OdinNode, OdinPrimitiveArray, OdinValue } from './odin';
-import { isPrimitiveArray, listItems, maxOdinId, pushScalar } from './tree';
+import { isPrimitiveArray, listItems, maxOdinId, pushScalar, reidNode } from './tree';
 
 // ---------------------------------------------------------------------------
 // Ingredients
@@ -312,6 +312,19 @@ export function newModuleNode(
 		powerLevel: info?.powerLevel?.[1] ?? 1,
 		$types: { powerLevel: { e: EntryType.UnnamedInt } }
 	};
+}
+
+/**
+ * A duplicate of a module memento, its `$id`s allocated past `tree`'s highest
+ * so the copy can sit beside the original in the same file. Everything the
+ * original carries comes along — the rolled fields, the connections, the power
+ * level — which is the difference between copying a module and building the
+ * same one again.
+ */
+export function copyModuleNode(node: OdinNode, tree: OdinNode): OdinNode {
+	const copy = structuredClone(node);
+	reidNode(copy, tree);
+	return copy;
 }
 
 /** Appends a freshly built module to the vault (see `newModuleNode`). */

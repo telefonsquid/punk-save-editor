@@ -26,7 +26,10 @@ Rules that follow (details at the tokens in layout.css):
   8-bit HUD titles only. Anything set in the HUD face resets to
   `letter-spacing: normal` — `punk-hud-num` does this for number fields.
 - 000webfont hangs its capital low: pair `punk-cap` with the `--cap-fix`
-  bottom-padding recipe to centre a label in a control.
+  bottom-padding recipe to centre a label in a control. The same overhang is why
+  anything drawn *beside* such a label (a sprite in a glyph button) has to fall
+  by `--cap-drop` to share its centre line, and why a line of it centred in a box
+  has to rise by the same amount.
 - All three faces are `font-display: block` and preloaded by
   `$lib/editor/busy.ts` `loadFonts()` so nothing pops in late.
 
@@ -137,7 +140,7 @@ declares it in its own scoped block (`Section`'s `.is-plain`, the module card's
 ## The CRT screen
 
 The app scrolls inside `.crt-screen`, a fixed viewport-sized wrapper carrying
-the CRT `filter` — **not** the window. Three traps that follow:
+the CRT `filter` — **not** the window. Four traps that follow:
 
 - **Scroll code must target `.crt-screen`** (capture-phase listeners; the
   layout's `afterNavigate` resets it because SvelteKit only resets window
@@ -146,6 +149,12 @@ the CRT `filter` — **not** the window. Three traps that follow:
   block, so "fixed" elements scroll away with the content. Full-viewport
   overlays ride a zero-height `position: sticky` anchor instead
   (`LoadOverlay.svelte`), or live outside the wrapper like `ScrollBar`.
+- **The top layer escapes it.** A `<dialog>` renders outside the wrapper, so it
+  gets no filter of its own — fine for a card floating over a filtered page,
+  wrong for one that covers the screen. The grid editor takes its own copy of
+  `filter: url(#crt)` for that reason; any other full-screen dialog owes the
+  same. Keep such a copy viewport-sized: a page-tall filter buffer runs past
+  the browser's size cap and comes back as a blur.
 - The native scrollbar is hidden and `ScrollBar.svelte` draws an overlay one —
   WebView2/WebKitGTK would otherwise show a permanent grey gutter. Any *other*
   scroller in the app owes the same debt: a `Dialog` body hides its native bar

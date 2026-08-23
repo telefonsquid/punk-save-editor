@@ -1,214 +1,228 @@
 <script lang="ts">
 	import ItemIcon from '../ItemIcon.svelte';
+	import PixelSprite from './PixelSprite.svelte';
+	import {
+		BOOST_PIP,
+		GRID_CELL,
+		NOTCH,
+		NOTCH_LINKED,
+		centredIn,
+		moduleFrame
+	} from '$lib/game/grid-icons';
 	import { moduleCategory, moduleEffectsEntry, moduleInfo } from '$lib/game/data';
 	import { DIRECTIONS, type ConnectionSide, type GridModule } from '$lib/game/grid-rules';
 
 	// One module on the grid canvas, drawn the way the game's ModuleIconWidget
-	// draws it: a frame in the module's colour whose shape follows the category
-	// (the game gives each ModuleType its own background sprite), the item art,
-	// a stub per enabled connection edge — engaged when the neighbour connects
-	// back — the level and its boost chevrons on boostable modules, and the
-	// power badge under a main module. A module that is not both connected and
-	// powered draws at half opacity, exactly as the game fades it.
+	// draws it: the frame its shop category ships, in the module's colour; the
+	// item art; a notch per enabled connection edge, merging into one capsule
+	// across the seam when the neighbour connects back; a chevron per level
+	// above the base; and the power badge under a main module. A module that is
+	// not both connected and powered draws at half opacity, exactly as the game
+	// fades it. Every sprite here is the game's own (see grid-icons.ts).
+	// Nothing off the board touches anything, so a tile with no neighbours to
+	// speak of draws every enabled side as an open stub.
+	const NO_LINKS: Record<ConnectionSide, boolean> = {
+		north: false,
+		east: false,
+		south: false,
+		west: false
+	};
+
 	let {
 		module,
-		level,
-		dimmed,
-		links,
-		badge,
-		iconScale
+		level = 1,
+		dimmed = false,
+		links = NO_LINKS,
+		badge = null,
+		u
 	}: {
 		module: GridModule;
-		level: number;
+		level?: number;
 		/** Not connected-and-powered — the game's half-alpha state. */
-		dimmed: boolean;
-		/** Per side: the neighbour connects back (draws the engaged link bar). */
-		links: Record<ConnectionSide, boolean>;
+		dimmed?: boolean;
+		/** Per side: the neighbour connects back (draws the merged capsule). */
+		links?: Record<ConnectionSide, boolean>;
 		/** Main modules: attached cores vs the module's power level. */
-		badge: { cores: number; budget: number } | null;
-		iconScale: number;
+		badge?: { cores: number; budget: number } | null;
+		/** One game pixel, in screen pixels. The whole tile is drawn in it — the
+		 * item art included, so no caller can scale the frame and the icon apart. */
+		u: number;
 	} = $props();
 
+	// White is the game's "no colour of its own" — those modules wear the same
+	// neutral their notches do, rather than a frame brighter than their own art.
 	const color = $derived(moduleInfo(module.id)?.color ?? null);
-	const shape = $derived.by(() => {
-		const category = moduleCategory(module.id);
-		if (category === 'UPGRADES') return 'square';
-		if (category === 'POWER' || category === 'BOOSTERS') return 'round';
-		return 'octagon';
-	});
+	const tint = $derived(color && color.toLowerCase() !== '#ffffff' ? color : null); // palette-ok: compared against module-info's own value, never painted
+	const frame = $derived(moduleFrame(moduleCategory(module.id)));
 	const boostable = $derived(moduleEffectsEntry(module.id)?.canBeBoosted !== false);
+
+	// A notch sits against the cell edge it belongs to and centres on the other
+	// axis; the capsule is the same, twice as long, sitting astride the seam.
+	// Only the east and south sides draw one — the neighbour's copy would land
+	// on the identical pixels, and two half-transparent copies read brighter
+	// than a single one.
+	const across = Math.floor((GRID_CELL - NOTCH.w) / 2);
+	const far = GRID_CELL - NOTCH.h;
+	const seam = GRID_CELL - Math.floor(NOTCH_LINKED.h / 2);
+	const OWNS_LINK: Record<ConnectionSide, boolean> = {
+		north: false,
+		east: true,
+		south: true,
+		west: false
+	};
 </script>
 
-<div class="tile" class:is-dimmed={dimmed} style:--module-color={color}>
-	<!-- A border cannot follow a clip-path (the diagonals would simply vanish),
-	     so the frame is two layers: the outer painted in the module's colour and
-	     an inset inner one painted back to void, both wearing the shape. -->
-	<div class="frame is-{shape}">
-		<div class="frame-fill is-{shape}">
-			<ItemIcon id={module.id} scale={iconScale} />
-		</div>
+<div
+	class="tile"
+	class:is-dimmed={dimmed}
+	style:--u="{u}px"
+	style:--module-color={tint}
+	style:--frame-inset={centredIn(frame)}
+	style:--across={across}
+	style:--far={far}
+	style:--seam={seam}
+>
+	<div class="body">
+		<PixelSprite sprite={frame} class="frame-art" />
+		<span class="art"><ItemIcon id={module.id} scale={u} /></span>
+
+		{#if boostable && level > 1}
+			<span class="pips" aria-hidden="true">
+				{#each { length: level - 1 }, i (i)}
+					<PixelSprite sprite={BOOST_PIP} />
+				{/each}
+			</span>
+		{/if}
+
+		{#if badge}
+			<span class="badge punk-hud-num" class:is-over={badge.cores > badge.budget}>
+				{badge.cores}/{badge.budget}
+			</span>
+		{/if}
 	</div>
-	{#if boostable && level > 1}
-		<span class="level punk-hud-num">{level}</span>
-		<span class="pips" aria-hidden="true">
-			<!-- One chevron per level above the base, the game's upgrade pips. -->
-			{#each { length: level - 1 }, i (i)}
-				<svg viewBox="0 0 8 5" class="pip"><path d="M0 5 4 0 8 5 6 5 4 2 2 5Z" /></svg>
-			{/each}
-		</span>
-	{/if}
+
 	{#each DIRECTIONS as dir (dir.side)}
 		{#if module[dir.side]}
-			<span class="stub stub-{dir.side}" class:is-linked={links[dir.side]}></span>
-			{#if links[dir.side]}
-				<span class="link link-{dir.side}"></span>
+			{#if !links[dir.side]}
+				<PixelSprite sprite={NOTCH} class="joint stub-{dir.side}" />
+			{:else if OWNS_LINK[dir.side]}
+				<PixelSprite
+					sprite={NOTCH_LINKED}
+					quarterTurn={dir.side === 'east'}
+					class="joint link-{dir.side}"
+				/>
 			{/if}
 		{/if}
 	{/each}
-	{#if badge}
-		<span class="badge punk-hud-num" class:is-over={badge.cores > badge.budget}>
-			{badge.cores}/{badge.budget}
-		</span>
-	{/if}
 </div>
 
 <style>
-	/* The cell is 28u, the tile sits 2u inside it. Everything here counts in the
-	   canvas's --u so the whole thing rescales with the zoom level. */
+	/* The tile is the whole cell: the frame centres in it and every notch is
+	   placed against the cell's edges, so all four shapes hang their connections
+	   in the same places. Everything counts in the canvas's --u, so the tile
+	   rescales with the zoom level. */
 	.tile {
 		position: absolute;
-		inset: calc(2 * var(--u));
-		color: var(--module-color, var(--color-ink));
+		inset: 0;
+		color: var(--module-color, var(--color-joint));
 	}
-	.is-dimmed {
+
+	/* Everything except the connections. They fade separately so the tile itself
+	   never becomes a stacking context — one would trap the joints below the
+	   neighbouring tiles they have to reach across. */
+	.body {
+		position: absolute;
+		inset: 0;
+	}
+	.is-dimmed .body,
+	.is-dimmed :global(.joint) {
 		opacity: 0.5;
 	}
 
-	.frame {
-		width: 100%;
-		height: 100%;
-		padding: var(--u);
-		background-color: currentColor;
+	.tile :global(.frame-art) {
+		position: absolute;
+		top: calc(var(--frame-inset) * var(--u));
+		left: calc(var(--frame-inset) * var(--u));
 	}
-	.frame-fill {
+
+	/* Over the frame's black interior, which the sprite paints itself. It rides a
+	   pixel above centre, leaving the lower half of the frame to the chevrons and
+	   the power badge. */
+	.art {
+		position: absolute;
+		inset: 0;
 		display: flex;
 		align-items: center;
 		justify-content: center;
-		width: 100%;
-		height: 100%;
-		background-color: var(--color-void);
-	}
-	.is-octagon {
-		clip-path: polygon(
-			25% 0,
-			75% 0,
-			100% 25%,
-			100% 75%,
-			75% 100%,
-			25% 100%,
-			0 75%,
-			0 25%
-		);
-	}
-	.is-round {
-		clip-path: circle(50%);
-	}
-	.is-square {
-		clip-path: none;
+		transform: translateY(calc(-1 * var(--u)));
 	}
 
-	.level {
+	/* Connections draw over every tile, not only their own — a capsule reaches
+	   half into the neighbour's cell and must not vanish under it. */
+	.tile :global(.joint) {
 		position: absolute;
-		bottom: calc(-1 * var(--u));
+		z-index: 1;
+	}
+	/* An open connection wears its module's colour; once the neighbour answers
+	   it, the pair they share goes neutral. */
+	.tile :global(.link-south),
+	.tile :global(.link-east) {
+		color: var(--color-joint);
+	}
+	.tile :global(.stub-north) {
+		top: 0;
+		left: calc(var(--across) * var(--u));
+	}
+	.tile :global(.stub-south) {
+		top: calc(var(--far) * var(--u));
+		left: calc(var(--across) * var(--u));
+	}
+	.tile :global(.stub-east) {
+		top: calc(var(--across) * var(--u));
+		left: calc(var(--far) * var(--u));
+	}
+	.tile :global(.stub-west) {
+		top: calc(var(--across) * var(--u));
 		left: 0;
-		/* 10px at the default zoom, snapped to the HUD face's 5px grid elsewhere. */
-		font-size: round(calc(10 / 3 * var(--u)), 5px);
-		line-height: 1;
-		color: currentColor;
-		text-shadow: var(--u) var(--u) 0 var(--color-void);
+	}
+	.tile :global(.link-south) {
+		top: calc(var(--seam) * var(--u));
+		left: calc(var(--across) * var(--u));
+	}
+	.tile :global(.link-east) {
+		top: calc(var(--across) * var(--u));
+		left: calc(var(--seam) * var(--u));
 	}
 
+	/* The +1 chevrons stack up from the frame's bottom-right corner, in the
+	   booster's own green — the module is boosted, and that is who did it. */
 	.pips {
 		position: absolute;
-		right: calc(-1 * var(--u));
-		bottom: calc(-1 * var(--u));
+		right: calc(5 * var(--u));
+		bottom: calc(6 * var(--u));
 		display: flex;
 		flex-direction: column-reverse;
-	}
-	.pip {
-		width: calc(3 * var(--u));
-		height: calc(2 * var(--u));
-		fill: var(--color-regen);
-	}
-
-	/* A stub is the open ring the game puts on every enabled connection edge;
-	   the engaged state fills it and adds the short bar reaching the neighbour. */
-	.stub {
-		position: absolute;
-		width: calc(4 * var(--u));
-		height: calc(4 * var(--u));
-		background-color: var(--color-void);
-		border: var(--u) solid currentColor;
-		border-radius: 50%;
-	}
-	.is-linked {
-		background-color: currentColor;
-	}
-	.stub-north {
-		top: calc(-2 * var(--u));
-		left: calc(50% - 2 * var(--u));
-	}
-	.stub-south {
-		bottom: calc(-2 * var(--u));
-		left: calc(50% - 2 * var(--u));
-	}
-	.stub-east {
-		right: calc(-2 * var(--u));
-		top: calc(50% - 2 * var(--u));
-	}
-	.stub-west {
-		left: calc(-2 * var(--u));
-		top: calc(50% - 2 * var(--u));
-	}
-
-	/* The engaged bar crosses the 2u gap to the cell edge; the neighbour's own
-	   bar covers the other half of the gap between the two tiles. */
-	.link {
-		position: absolute;
-		background-color: currentColor;
-	}
-	.link-north {
-		top: calc(-4 * var(--u));
-		left: calc(50% - var(--u));
-		width: calc(2 * var(--u));
-		height: calc(2 * var(--u));
-	}
-	.link-south {
-		bottom: calc(-4 * var(--u));
-		left: calc(50% - var(--u));
-		width: calc(2 * var(--u));
-		height: calc(2 * var(--u));
-	}
-	.link-east {
-		right: calc(-4 * var(--u));
-		top: calc(50% - var(--u));
-		width: calc(2 * var(--u));
-		height: calc(2 * var(--u));
-	}
-	.link-west {
-		left: calc(-4 * var(--u));
-		top: calc(50% - var(--u));
-		width: calc(2 * var(--u));
-		height: calc(2 * var(--u));
+		color: var(--color-boost);
 	}
 
 	/* The n/max power badge under a main module, in the game's teal — red once
-	   more cores are attached than the module can hold. */
+	   more cores are attached than the module can hold.
+
+	   The bottom edge of the cell belongs to the south notch, which sits from 13
+	   game pixels in: the badge has to end before it, at every zoom. The game's
+	   own runs from -1.5 to 12.9 across the cell and stops 1.7 above the floor
+	   (infinite-grid-full.png), so this one hangs two pixels out on the left, two
+	   above the floor, and carries no padding beside its numbers — the digits'
+	   own bearings are the gap. */
 	.badge {
 		position: absolute;
-		bottom: calc(-2 * var(--u));
-		left: calc(-1 * var(--u));
-		padding: var(--u) calc(1.5 * var(--u));
+		/* Over the connections rather than under them: they carry a z-index to
+		   reach across the neighbouring tiles, and one of them was cutting the
+		   badge's corner off. */
+		z-index: 2;
+		bottom: calc(2 * var(--u));
+		left: calc(-2 * var(--u));
+		padding: calc(0.5 * var(--u)) 0;
 		/* 10px at the default zoom, snapped to the HUD face's 5px grid elsewhere. */
 		font-size: round(calc(10 / 3 * var(--u)), 5px);
 		line-height: 1;

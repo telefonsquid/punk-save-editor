@@ -1,12 +1,13 @@
 <script lang="ts">
 	import CloseBadge from '../CloseBadge.svelte';
-	import ItemIcon from '../ItemIcon.svelte';
 	import ScrollBar from '../ScrollBar.svelte';
 	import EditChip from './EditChip.svelte';
 	import GridHoverCard from './GridHoverCard.svelte';
+	import GridModuleTile from './GridModuleTile.svelte';
 	import type { GridEditorState } from '$lib/editor/grid.svelte';
 	import type { EditorState } from '$lib/editor/state.svelte';
-	import { displayName, moduleInfo } from '$lib/game/data';
+	import { displayName } from '$lib/game/data';
+	import { GRID_CELL } from '$lib/game/grid-icons';
 	import { groupModules } from '$lib/game/module-groups';
 	import type { OdinNode } from '$lib/save/odin';
 	import { getModules } from '$lib/save/vault';
@@ -38,10 +39,17 @@
 	const rows = $derived.by(() => {
 		if (editor.version < 0 || !editor.slot) return [];
 		return getModules(editor.slot.vault)
-			.map((m) => ({ node: m, id: m.moduleDataId }))
+			.map((m) => ({ node: m, id: m.moduleDataId as string | null, module: readModule(m) }))
 			.filter(({ node }) => !(grid.carried?.source === 'vault' && grid.carried.node === node));
 	});
 	const groups = $derived(groupModules(rows));
+
+	// The dock draws the canvas's own tiles at the canvas's own default zoom, so
+	// a module reads here exactly as it does on the board — one `u` feeds the
+	// whole tile, art included. Three of them across is what the dock's width
+	// allows at that size.
+	const VAULT_U = 3;
+	const VAULT_COLUMNS = 3;
 
 	const hoveredModule = $derived(hovered ? readModule(hovered.node) : null);
 
@@ -80,13 +88,16 @@
 			{/if}
 			{#each groups as group (group.name)}
 				<p class="punk-group-title">{group.name}</p>
-				<div class="tile-grid">
+				<div
+					class="tile-grid"
+					style:--cell="{GRID_CELL * VAULT_U}px"
+					style:--columns={VAULT_COLUMNS}
+				>
 					{#each group.items as row (row.node)}
 						<div class="tile-wrap" role="presentation" onpointerenter={(e) => hoverTile(row.node, e)}>
 							<button
 								type="button"
 								class="tile"
-								style:--module-color={moduleInfo(row.id)?.color}
 								aria-label="Pick up {displayName(row.id)}"
 								onpointerenter={() => sound.play('hover')}
 								onclick={(e) => {
@@ -94,7 +105,7 @@
 									clickTile(row.node);
 								}}
 							>
-								<ItemIcon id={row.id} scale={2} />
+								<GridModuleTile module={row.module} u={VAULT_U} />
 							</button>
 							{#if !grid.carried}
 								<EditChip
@@ -116,6 +127,22 @@
 		<ScrollBar scroller={body} contained />
 	</div>
 
+	<footer class="dock-foot">
+		<!-- The inverted face of game-parity validation: unchecked (the default)
+		     refuses rule-breaking drops exactly as the game does; checked, drops
+		     always land and the canvas marks every broken rule instead — safe,
+		     because the game never re-checks a loaded save. -->
+		<label class="rules-toggle">
+			<input
+				type="checkbox"
+				class="punk-check"
+				checked={!grid.strict}
+				onchange={(e) => (grid.strict = !e.currentTarget.checked)}
+			/>
+			Ignore placement rules
+		</label>
+	</footer>
+
 	{#if hovered && hoveredModule && !grid.carried}
 		<div class="dock-card" style:top="{hovered.top}px">
 			<GridHoverCard module={hoveredModule} level={1} badge={null} />
@@ -128,14 +155,20 @@
 		position: relative;
 		display: flex;
 		flex-direction: column;
-		width: 19rem;
+		/* Wide enough for the footer's toggle to stay on one line — the tile grid
+		   would happily be narrower. */
+		width: 22rem;
 		flex: none;
 		border-left: 2px solid var(--color-edge-dim);
 		background-color: var(--color-card);
 	}
-	/* Carrying, the whole dock reads as the place a module can be filed away. */
+	/* Carrying, the whole dock reads as the place a module can be filed away —
+	   and lights up once the module is actually over it. */
 	.dock.is-target {
 		border-left-color: var(--color-accent);
+	}
+	.dock.is-target:hover {
+		background-color: color-mix(in srgb, var(--color-accent) 10%, var(--color-card));
 	}
 
 	.dock-head {
@@ -168,8 +201,9 @@
 
 	.tile-grid {
 		display: grid;
-		grid-template-columns: repeat(4, 1fr);
-		gap: 0.5rem;
+		grid-template-columns: repeat(var(--columns), var(--cell));
+		justify-content: space-between;
+		gap: 0.25rem;
 		margin: 0.5rem 0 1rem;
 	}
 
@@ -178,18 +212,15 @@
 	}
 
 	.tile {
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		width: 100%;
-		aspect-ratio: 1;
-		background-color: var(--color-void);
-		border: 2px solid
-			color-mix(in srgb, var(--module-color, var(--color-edge)) 55%, var(--color-void));
+		position: relative;
+		width: var(--cell);
+		height: var(--cell);
 		cursor: pointer;
 	}
+	/* The frame already wears the module's colour, so hovering draws the box the
+	   game's vault puts around the tile under the cursor. */
 	.tile:hover {
-		border-color: var(--module-color, var(--color-accent));
+		outline: 2px solid var(--color-edge);
 	}
 
 	/* Both hover affordances sit on the tile's top corners, clear of its centre —
@@ -212,6 +243,26 @@
 	}
 	.tile-wrap:hover :global(.tile-remove) {
 		display: block;
+	}
+
+	.dock-foot {
+		display: flex;
+		justify-content: center;
+		flex: none;
+		padding: 0.75rem 1rem;
+		border-top: 2px solid var(--color-edge-dim);
+	}
+
+	.rules-toggle {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.5rem;
+		white-space: nowrap;
+		font-size: var(--text-ui-xs);
+		line-height: var(--text-ui-xs--line-height);
+		text-transform: uppercase;
+		color: var(--color-muted);
+		cursor: pointer;
 	}
 
 	/* The info card floats out over the canvas, beside the hovered tile. */

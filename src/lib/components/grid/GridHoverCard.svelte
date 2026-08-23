@@ -3,11 +3,11 @@
 	import ItemIcon from '../ItemIcon.svelte';
 	import ModuleStatLine from '../ModuleStatLine.svelte';
 	import RichText from '../RichText.svelte';
-	import { displayName, moduleCategory } from '$lib/game/data';
+	import { displayName } from '$lib/game/data';
 	import { moduleCard } from '$lib/game/module-groups';
 	import type { GridModule } from '$lib/game/grid-rules';
 
-	// The game's hover popup (HoveredModuleInfo): category, coloured name, boost
+	// The game's hover popup (HoveredModuleInfo): the coloured name, boost
 	// chevrons, description, the module's *rolled* effect field, stats — and the
 	// attached-cores line under a main module. Read-only; editing opens the card
 	// editor dialog instead.
@@ -30,13 +30,12 @@
 	<header class="flex items-center gap-3">
 		<ItemIcon id={module.id} scale={2} />
 		<div class="min-w-0">
-			<p class="punk-group-title">{moduleCategory(module.id)}</p>
 			<h4
 				class="punk-panel-title punk-title-shadow card-name"
 				style:color={card.color ?? undefined}
 			>
 				{displayName(module.id)}
-				{#if level > 1}<span class="boosts text-regen">+{level - 1}</span>{/if}
+				{#if level > 1}<span class="boosts">+{level - 1}</span>{/if}
 			</h4>
 		</div>
 	</header>
@@ -77,9 +76,11 @@
 		overflow-wrap: anywhere;
 	}
 
+	/* The same green the tile's chevrons wear — one boost, told twice. */
 	.boosts {
 		margin-left: 0.5em;
 		font-size: var(--text-hud-xs);
+		color: var(--color-boost);
 	}
 
 	.card-stats {

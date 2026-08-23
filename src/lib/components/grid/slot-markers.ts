@@ -6,15 +6,22 @@
  */
 
 export type SlotMarker =
-	/** `invalid` is the danger ✕, `boost` the amber + — both suppress the green
-	 * boost dot, which would fight the glyph for the same cell. */
+	/** The two rings the grid's shader draws on a cell. Both replace the empty
+	 * ring rather than sitting on it, and both suppress a booster's marker,
+	 * which would fight them for the same middle of the same cell. */
 	| { kind: 'invalid' | 'boost' }
-	/** An empty main slot: the game's labelled octagon placeholder. */
+	/** An empty special slot: the game's octagon placeholder, over three letters
+	 * naming what belongs in it. */
 	| { kind: 'main'; label: string };
 
+// Weapon, Active and Embedded share one octagon and differ only in the three
+// letters on it — the game's own gadget slots read GDT in
+// static/design-references/infinite-grid-full.png. Embedded's never shows: the
+// ship module sits on that cell for the whole run.
 export const SLOT_MARKERS: Record<string, SlotMarker> = {
 	Invalid: { kind: 'invalid' },
 	LevelUp: { kind: 'boost' },
 	Weapon: { kind: 'main', label: 'WPN' },
-	Active: { kind: 'main', label: 'GDT' }
+	Active: { kind: 'main', label: 'GDT' },
+	Embedded: { kind: 'main', label: 'SHP' }
 };

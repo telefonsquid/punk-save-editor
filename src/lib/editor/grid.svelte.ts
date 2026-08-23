@@ -50,7 +50,12 @@ import {
 } from '$lib/save/grid';
 import { dictPairs } from '$lib/save/tree';
 import { moduleInfo } from '$lib/game/data';
-import { getModuleNodes, newModuleNode, type NewModuleFields } from '$lib/save/vault';
+import {
+	copyModuleNode,
+	getModuleNodes,
+	newModuleNode,
+	type NewModuleFields
+} from '$lib/save/vault';
 import { sound, soundForSfx } from '$lib/sound.svelte';
 import type { EditorState } from './state.svelte';
 
@@ -79,10 +84,9 @@ export class GridEditorState {
 	/** Game-parity validation: a drop breaking any rule is refused. Off, the
 	 * drop lands anyway and the errors stay marked on the canvas. */
 	strict = $state(true);
-	/** 'paint' turns the canvas into a slot-type brush instead of module moves. */
-	mode = $state<'modules' | 'paint'>('modules');
-	/** The slot type the paint mode's left button lays down. */
-	brush = $state<'LevelUp' | 'Invalid'>('LevelUp');
+	/** An armed slot brush: the next canvas click paints this type onto one
+	 * cell, the way an added module rides the cursor until dropped. */
+	slotBrush = $state<'LevelUp' | 'Invalid' | 'Normal' | null>(null);
 	carried = $state.raw<Carried | null>(null);
 	/** A refused drop's errors, shown briefly the way the game flashes them. */
 	flash = $state.raw<{ errors: GridError[]; message: string } | null>(null);
@@ -131,6 +135,7 @@ export class GridEditorState {
 		if (this.carried || key === SHIP_CELL) return;
 		const module = this.view?.modules.get(key);
 		if (!module) return;
+		this.slotBrush = null;
 		this.carried = { node: module.node, module, source: 'grid', originKey: key };
 		sound.play('select');
 	};
@@ -138,6 +143,7 @@ export class GridEditorState {
 	/** Picks a vault module up (the vault dock's click). */
 	pickUpVault = (node: OdinNode): void => {
 		if (this.carried) return;
+		this.slotBrush = null;
 		this.carried = { node, module: readModule(node), source: 'vault' };
 		sound.play('select');
 	};
@@ -147,7 +153,7 @@ export class GridEditorState {
 		const entities = this.#editor.slot?.files.entities;
 		if (this.carried || !entities) return;
 		const node = newModuleNode(entities, id, fields);
-		this.mode = 'modules'; // a carry means nothing to the paint brush
+		this.slotBrush = null; // the cursor carries one thing at a time
 		this.carried = { node, module: readModule(node), source: 'new' };
 		sound.play('select');
 	};
@@ -179,18 +185,21 @@ export class GridEditorState {
 	/**
 	 * Commits the carry onto a grid cell — the game's `OnModuleDropped` +
 	 * `MoveToGrid`. A module already at the target is vaulted and immediately
-	 * becomes the new carry.
+	 * becomes the new carry. `keep` is the shift key: the module lands and a
+	 * copy of it takes its place on the cursor, so one pick-up fills a whole row.
 	 */
-	drop = (target: CellKey): void => {
+	drop = (target: CellKey, keep = false): void => {
 		const carried = this.carried;
 		const slot = this.#editor.slot;
 		const owner = this.owner;
 		if (!carried || !slot || !owner) return;
 
-		// Dropping back where it was picked up ends the carry, nothing moves.
+		// Dropping back where it was picked up ends the carry, nothing moves —
+		// shift still gets its copy, since the module did land on that cell.
 		if (carried.source === 'grid' && target === carried.originKey) {
 			this.carried = null;
 			this.#placeSound(carried.module.id);
+			if (keep) this.#carryCopy(carried.node);
 			return;
 		}
 
@@ -250,7 +259,18 @@ export class GridEditorState {
 			? { node: displaced, module: readModule(displaced), source: 'vault' }
 			: null;
 		this.#placeSound(carried.module.id);
+		// A displaced module owns the cursor now — shift does not get to jump it.
+		if (keep && !displaced) this.#carryCopy(node);
 	};
+
+	/** Hands the cursor a copy of a module that has just landed. Copied after
+	 * the drop, so the copy's ids are allocated past the placed original's. */
+	#carryCopy(node: OdinNode): void {
+		const entities = this.#editor.slot?.files.entities;
+		if (!entities) return;
+		const copy = copyModuleNode(node, entities);
+		this.carried = { node: copy, module: readModule(copy), source: 'new' };
+	}
 
 	/**
 	 * Commits the carry into the vault — the dock as a drop target. A module
@@ -353,54 +373,45 @@ export class GridEditorState {
 
 	// --- slot painting -------------------------------------------------------
 
-	/** Enters or leaves paint mode; a live carry has no meaning there. */
-	setMode = (mode: 'modules' | 'paint'): void => {
+	/** Arms the brush, or disarms it when its button is clicked again; a live
+	 * carry yields — the cursor holds one thing at a time. */
+	armBrush = (type: 'LevelUp' | 'Invalid' | 'Normal'): void => {
 		if (this.carried) this.cancelCarry();
-		this.mode = mode;
+		this.slotBrush = this.slotBrush === type ? null : type;
 	};
 
-	#stroke: Record<CellKey, { before: string | null; after: string | null }> | null = null;
-
-	/** Starts collecting one paint stroke; `endStroke` files it as one undo. */
-	beginStroke = (): void => {
-		this.#stroke = {};
+	disarmBrush = (): void => {
+		this.slotBrush = null;
 	};
 
 	/**
-	 * Paints one cell with the brush (or back to normal, the right button's
-	 * eraser). The six main slots are the grid's skeleton and stay untouchable,
-	 * exactly as `RandomizeSlots` clears around them.
+	 * Paints the armed slot type onto one cell and disarms — a placement like
+	 * an added module's, not a drag stroke. `keep` is the shift key: the brush
+	 * stays armed for the next cell. The six main slots are the grid's skeleton
+	 * and refuse the brush (it stays armed for another try), exactly as
+	 * `RandomizeSlots` clears around them.
 	 */
-	paint = (key: CellKey, erase = false): void => {
+	paintOnce = (key: CellKey, keep = false): void => {
 		const owner = this.owner;
-		if (!owner || isMainCell(key)) return;
-		const next = erase ? null : this.brush;
-		const current = this.view?.slotTypes.get(key) ?? null;
-		if (current === next) return;
+		const type = this.slotBrush;
+		if (!owner || !type || isMainCell(key)) return;
+		const after = type === 'Normal' ? null : type;
+		const before = this.view?.slotTypes.get(key) ?? null;
+		if (!keep) this.slotBrush = null;
+		if (before === after) return;
 		const { x, y } = parseCell(key);
-		const before = setSlotTypeAt(owner.grid, x, y, next);
-		if (this.#stroke) {
-			const entry = (this.#stroke[key] ??= { before, after: next });
-			entry.after = next;
-		}
-		this.#editor.touch('entities');
-	};
-
-	endStroke = (): void => {
-		const stroke = this.#stroke;
-		this.#stroke = null;
-		const entries = stroke ? Object.entries(stroke) : [];
-		const grid = this.owner?.grid;
-		if (entries.length === 0 || !grid) return;
-		const apply = (side: 'before' | 'after') => {
-			for (const [key, change] of entries) {
-				const { x, y } = parseCell(key);
-				setSlotTypeAt(grid, x, y, change[side]);
+		const grid = owner.grid;
+		this.#perform({
+			redo: () => {
+				setSlotTypeAt(grid, x, y, after);
+				this.#editor.touch('entities');
+			},
+			undo: () => {
+				setSlotTypeAt(grid, x, y, before);
+				this.#editor.touch('entities');
 			}
-			this.#editor.touch('entities');
-		};
-		// The stroke already painted the cells, so it is recorded, not re-run.
-		this.#record({ redo: () => apply('after'), undo: () => apply('before') });
+		});
+		sound.play('close');
 	};
 
 	/** Rerolls the generated cells with the game's own algorithm. */

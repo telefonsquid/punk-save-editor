@@ -3,6 +3,15 @@
 	import EditChip from './EditChip.svelte';
 	import GridHoverCard from './GridHoverCard.svelte';
 	import GridModuleTile from './GridModuleTile.svelte';
+	import PixelSprite from './PixelSprite.svelte';
+	import {
+		GRID_CELL,
+		SLOT_BLOCKED,
+		SLOT_BOOST,
+		SLOT_EMPTY,
+		SLOT_SPECIAL,
+		centredIn
+	} from '$lib/game/grid-icons';
 	import { SLOT_MARKERS, type SlotMarker } from './slot-markers';
 	import type { GridEditorState } from '$lib/editor/grid.svelte';
 	import { displayName } from '$lib/game/data';
@@ -17,21 +26,35 @@
 
 	let {
 		grid,
+		cursorX,
+		cursorY,
 		onedit
 	}: {
 		grid: GridEditorState;
+		/** Where the pointer is on screen — a carried module hangs off it. */
+		cursorX: number;
+		cursorY: number;
 		/** The hovered module's EDIT chip was clicked. */
 		onedit?: (key: CellKey) => void;
 	} = $props();
 
-	// Zoom is a local game pixel: cells are 28u, so stepping u rescales the whole
-	// board, and the item art rides one integer behind it (24px sprites at 1x/2x/3x
-	// in a 56/84/112px cell) so it never leaves the pixel grid.
+	// Zoom is a local game pixel: a cell is GRID_CELL of them, so stepping u
+	// rescales the whole board. The 24px item sprites scale by the same step, so
+	// they stay 24 game pixels inside a 34-pixel cell, as in the game.
 	const U_LEVELS = [2, 3, 4];
 	let zoom = $state(1);
 	const u = $derived(U_LEVELS[zoom]);
-	const cell = $derived(28 * u);
-	const iconScale = $derived(u - 1);
+	const cell = $derived(GRID_CELL * u);
+
+	// The empty-cell ring, tiled as a mask over one colour rather than drawn per
+	// cell — cheap at any pan distance, and the colour stays a palette token
+	// because a mask only reads alpha.
+	const dotMask = `url("data:image/svg+xml,${encodeURIComponent(
+		`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${GRID_CELL} ${GRID_CELL}">` +
+			`<g transform="translate(${centredIn(SLOT_EMPTY)} ${centredIn(SLOT_EMPTY)})">` +
+			SLOT_EMPTY.layers.map((l) => `<path d="${l.d}"/>`).join('') +
+			`</g></svg>`
+	)}")`;
 
 	let viewport = $state<HTMLElement | null>(null);
 	let width = $state(0);
@@ -48,14 +71,18 @@
 		panY = height / 2 + (y + 0.5) * cell;
 	}
 
-	// Open where the game opens: two cells below the ship slot. Runs once the
-	// dialog has laid the canvas out (it mounts inside a closed <dialog>, so the
-	// first measurable width arrives a beat after mount). The flag is plain on
-	// purpose — nothing renders it, and the effect only touches the pan state.
+	// Where the game opens: two cells below the ship slot, so the weapon row and
+	// the gadget row both sit on screen. The Center button goes back to it.
+	const HOME = { x: 50, y: 48 };
+
+	// Runs once the dialog has laid the canvas out (it mounts inside a closed
+	// <dialog>, so the first measurable width arrives a beat after mount). The
+	// flag is plain on purpose — nothing renders it, and the effect only touches
+	// the pan state.
 	let centered = false;
 	$effect(() => {
 		if (!centered && width > 0) {
-			centerOn(50, 48);
+			centerOn(HOME.x, HOME.y);
 			centered = true;
 		}
 	});
@@ -71,10 +98,6 @@
 	let downY = 0;
 	let dragMoved = false;
 
-	// A paint stroke: left lays the brush down, right erases; both drag.
-	let painting = $state(false);
-	let paintErase = false;
-
 	function cellAt(e: PointerEvent): CellKey | null {
 		if (!viewport) return null;
 		const rect = viewport.getBoundingClientRect();
@@ -84,15 +107,9 @@
 	}
 
 	function onpointerdown(e: PointerEvent) {
-		if (grid.mode === 'paint' && (e.button === 0 || e.button === 2)) {
-			painting = true;
-			paintErase = e.button === 2;
-			grid.beginStroke();
-			const key = cellAt(e);
-			if (key) grid.paint(key, paintErase);
-			viewport?.setPointerCapture(e.pointerId);
-			return;
-		}
+		// The zoom buttons sit on the viewport — capturing their pointer would
+		// retarget the pointerup and eat their click.
+		if ((e.target as Element).closest('button')) return;
 		if (e.button !== 0 && e.button !== 1) return;
 		dragging = true;
 		dragMoved = false;
@@ -109,22 +126,18 @@
 			lastY = e.clientY;
 			if (Math.abs(e.clientX - downX) + Math.abs(e.clientY - downY) > 5) dragMoved = true;
 		}
-		const key = cellAt(e);
-		grid.hovered = key;
-		if (painting && key) grid.paint(key, paintErase);
+		grid.hovered = cellAt(e);
 	}
 
 	function onpointerup(e: PointerEvent) {
-		if (painting) {
-			painting = false;
-			grid.endStroke();
-			return;
-		}
 		if (!dragging) return;
 		dragging = false;
-		if (e.button !== 0 || dragMoved || !grid.hovered || grid.mode !== 'modules') return;
-		// The game's click: carrying drops, a module underneath picks up.
-		if (grid.carried) grid.drop(grid.hovered);
+		if (e.button !== 0 || dragMoved || !grid.hovered) return;
+		// The game's click: an armed brush paints its one cell, carrying drops,
+		// a module underneath picks up. Shift places a copy — the brush stays
+		// armed, a dropped module leaves an identical one on the cursor.
+		if (grid.slotBrush) grid.paintOnce(grid.hovered, e.shiftKey);
+		else if (grid.carried) grid.drop(grid.hovered, e.shiftKey);
 		else if (grid.view?.modules.has(grid.hovered)) grid.pickUp(grid.hovered);
 	}
 
@@ -132,31 +145,30 @@
 		grid.hovered = null;
 	}
 
-	// Right-click, as in game: cancels a carry, otherwise unequips to the vault.
-	// In paint mode the right button is the eraser stroke handled above.
+	// Right-click, as in game: cancels a carry (or the armed brush), otherwise
+	// unequips to the vault.
 	function oncontextmenu(e: MouseEvent) {
 		e.preventDefault();
-		if (grid.mode === 'paint') return;
-		if (grid.carried) grid.cancelCarry();
+		if (grid.slotBrush) grid.disarmBrush();
+		else if (grid.carried) grid.cancelCarry();
 		else if (grid.hovered && grid.view?.modules.has(grid.hovered)) grid.unequip(grid.hovered);
 	}
 
-	/** Steps the zoom, keeping the point under the cursor (or the centre) fixed. */
-	function setZoom(index: number, e?: WheelEvent) {
+	// Steps the zoom around the middle of the viewport — whatever was in front of
+	// you stays in front of you, wheel or button. Anchoring on the cursor instead
+	// walks the board off screen over a few steps.
+	function setZoom(index: number) {
 		const next = Math.max(0, Math.min(U_LEVELS.length - 1, index));
-		if (next === zoom || !viewport) return;
-		const rect = viewport.getBoundingClientRect();
-		const mx = e ? e.clientX - rect.left : width / 2;
-		const my = e ? e.clientY - rect.top : height / 2;
-		const k = (28 * U_LEVELS[next]) / cell;
-		panX = mx - (mx - panX) * k;
-		panY = my - (my - panY) * k;
+		if (next === zoom) return;
+		const k = U_LEVELS[next] / u;
+		panX = width / 2 - (width / 2 - panX) * k;
+		panY = height / 2 - (height / 2 - panY) * k;
 		zoom = next;
 	}
 
 	function onwheel(e: WheelEvent) {
 		e.preventDefault();
-		setZoom(zoom + (e.deltaY < 0 ? 1 : -1), e);
+		setZoom(zoom + (e.deltaY < 0 ? 1 : -1));
 	}
 
 	// --- render lists, all rebuilt from the snapshot on every edit ---------------
@@ -177,7 +189,8 @@
 		return out;
 	});
 
-	// Cells a powered booster's field reaches — the game tints their dots green.
+	// Cells a powered booster's field reaches. They mean what a level-up slot
+	// means, so they wear the same marker in place of the empty-cell ring.
 	const boosted = $derived.by(() => {
 		const view = grid.view;
 		const sim = grid.sim;
@@ -297,12 +310,6 @@
 		};
 	});
 
-	const NO_LINKS: Record<ConnectionSide, boolean> = {
-		north: false,
-		east: false,
-		south: false,
-		west: false
-	};
 </script>
 
 <div
@@ -311,9 +318,10 @@
 	bind:clientHeight={height}
 	class="viewport"
 	class:is-dragging={dragging}
-	style:--u="{u}px"
-	style:background-size="{cell}px {cell}px"
-	style:background-position="{panX}px {panY}px"
+	style:--cell="{cell}px"
+	style:--pan-x="{panX}px"
+	style:--pan-y="{panY}px"
+	style:--dot-mask={dotMask}
 	role="application"
 	aria-label="Module grid"
 	{onpointerdown}
@@ -323,7 +331,12 @@
 	{onwheel}
 	{oncontextmenu}
 >
-	<div class="plane" style:transform="translate({panX}px, {panY}px)">
+	<!-- The zoom's game pixel belongs to the board, not to the screen: everything
+	     inside here is drawn in it, while the chrome around it (the controls, the
+	     hover card, a flashed error) keeps the page's own and holds its size at
+	     every zoom. The two cursor ghosts hang outside the plane and take it as a
+	     prop instead. -->
+	<div class="plane" style:--u="{u}px" style:transform="translate({panX}px, {panY}px)">
 		{#each markers as marker (marker.key)}
 			<div
 				class="cell marker-{marker.kind}"
@@ -331,26 +344,28 @@
 				style:top="{-(marker.y + 1) * cell}px"
 			>
 				{#if marker.kind === 'invalid'}
-					<svg viewBox="0 0 10 10" class="glyph glyph-invalid" aria-hidden="true">
-						<path d="M1 0 5 4 9 0 10 1 6 5 10 9 9 10 5 6 1 10 0 9 4 5 0 1Z" />
-					</svg>
+					<PixelSprite sprite={SLOT_BLOCKED} class="glyph-invalid" />
 				{:else if marker.kind === 'boost'}
-					<svg viewBox="0 0 10 10" class="glyph glyph-boost" aria-hidden="true">
-						<path d="M4 0h2v4h4v2H6v4H4V6H0V4h4Z" />
-					</svg>
+					<PixelSprite sprite={SLOT_BOOST} class="glyph-boost" />
 				{:else if marker.kind === 'main'}
-					<span class="main-slot">{marker.label}</span>
+					<span class="main-slot">
+						<PixelSprite sprite={SLOT_SPECIAL} />
+						<span class="main-label">{marker.label}</span>
+					</span>
 				{/if}
 			</div>
 		{/each}
 
 		{#each boosted as spot (spot.key)}
 			<div
-				class="cell"
+				class="cell boost-cell"
 				style:left="{spot.x * cell}px"
 				style:top="{-(spot.y + 1) * cell}px"
 			>
-				<span class="boost-dot"></span>
+				<!-- A booster's reach means the same thing a level-up slot does, and
+				     the game marks it with the same ring — over the pattern's dot,
+				     not tinting it. -->
+				<PixelSprite sprite={SLOT_BOOST} class="glyph-boost" />
 			</div>
 		{/each}
 
@@ -390,7 +405,7 @@
 					dimmed={tile.dimmed}
 					links={tile.links}
 					badge={tile.badge}
-					{iconScale}
+					{u}
 				/>
 			</div>
 		{/each}
@@ -430,32 +445,20 @@
 
 		{#if grid.hovered}
 			{@const hover = parseCell(grid.hovered)}
-			<div
-				class="cell hover-ring"
-				class:is-carrying={!!grid.carried}
-				class:is-invalid={!!grid.carried && !dropValid}
-				style:left="{hover.x * cell}px"
-				style:top="{-(hover.y + 1) * cell}px"
-			></div>
-			{#if grid.carried}
+			<!-- The drop target marks itself only while something is on the cursor:
+			     with nothing to place, a ring following the pointer around an idle
+			     board is noise. -->
+			{#if grid.carried || grid.slotBrush}
 				<div
-					class="cell is-carried"
+					class="cell hover-ring"
+					class:is-invalid={!!grid.carried && !dropValid}
 					style:left="{hover.x * cell}px"
 					style:top="{-(hover.y + 1) * cell}px"
-				>
-					<GridModuleTile
-						module={grid.carried.module}
-						level={1}
-						dimmed={false}
-						links={NO_LINKS}
-						badge={null}
-						{iconScale}
-					/>
-				</div>
+				></div>
 			{/if}
 		{/if}
 
-		{#if hoveredTile && !grid.carried && grid.mode === 'modules' && onedit}
+		{#if hoveredTile && !grid.carried && !grid.slotBrush && onedit}
 			<div
 				class="cell edit-anchor"
 				style:left="{hoveredTile.x * cell}px"
@@ -471,6 +474,32 @@
 		{/if}
 	</div>
 
+	{#if grid.carried}
+		<!-- The module hangs off the cursor rather than snapping to the cell under
+		     it — the ring below says where it would land. Fixed, so it keeps
+		     following the pointer out over the vault dock. -->
+		<div class="carry-ghost" style:left="{cursorX}px" style:top="{cursorY}px">
+			<GridModuleTile module={grid.carried.module} {u} />
+		</div>
+	{:else if grid.slotBrush}
+		<!-- An armed brush is carried like a module: the marker it would leave
+		     rides the cursor, and the ring below says which cell gets it. -->
+		<div
+			class="carry-ghost brush-ghost"
+			style:--u="{u}px"
+			style:left="{cursorX}px"
+			style:top="{cursorY}px"
+		>
+			{#if grid.slotBrush === 'LevelUp'}
+				<PixelSprite sprite={SLOT_BOOST} class="glyph-boost" />
+			{:else if grid.slotBrush === 'Invalid'}
+				<PixelSprite sprite={SLOT_BLOCKED} class="glyph-invalid" />
+			{:else}
+				<PixelSprite sprite={SLOT_EMPTY} class="glyph-empty" />
+			{/if}
+		</div>
+	{/if}
+
 	{#if hoveredTile && !grid.carried}
 		<div
 			class="card-anchor"
@@ -483,6 +512,10 @@
 	{/if}
 
 	<div class="zoom-controls">
+		<!-- Panning has no bounds, so this is the way back from wherever you ended
+		     up: the view the screen opens on. -->
+		<Button size="xs" variant="ghost" aria-label="Center on the ship"
+			onclick={() => centerOn(HOME.x, HOME.y)}>Center</Button>
 		<Button size="xs" variant="ghost" aria-label="Zoom out" disabled={zoom === 0}
 			onclick={() => setZoom(zoom - 1)}>−</Button>
 		<Button size="xs" variant="ghost" aria-label="Zoom in" disabled={zoom === U_LEVELS.length - 1}
@@ -496,8 +529,6 @@
 </div>
 
 <style>
-	/* The infinite dot field is a repeating background, not DOM: one hollow ring
-	   per cell, panned by offsetting the pattern. Cheap at any pan distance. */
 	.viewport {
 		position: relative;
 		flex: 1;
@@ -508,14 +539,21 @@
 		   selection — which paints every tile blue mid-pan. */
 		user-select: none;
 		background-color: var(--color-void);
-		background-image: radial-gradient(
-			circle,
-			transparent calc(1.2 * var(--u)),
-			var(--color-edge-dim) calc(1.2 * var(--u)),
-			var(--color-edge-dim) calc(1.8 * var(--u)),
-			transparent calc(1.8 * var(--u))
-		);
 		touch-action: none;
+	}
+	/* The infinite dot field: the game's ring on every empty cell, tiled from
+	   `--dot-mask` and panned with the board. */
+	.viewport::before {
+		content: '';
+		position: absolute;
+		inset: 0;
+		background-color: var(--color-dot);
+		-webkit-mask-image: var(--dot-mask);
+		mask-image: var(--dot-mask);
+		-webkit-mask-size: var(--cell) var(--cell);
+		mask-size: var(--cell) var(--cell);
+		-webkit-mask-position: var(--pan-x) var(--pan-y);
+		mask-position: var(--pan-x) var(--pan-y);
 	}
 	.viewport.is-dragging {
 		cursor: grabbing;
@@ -532,74 +570,88 @@
 		display: flex;
 		align-items: center;
 		justify-content: center;
-		width: calc(28 * var(--u));
-		height: calc(28 * var(--u));
+		width: var(--cell);
+		height: var(--cell);
 		pointer-events: none;
 	}
 
-	.glyph {
-		width: calc(7 * var(--u));
-		height: calc(7 * var(--u));
-	}
-	.glyph-invalid {
-		fill: var(--color-danger);
-	}
-	.glyph-boost {
-		fill: var(--color-amber);
+	/* A special cell replaces its dot rather than sitting on it — the game
+	   draws the marker on bare ground, so these blank the pattern's ring. */
+	.marker-invalid,
+	.marker-boost,
+	.marker-main,
+	.boost-cell {
+		background-color: var(--color-void);
 	}
 
-	.boost-dot {
-		width: calc(3 * var(--u));
-		height: calc(3 * var(--u));
-		border-radius: 50%;
-		background-color: var(--color-regen);
-		opacity: 0.5;
+	/* The three markers the grid's shader draws, in the colours it draws them —
+	   on the board and on the cursor alike. */
+	.viewport :global(.glyph-invalid) {
+		color: var(--color-slot-block);
+	}
+	.viewport :global(.glyph-boost) {
+		color: var(--color-slot-boost);
+	}
+	.viewport :global(.glyph-empty) {
+		color: var(--color-dot);
 	}
 
-	/* An empty main slot: the game's labelled octagon placeholder. */
+	/* An empty special slot: the game's own octagon, with the three letters its
+	   widget carries sitting on top. */
 	.main-slot {
+		position: relative;
 		display: flex;
 		align-items: center;
 		justify-content: center;
-		width: calc(24 * var(--u));
-		height: calc(24 * var(--u));
-		font-family: var(--font-title);
-		font-size: round(calc(10 / 3 * var(--u)), 5px);
-		letter-spacing: var(--tracking-hud);
+		color: var(--color-edge-dim);
+	}
+	/* In the body face, not the HUD one the badges use — the game bakes its label
+	   into the widget's sprite sheet and this is the closest face to it. Sizes on
+	   000webfont's 16-brick em, so the letters stay crisp at every zoom, and dim
+	   enough that an empty slot stays quieter than a filled one. */
+	.main-label {
+		position: absolute;
+		top: 50%;
+		left: 50%;
+		/* The ink hangs below its own line box, so the box has to sit that much
+		   above the cell's middle for the letters to land on it. */
+		transform: translate(-50%, calc(-50% - var(--cap-drop)));
+		font-family: var(--font-ui);
+		font-size: round(calc(32 / 3 * var(--u)), 16px);
+		line-height: 0.3125em;
 		color: var(--color-edge);
-		background-color: var(--color-surface);
-		border: var(--u) solid var(--color-edge);
-		clip-path: polygon(25% 0, 75% 0, 100% 25%, 100% 75%, 75% 100%, 25% 100%, 0 75%, 0 25%);
 	}
 
 	/* Cluster coverage: dashed cell borders drawn only on boundary sides, so the
 	   set reads as one outlined region. Core previews are the same shape dimmer. */
 	.coverage {
-		border: 0 dashed var(--color-edge);
+		/* Thicker than an error's edge, and darker than any border in the chrome —
+		   the outline is context, not a warning, so it stays behind the modules it
+		   surrounds. */
+		--edge-width: 4px;
+		border: 0 dashed var(--color-field-edge);
 	}
 	.coverage.is-preview {
-		border-color: var(--color-edge-dim);
+		border-color: color-mix(in srgb, var(--color-field-edge) 60%, var(--color-void));
 	}
 	.edge-n {
-		border-top-width: 2px;
+		border-top-width: var(--edge-width, 2px);
 	}
 	.edge-e {
-		border-right-width: 2px;
+		border-right-width: var(--edge-width, 2px);
 	}
 	.edge-s {
-		border-bottom-width: 2px;
+		border-bottom-width: var(--edge-width, 2px);
 	}
 	.edge-w {
-		border-left-width: 2px;
+		border-left-width: var(--edge-width, 2px);
 	}
 
+	/* The drop target, answering with the verdict the game's hover gives: accent
+	   for a legal drop, red for a refused one. */
 	.hover-ring {
-		border: 2px solid var(--color-edge);
-	}
-	/* Carrying, the ring is the drop target and answers with the verdict the
-	   game's hover gives: accent for a legal drop, red for a refused one. */
-	.hover-ring.is-carrying {
-		border-color: var(--color-accent);
+		z-index: 3;
+		border: 2px solid var(--color-accent);
 	}
 	.hover-ring.is-invalid {
 		border-color: var(--color-danger);
@@ -610,30 +662,42 @@
 		background-color: color-mix(in srgb, var(--color-power) 16%, transparent);
 	}
 	.hint.is-boost {
-		background-color: color-mix(in srgb, var(--color-regen) 16%, transparent);
+		background-color: color-mix(in srgb, var(--color-boost) 16%, transparent);
 	}
 
+	/* Above the connections, which draw over the tiles — an error that marks a
+	   cell edge must not end up under the notch sitting on it. */
 	.error-ring {
+		z-index: 3;
 		border: 2px solid var(--color-danger);
 	}
 	/* One red edge per connection error, on the shared .edge-* width classes. */
 	.error-edge {
+		z-index: 3;
 		border: 0 solid var(--color-danger);
 	}
 
-	.is-carried {
+	/* The carried module, centred on the pointer. Outside the plane, so its
+	   transform cannot pin the fixed position to the board. */
+	.carry-ghost {
+		position: fixed;
+		z-index: 20;
+		width: var(--cell);
+		height: var(--cell);
+		transform: translate(-50%, -50%);
 		opacity: 0.85;
+		pointer-events: none;
+	}
+	/* A marker has no frame to fill the cell with, so it centres in one. */
+	.brush-ghost {
+		display: flex;
+		align-items: center;
+		justify-content: center;
 	}
 
 	.edit-anchor {
 		z-index: 5;
-	}
-	/* The one clickable thing on the canvas besides the cells themselves — the
-	   chip that opens the module's card editor, pinned to the tile's corner. */
-	.edit-anchor :global(.canvas-chip) {
-		position: absolute;
-		top: calc(-1 * var(--u));
-		right: calc(-1 * var(--u));
+		align-items: flex-end;
 	}
 
 	.card-anchor {

@@ -70,6 +70,17 @@
 	--color-press: #0d0906; /* a held control's interior — the frame's bloom spills in (button_pressed.png) */
 	--color-regen: #5fc24e; /* a gain: the recharge rate beside a ship tank. the one green in the app */
 	--color-power: #3fd7d0; /* the grid's power-core badge (n/max under a main module), sampled from infinite-grid-empty.png */
+	/* The module grid's own five. The game draws its connection notches — and any
+	   frame whose module has no colour of its own — in one neutral, and paints
+	   the three cell markers so far down that the empty grid barely reads as
+	   anything at all. Sampled off infinite-grid-full.png rather than the source
+	   sprites, which sit darker still than they appear on the lit screen. */
+	--color-joint: #8e8575; /* module frames and connection notches */
+	--color-dot: #181411; /* the ring on an empty cell */
+	--color-slot-boost: #522000; /* a level-up slot, and any cell a booster reaches */
+	--color-slot-block: #540000; /* a blocked (Invalid) slot */
+	--color-boost: #49c500; /* the +1 chevron, the booster module's own green (Image.color on the pip) */
+	--color-field-edge: #2f2317; /* the dashed outline around a power field. below every module it surrounds */
 	/* Behind a modal, so the page reads as switched off rather than dimmed.
 	   Dialog.svelte repeats this value as a var() fallback — `::backdrop` does not
 	   inherit custom properties on older WebKitGTK. Change both together. */
@@ -146,6 +157,12 @@
 	   Rounded to whole pixels because it lands on a control's edge: left as a raw
 	   em it antialiases every frame bar. */
 	--cap-fix: round(0.23em, 1px);
+
+	/* The same low-hanging capital seen from the other side. Under `punk-cap` the
+	   line box is the cap height, but the ink drops below its middle — measured in
+	   a button: box 6..16, capital 8..18. Anything drawn beside a label (a sprite,
+	   a glyph box) has to fall by this much to share the capitals' centre line. */
+	--cap-drop: round(0.0625em, 1px);
 
 	/* One arrival motion for the whole editor — a rise-and-fade. Sections and
 	   module cards play it as they reach the fold ($lib/actions/reveal.ts), a

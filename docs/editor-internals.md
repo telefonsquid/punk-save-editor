@@ -63,7 +63,7 @@ src/lib/sound.svelte.ts  the game's own interface sounds: sound.play(name) + the
 src/lib/editor/        state.svelte.ts (EditorState: slot, version, dirty, open/save/reload)
                        backup.svelte.ts (BackupState: the backup + restore subsystem,
                        reached as editor.backups)
-                       grid.svelte.ts (GridEditorState: the grid editor's carry, paint
+                       grid.svelte.ts (GridEditorState: the grid editor's carry, slot
                        brush, undo stack and derived simulation — docs/grid-editor.md)
                        settings.svelte.ts (the two remembered *backup* settings, as one
                        singleton; the sound switch lives with the audio it governs)

@@ -89,15 +89,19 @@ dashed outlines; the carried module shows its effect field around the cursor.
 ## Product decisions (Saskia, 2026-08-22)
 
 - **Validation is a toggle**, strict (game-parity) by default; free mode marks
-  invalid cells instead of refusing drops.
-- **Full-screen overlay**, opened from the Modules section — which shrinks to
-  a launcher button (plus the vault dock inside the editor absorbing the old
-  card UI).
+  invalid cells instead of refusing drops. Surfaced as "Ignore placement
+  rules" in the vault dock's footer, off by default (revised 2026-08-23).
+- **Full-screen overlay**, opened straight from the Modules tab — selecting
+  the tab is the door, there is no in-between panel (revised 2026-08-23; the
+  vault dock inside the editor absorbed the old card UI).
 - **Hover shows the game-style info card**; an explicit affordance opens the
   existing card editor (connections, shapes, cores) as a dialog, for grid and
   vault modules alike.
-- **Booster/invalid cells are paintable**, plus a reroll button running the
-  game's `RandomizeSlots` algorithm.
+- **Booster/invalid cells are paintable** as one-shot placements: three header
+  buttons (booster plus, blocked cross, normal ring) arm a brush that paints
+  the next clicked cell and disarms, the way an added module rides the cursor
+  (revised 2026-08-23 from the original drag brushes). Plus a reroll button
+  running the game's `RandomizeSlots` algorithm.
 - **Pan + stepped integer-scale zoom** (the game has pan only).
 - **The game's grid sounds** are extracted (per-module `gridPlacementSfx`,
   fail/pick-up/cancel/selection-move), falling back to the six existing UI
@@ -133,7 +137,11 @@ src/lib/editor/grid.svelte.ts   GridEditorState: open/close, active ship,
                                 mode, the undo stack
 src/lib/components/grid/        GridEditor.svelte (the overlay), GridCanvas,
                                 module tiles + slot markers, HoverCard,
-                                VaultDock, ModuleEditDialog, plus small parts
+                                VaultDock, ModuleEditDialog, plus small parts;
+                                PixelSprite.svelte draws the game's art
+src/lib/game/grid-icons.ts      the grid's sprites and the cell size, from
+  + grid-icons.json             scripts/extract-grid-icons.py — see "The art
+                                comes out of the game" below
 ```
 
 **Data flow is the app's usual one.** The raw `entities`/`vault` trees stay
@@ -223,6 +231,142 @@ what it computes.
    `UI/Grid/ModulePlaced`. `module-info.json`'s `placeSfx` resolves the
    per-module guid to the sfx name at extraction, and `soundForSfx` maps it
    onto the palette at play time.
+
+## Revisions (2026-08-23)
+
+The milestone entries above record what shipped then; this is what changed
+after:
+
+- **Entry**: the Modules tab opens the overlay directly — `ModulesPanel` (the
+  launcher page) is gone, and `+page.svelte` routes the tab strip's write so
+  closing the overlay lands back on the tab that was showing.
+- **Slot painting**: the drag brushes and right-button eraser became one-shot
+  brush buttons (plus / cross / ring in the header) — arm, click one cell,
+  disarmed. Esc or right-click puts an armed brush down; one undo entry per
+  placement.
+- **Validation toggle**: moved to the vault dock's footer as "Ignore placement
+  rules", unchecked by default (same strict default, inverted face).
+- **Pixel sprites**: the dot grid, connection notches, linked capsules, module
+  frames and the boost chevron draw the game's own pixel art — first as hand
+  traces, then straight out of Punk_Data (below). The empty-cell ring is a
+  repeating CSS mask over one palette-token layer, so it recolours with the
+  theme and stays cheap at any pan distance.
+- **Zoom buttons fixed**: the viewport's pointer capture was eating their
+  clicks; pointerdowns that start on a button now stay with the button.
+- **Shift copies a placement**: holding it while dropping any module puts an
+  identical one on the cursor, and holding it while painting a slot leaves the
+  brush armed. The copy is `copyModuleNode` — a clone of the node with its
+  `$id`s allocated past the tree's highest, taken *after* the drop so the
+  placed original's own ids are already counted. It carries the rolled fields
+  and the connections, which rebuilding the same module from the asset would
+  not. Dropping a picked-up module back on its own cell copies too, even though
+  nothing moves in the tree — the module did land there. A displaced module
+  still takes the cursor — it has the better claim.
+- **The frame follows the module's category**, not a three-way guess at its
+  shape: `ModuleType.background` ships a rect, an octagon, a round, a notched
+  octagon and a rounded diamond, and each is drawn as itself instead of as a
+  CSS `clip-path`. A module whose colour is white wears the neutral its notches
+  do, which is what the game shows.
+- **One capsule per link.** Both neighbours used to draw the seam capsule on
+  the same pixels, so on a dimmed pair the two half-transparent copies stacked
+  brighter than the stubs. The east/south side draws it; the other draws
+  nothing.
+- **Connections draw over every tile.** A capsule reaches half into the
+  neighbour's cell, and in tree order the neighbour's frame painted over it.
+  The joints carry a `z-index` inside the plane, which also means a dimmed
+  module must not fade as one layer — an `opacity` on the tile would make it a
+  stacking context and trap them again. The tile's body and its joints fade
+  separately for that reason.
+- **A connection wears its module's colour until it is answered**; the capsule
+  a connected pair shares is the neutral.
+- **The hover ring only marks a drop target.** With nothing on the cursor it
+  followed the pointer around an idle board for no reason.
+- **The icon is 24 game pixels**, its native size in a 34-pixel cell, and rides
+  one pixel high — the chevrons and the power badge own the space below it.
+- **A carried module hangs off the cursor**, not off the cell under it: a
+  `position: fixed` tile outside the plane (whose transform would otherwise pin
+  it back to the board), so it keeps following the pointer out over the vault
+  dock, which lights up as the place it can be filed away. The hover ring still
+  marks the cell the drop would land in.
+- **An empty special slot is the game's own octagon.** Weapon, Active and
+  Embedded point their `gridVisualPrefab` at one shared `SpecialSlotWidget` —
+  the editor's hand-built labelled boxes were the wrong shape. The three letters
+  on it change per slot type: `static/design-references/infinite-grid-full.png`
+  shows the game's gadget row reading GDT, so `slot-markers.ts` names one per
+  type — WPN, GDT, SHP — in the body face rather than the HUD one, dim enough
+  that an empty slot stays quieter than a filled one. SHP never shows; the ship
+  module holds that cell for the whole run.
+- **The vault dock draws canvas tiles**, at the canvas's own default zoom and
+  three across — same frame, same colour, same connection stubs, so a module is
+  the same object on both sides of the screen. `GridModuleTile` takes the game
+  pixel itself (`u`) and sets `--u` from it, so no caller can scale the frame
+  and the item art apart — which is exactly what the dock did while it passed
+  its own icon scale.
+- **The band is one gap wide**, and carries the page's save controls whenever
+  the row is wide enough for them (below ~1500px they drop out). The overlay
+  covers the page's own strip, so `SaveActions.svelte` is the one component both
+  rows render.
+- **Zoom holds the middle of the viewport.** The step used to rescale the pan
+  against a hardcoded 28 rather than the cell's own 34 game pixels, which walked
+  the board toward a corner over a few steps. Alongside it, **Center** puts the
+  view back where the screen opens.
+- **The zoom's game pixel is the plane's, not the viewport's.** `--u` sits on
+  the panned board, so the chrome over it — zoom controls, hover card, flashed
+  error — keeps the page's own 3px and holds its size at every zoom. It used to
+  sit on the viewport, and the buttons grew and shrank with the board. The two
+  cursor ghosts hang outside the plane and take the game pixel as a prop.
+- **The grid screen paints its own CRT.** A `<dialog>` renders in the top
+  layer, which is outside `.crt-screen` and so outside its filter — the grid
+  was the one surface in the app with no aberration or bloom on it. The screen
+  carries `filter: url(#crt)` itself. It is viewport-sized like the wrapper is,
+  which is what keeps the filter buffer under the browser's size cap, and the
+  cursor ghosts still land on the pointer because the new containing block the
+  filter creates starts at (0, 0) and is the viewport.
+- **An armed slot brush rides the cursor**, exactly like a carried module: the
+  marker it would leave follows the pointer and the hover ring says which cell
+  gets it. Drawing the preview into the cell instead put the answer in two
+  places and neither of them was where the eye was.
+- **The power badge clears the south notch.** The notch owns the bottom edge
+  from 13 game pixels in, so the badge hangs two pixels out of its cell on the
+  left, two above the floor, and carries no padding beside its numbers — the
+  digits' own bearings are the gap. It has to clear 13 at *every* zoom, and the
+  HUD face snaps to a 5px grid, so the badge is proportionally widest at the
+  biggest one: at `--u: 4px` it ran to 14 game pixels and overlapped. It now
+  ends at 12, against the game's own badge running −1.5 to 12.9 across the cell
+  and stopping 1.7 above the floor (measured off `infinite-grid-full.png`).
+- **A glyph on a label's line needs `--cap-drop`.** 000webfont hangs its capital
+  below its own collapsed line box, so a sprite centred in that box sits high by
+  a fixed fraction of the font size, and a line of text centred in a cell sits
+  low by the same amount. The token is measured, like `--cap-fix`.
+
+## The art comes out of the game
+
+`scripts/extract-grid-icons.py` (in `bun run extract`) writes
+`src/lib/game/grid-icons.json`. Two mechanisms feed it, because the game has
+two:
+
+- **The cell markers are a shader, not sprites.** `ModuleGridWidget` paints the
+  whole backdrop with one `Unlit/GridBackground` RawImage over a runtime
+  `Texture2D(100, 100)` LUT — one pixel per cell, black for normal, red for
+  `Invalid`, green where `GetLevelDelta > 0` — and the shader picks a quadrant
+  of the 64×64 `Sprites UI GridSlotTypes` sheet from that pixel. Which is why
+  `ModuleSlotType.gridVisualPrefab` is null for exactly those three.
+- **Everything else is a plain sprite** on a prefab: `ModuleType.background`,
+  `ConnectionWidget`'s two Images, `ModuleIconWidget.upgradesPrefab`, and the
+  octagon on the one `SpecialSlotWidget` all three special slot types share.
+
+Each is stored as **SVG path data at native pixel size, one path per distinct
+colour**, with `shade` = that colour's brightness against the sprite's
+brightest. `PixelSprite.svelte` paints every layer in `currentColor` at
+`fill-opacity: shade`, so one sprite serves every module colour and keeps its
+own internal shading; shade 0 is the sprite's black — its outline and interior
+fill — and paints as the void. A bitmap could not be recoloured that way
+without filtering the scaled-up pixels, which the integer-scaling rule forbids.
+
+**The cell is 34 game pixels**, taken from the widest frame the game ships.
+The rect frame is 32 and centres in it; what is left over is the gap between
+two neighbours. Notches sit against the cell's edges rather than the frame's,
+so all five shapes hang their connections in the same places.
 
 ## Verification
 
