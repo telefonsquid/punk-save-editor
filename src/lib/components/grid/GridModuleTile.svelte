@@ -214,7 +214,7 @@
 		line-height: 1;
 		color: var(--color-power);
 		background-color: var(--color-void);
-		border: 1px solid var(--color-power);
+		border: var(--u) solid var(--color-power); /* counts in --u like every other edge here */
 	}
 	.badge.is-over {
 		color: var(--color-danger);

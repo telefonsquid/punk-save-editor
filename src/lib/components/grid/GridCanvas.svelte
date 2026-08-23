@@ -1,8 +1,11 @@
 <script lang="ts">
 	import Button from '../Button.svelte';
+	import EditChip from './EditChip.svelte';
 	import GridHoverCard from './GridHoverCard.svelte';
 	import GridModuleTile from './GridModuleTile.svelte';
+	import { SLOT_MARKERS, type SlotMarker } from './slot-markers';
 	import type { GridEditorState } from '$lib/editor/grid.svelte';
+	import { displayName } from '$lib/game/data';
 	import {
 		DIRECTIONS,
 		cellKey,
@@ -11,7 +14,6 @@
 		type CellKey,
 		type ConnectionSide
 	} from '$lib/game/grid-rules';
-	import { sound } from '$lib/sound.svelte';
 
 	let {
 		grid,
@@ -159,21 +161,18 @@
 
 	// --- render lists, all rebuilt from the snapshot on every edit ---------------
 
-	type Marker = { key: CellKey; x: number; y: number; kind: string; label?: string };
+	type Marker = { key: CellKey; x: number; y: number } & SlotMarker;
 
-	// Special cells without a module on them: the invalid ✕, the booster +, and
-	// the empty main slots' labelled octagons (a placed module covers its own).
+	// Special cells without a module on them (a placed module covers its own
+	// marker); which glyph a slot type wears is `SLOT_MARKERS`'s call.
 	const markers = $derived.by(() => {
 		const view = grid.view;
 		if (!view) return [];
 		const out: Marker[] = [];
 		for (const [key, typeId] of view.slotTypes) {
 			if (view.modules.has(key)) continue;
-			const { x, y } = parseCell(key);
-			if (typeId === 'Invalid') out.push({ key, x, y, kind: 'invalid' });
-			else if (typeId === 'LevelUp') out.push({ key, x, y, kind: 'boost' });
-			else if (typeId === 'Weapon') out.push({ key, x, y, kind: 'main', label: 'WPN' });
-			else if (typeId === 'Active') out.push({ key, x, y, kind: 'main', label: 'GDT' });
+			const marker = SLOT_MARKERS[typeId];
+			if (marker) out.push({ key, ...parseCell(key), ...marker });
 		}
 		return out;
 	});
@@ -186,8 +185,8 @@
 		const out: { key: CellKey; x: number; y: number }[] = [];
 		for (const [key, delta] of sim.levelDeltas) {
 			if (delta <= 0 || view.modules.has(key)) continue;
-			const typeId = view.slotTypes.get(key);
-			if (typeId === 'LevelUp' || typeId === 'Invalid') continue;
+			const marker = SLOT_MARKERS[view.slotTypes.get(key) ?? ''];
+			if (marker && marker.kind !== 'main') continue; // the glyph owns the cell
 			out.push({ key, ...parseCell(key) });
 		}
 		return out;
@@ -407,11 +406,26 @@
 		{/if}
 
 		{#each shownErrors as error, i (i)}
-			<div
-				class="cell error-ring"
-				style:left="{error.x * cell}px"
-				style:top="{-(error.y + 1) * cell}px"
-			></div>
+			{#if error.dx !== undefined}
+				<!-- A connection error marks the offending edge red, as the game does;
+				     the mismatch errors both sides, so the neighbour marks its half of
+				     the same boundary. -->
+				<div
+					class="cell error-edge"
+					class:edge-n={error.dy === 1}
+					class:edge-e={error.dx === 1}
+					class:edge-s={error.dy === -1}
+					class:edge-w={error.dx === -1}
+					style:left="{error.x * cell}px"
+					style:top="{-(error.y + 1) * cell}px"
+				></div>
+			{:else}
+				<div
+					class="cell error-ring"
+					style:left="{error.x * cell}px"
+					style:top="{-(error.y + 1) * cell}px"
+				></div>
+			{/if}
 		{/each}
 
 		{#if grid.hovered}
@@ -447,18 +461,12 @@
 				style:left="{hoveredTile.x * cell}px"
 				style:top="{-(hoveredTile.y + 1) * cell}px"
 			>
-				<button
-					type="button"
-					class="edit-chip"
-					onpointerdown={(e) => e.stopPropagation()}
-					onclick={(e) => {
-						e.stopPropagation();
-						sound.play('click');
-						onedit(hoveredTile.key);
-					}}
-				>
-					Edit
-				</button>
+				<EditChip
+					class="canvas-chip"
+					text="Edit"
+					label="Edit {displayName(hoveredTile.module.id)}"
+					onclick={() => onedit(hoveredTile.key)}
+				/>
 			</div>
 		{/if}
 	</div>
@@ -608,6 +616,10 @@
 	.error-ring {
 		border: 2px solid var(--color-danger);
 	}
+	/* One red edge per connection error, on the shared .edge-* width classes. */
+	.error-edge {
+		border: 0 solid var(--color-danger);
+	}
 
 	.is-carried {
 		opacity: 0.85;
@@ -617,26 +629,11 @@
 		z-index: 5;
 	}
 	/* The one clickable thing on the canvas besides the cells themselves — the
-	   explicit affordance that opens the module's card editor. */
-	.edit-chip {
+	   chip that opens the module's card editor, pinned to the tile's corner. */
+	.edit-anchor :global(.canvas-chip) {
 		position: absolute;
 		top: calc(-1 * var(--u));
 		right: calc(-1 * var(--u));
-		padding: var(--u) calc(2 * var(--u)) calc(var(--u) + 1px);
-		pointer-events: auto;
-		font-family: var(--font-title);
-		font-size: 10px;
-		line-height: 1; /* the body's 30px would balloon the chip over the cell */
-		letter-spacing: var(--tracking-hud);
-		text-transform: uppercase;
-		color: var(--color-ink);
-		background-color: var(--color-void);
-		border: 1px solid var(--color-edge);
-		cursor: pointer;
-	}
-	.edit-chip:hover {
-		border-color: var(--color-accent);
-		color: var(--color-accent);
 	}
 
 	.card-anchor {

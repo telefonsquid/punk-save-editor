@@ -1,6 +1,7 @@
 <script lang="ts">
 	import type { Snippet } from 'svelte';
 	import ScrollBar from './ScrollBar.svelte';
+	import { syncModal } from './modal';
 	import { sound } from '$lib/sound.svelte';
 
 	// The one place that defines what a modal looks like and how it behaves.
@@ -43,17 +44,10 @@
 	/** The body, handed to ScrollBar so it can draw the bar the body hides. */
 	let body = $state<HTMLElement | null>(null);
 
-	// The effect only touches the DOM; it assigns no state. The open sound is the
-	// game's own vault screen arriving, played over the same beat as the rise
-	// below; its closing half rides the `onclose` event rather than this effect,
-	// because Esc closes the element itself and never reaches the branch here.
-	$effect(() => {
-		if (!dialog) return;
-		if (open && !dialog.open) {
-			dialog.showModal();
-			sound.play('open');
-		} else if (!open && dialog.open) dialog.close();
-	});
+	// The effect only touches the DOM; it assigns no state. The open sound is
+	// the game's own vault screen arriving, played over the same beat as the
+	// rise below (`syncModal` owns the wiring).
+	$effect(() => syncModal(dialog, open));
 </script>
 
 <!-- `m-auto` is what centres the dialog: the UA centres a modal with its own

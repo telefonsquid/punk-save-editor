@@ -327,7 +327,7 @@ node; the `state_referenced_locally` autofixer warning is intentionally silenced
 
 ## Generated data (regenerate on game update)
 
-**`bun run extract`** regenerates all six JSON files under `src/lib/game/` from the installed game
+**`bun run extract`** regenerates every JSON file under `src/lib/game/` from the installed game
 in one command and then cross-checks them (`bun run check:data`). Full runbook, including what every
 warning means: **docs/migration.md**.
 
@@ -362,6 +362,11 @@ instead of being silently mis-filed.
   `addModule` needs — see the module-colour section in game-code.md. The two field lists are the
   *candidate* shapes (`SpriteDistribution.Draw` picks one per module built: five for POWER CORE,
   three for BOOSTER CORE, exactly one for everything else), drawn by `EffectFieldGrid.svelte`.
+- `slot-types.json` — slot type id → `{ canBePowered, compatibleModuleTypes, levelDelta,
+  gridPlacementRectSize, countInPlacementRect }`: what a grid cell's slot type *does*, which the
+  save never says — everything the grid simulation (`grid-rules.ts`) needs to judge a cell.
+  Extracted from the `ModuleSlotType` assets by `extract-slot-types.py`; the feature's own doc is
+  **grid-editor.md**.
 - `ui-sounds.json` — editor event → `{ sfx, volume, clips: [{ uri, weight }] }`, the game's own
   interface sounds as trimmed MP3 data URIs. Keyed by the game's sfx *name*, and the clip list keeps
   the game's weighted distribution so a future sound with variants needs no code change. See "The

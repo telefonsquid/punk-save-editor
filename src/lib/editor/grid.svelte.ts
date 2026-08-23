@@ -38,7 +38,9 @@ import type { OdinNode } from '$lib/save/odin';
 import {
 	gridOwners,
 	insertModuleAt,
+	moduleFromVault,
 	moduleNodeAt,
+	moduleToVault,
 	readModule,
 	removeModuleAt,
 	rerollSlotTypes,
@@ -46,10 +48,9 @@ import {
 	snapshotGrid,
 	type GridModuleRef
 } from '$lib/save/grid';
-import { dictPairs, listItems, reidNode } from '$lib/save/tree';
+import { dictPairs } from '$lib/save/tree';
 import { moduleInfo } from '$lib/game/data';
-import { newModuleNode, type NewModuleFields } from '$lib/save/vault';
-import type { OdinValue } from '$lib/save/odin';
+import { getModuleNodes, newModuleNode, type NewModuleFields } from '$lib/save/vault';
 import { sound, soundForSfx } from '$lib/sound.svelte';
 import type { EditorState } from './state.svelte';
 
@@ -206,23 +207,20 @@ export class GridEditorState {
 		const node = carried.node;
 		const { source, originKey } = carried;
 		const displaced = moduleNodeAt(grid, x, y);
-		const vaultIndex = source === 'vault' ? listItems(vault.modules as OdinValue).indexOf(node) : -1;
+		const vaultIndex = source === 'vault' ? getModuleNodes(vault).indexOf(node) : -1;
 
 		this.#perform({
 			redo: () => {
 				if (displaced) {
 					removeModuleAt(grid, x, y);
-					reidNode(displaced, vault);
-					listItems(vault.modules as OdinValue).push(displaced);
+					moduleToVault(vault, displaced);
 					this.#editor.dirtyFiles.add('vault');
 				}
 				if (source === 'grid') {
 					const o = parseCell(originKey!);
 					removeModuleAt(grid, o.x, o.y);
 				} else if (source === 'vault') {
-					const arr = listItems(vault.modules as OdinValue);
-					arr.splice(arr.indexOf(node), 1);
-					reidNode(node, entities);
+					moduleFromVault(vault, node, entities);
 					this.#editor.dirtyFiles.add('vault');
 				}
 				insertModuleAt(grid, x, y, node);
@@ -234,14 +232,11 @@ export class GridEditorState {
 					const o = parseCell(originKey!);
 					insertModuleAt(grid, o.x, o.y, node);
 				} else if (source === 'vault') {
-					reidNode(node, vault);
-					listItems(vault.modules as OdinValue).splice(vaultIndex, 0, node);
+					moduleToVault(vault, node, vaultIndex);
 					this.#editor.dirtyFiles.add('vault');
 				}
 				if (displaced) {
-					const arr = listItems(vault.modules as OdinValue);
-					arr.splice(arr.indexOf(displaced), 1);
-					reidNode(displaced, entities);
+					moduleFromVault(vault, displaced, entities);
 					insertModuleAt(grid, x, y, displaced);
 					this.#editor.dirtyFiles.add('vault');
 				}
@@ -285,18 +280,19 @@ export class GridEditorState {
 					removeModuleAt(grid!, o.x, o.y);
 					this.#editor.dirtyFiles.add('entities');
 				}
-				reidNode(node, vault);
-				listItems(vault.modules as OdinValue).push(node);
+				moduleToVault(vault, node);
 				this.#editor.touch('vault');
 			},
 			undo: () => {
-				const arr = listItems(vault.modules as OdinValue);
-				arr.splice(arr.indexOf(node), 1);
 				if (source === 'grid') {
+					moduleFromVault(vault, node, entities);
 					const o = parseCell(originKey!);
-					reidNode(node, entities);
 					insertModuleAt(grid!, o.x, o.y, node);
 					this.#editor.dirtyFiles.add('entities');
+				} else {
+					// 'new': the node leaves the save entirely, no id space to enter.
+					const nodes = getModuleNodes(vault);
+					nodes.splice(nodes.indexOf(node), 1);
 				}
 				this.#editor.touch('vault');
 			}
@@ -310,16 +306,16 @@ export class GridEditorState {
 		const slot = this.#editor.slot;
 		if (!slot || this.carried?.node === node) return;
 		const vault = slot.vault;
-		const index = listItems(vault.modules as OdinValue).indexOf(node);
+		const index = getModuleNodes(vault).indexOf(node);
 		if (index < 0) return;
 
 		this.#perform({
 			redo: () => {
-				listItems(vault.modules as OdinValue).splice(index, 1);
+				getModuleNodes(vault).splice(index, 1);
 				this.#editor.touch('vault');
 			},
 			undo: () => {
-				listItems(vault.modules as OdinValue).splice(index, 0, node);
+				getModuleNodes(vault).splice(index, 0, node);
 				this.#editor.touch('vault');
 			}
 		});
@@ -341,15 +337,12 @@ export class GridEditorState {
 		this.#perform({
 			redo: () => {
 				removeModuleAt(grid, x, y);
-				reidNode(node, vault);
-				listItems(vault.modules as OdinValue).push(node);
+				moduleToVault(vault, node);
 				this.#editor.dirtyFiles.add('vault');
 				this.#editor.touch('entities');
 			},
 			undo: () => {
-				const arr = listItems(vault.modules as OdinValue);
-				arr.splice(arr.indexOf(node), 1);
-				reidNode(node, entities);
+				moduleFromVault(vault, node, entities);
 				insertModuleAt(grid, x, y, node);
 				this.#editor.dirtyFiles.add('vault');
 				this.#editor.touch('entities');

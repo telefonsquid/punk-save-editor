@@ -2,6 +2,7 @@
 	import CloseBadge from '../CloseBadge.svelte';
 	import ItemIcon from '../ItemIcon.svelte';
 	import ScrollBar from '../ScrollBar.svelte';
+	import EditChip from './EditChip.svelte';
 	import GridHoverCard from './GridHoverCard.svelte';
 	import type { GridEditorState } from '$lib/editor/grid.svelte';
 	import type { EditorState } from '$lib/editor/state.svelte';
@@ -27,6 +28,7 @@
 		onedit: (node: OdinNode) => void;
 	} = $props();
 
+	let dock = $state<HTMLElement | null>(null);
 	let body = $state<HTMLElement | null>(null);
 	let hovered = $state.raw<{ node: OdinNode; top: number } | null>(null);
 
@@ -36,7 +38,7 @@
 	const rows = $derived.by(() => {
 		if (editor.version < 0 || !editor.slot) return [];
 		return getModules(editor.slot.vault)
-			.map((m) => ({ node: m as unknown as OdinNode, id: m.moduleDataId }))
+			.map((m) => ({ node: m, id: m.moduleDataId }))
 			.filter(({ node }) => !(grid.carried?.source === 'vault' && grid.carried.node === node));
 	});
 	const groups = $derived(groupModules(rows));
@@ -44,7 +46,7 @@
 	const hoveredModule = $derived(hovered ? readModule(hovered.node) : null);
 
 	function hoverTile(node: OdinNode, e: PointerEvent) {
-		const dockTop = (e.currentTarget as HTMLElement).closest('.dock')!.getBoundingClientRect().top;
+		const dockTop = dock?.getBoundingClientRect().top ?? 0;
 		hovered = { node, top: (e.currentTarget as HTMLElement).getBoundingClientRect().top - dockTop };
 	}
 
@@ -59,7 +61,7 @@
 	}
 </script>
 
-<aside class="dock" class:is-target={!!grid.carried}>
+<aside class="dock" class:is-target={!!grid.carried} bind:this={dock}>
 	<header class="dock-head">
 		<h3 class="punk-panel-title text-accent">Vault</h3>
 		<span class="text-ui-xs text-muted">{rows.length}</span>
@@ -95,22 +97,11 @@
 								<ItemIcon id={row.id} scale={2} />
 							</button>
 							{#if !grid.carried}
-								<button
-									type="button"
+								<EditChip
 									class="tile-edit"
-									aria-label="Edit {displayName(row.id)}"
-									onclick={(e) => {
-										e.stopPropagation();
-										sound.play('click');
-										onedit(row.node);
-									}}
-								>
-									<!-- Drawn, like the badge glyphs: a text glyph neither centres
-									     nor scales cleanly at this size. -->
-									<svg viewBox="0 0 12 12" aria-hidden="true">
-										<path d="M1 11v-3l7-7 3 3-7 7H1z" />
-									</svg>
-								</button>
+									label="Edit {displayName(row.id)}"
+									onclick={() => onedit(row.node)}
+								/>
 								<CloseBadge
 									class="tile-remove"
 									label="Remove {displayName(row.id)} from the vault"
@@ -125,8 +116,8 @@
 		<ScrollBar scroller={body} contained />
 	</div>
 
-	{#if hoveredModule && !grid.carried}
-		<div class="dock-card" style:top="{hovered!.top}px">
+	{#if hovered && hoveredModule && !grid.carried}
+		<div class="dock-card" style:top="{hovered.top}px">
 			<GridHoverCard module={hoveredModule} level={1} badge={null} />
 		</div>
 	{/if}
@@ -203,31 +194,14 @@
 
 	/* Both hover affordances sit on the tile's top corners, clear of its centre —
 	   the click a tile exists for must never land on a revealed chip. */
-	.tile-edit {
+	.tile-wrap :global(.tile-edit) {
 		position: absolute;
 		left: 0;
 		top: 0;
 		display: none;
-		width: 16px;
-		height: 16px;
-		padding: 3px;
-		color: var(--color-ink);
-		background-color: var(--color-void);
-		border: 1px solid var(--color-edge);
-		cursor: pointer;
 	}
-	.tile-edit svg {
+	.tile-wrap:hover :global(.tile-edit) {
 		display: block;
-		width: 100%;
-		height: 100%;
-		fill: currentColor;
-	}
-	.tile-wrap:hover .tile-edit {
-		display: block;
-	}
-	.tile-edit:hover {
-		border-color: var(--color-accent);
-		color: var(--color-accent);
 	}
 
 	.tile-wrap :global(.tile-remove) {

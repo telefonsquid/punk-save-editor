@@ -4,6 +4,7 @@
 	import GridCanvas from './GridCanvas.svelte';
 	import ModuleEditDialog from './ModuleEditDialog.svelte';
 	import VaultDock from './VaultDock.svelte';
+	import { syncModal } from '../modal';
 	import { GridEditorState } from '$lib/editor/grid.svelte';
 	import type { EditorState } from '$lib/editor/state.svelte';
 	import { equippableModules } from '$lib/game/data';
@@ -32,16 +33,9 @@
 
 	const addableModuleIds = equippableModules().map(({ id }) => id);
 
-	// Same contract as Dialog.svelte: the open state drives showModal, the close
-	// sound rides the element's own close event so Esc is covered too. The open
-	// and close sounds are the game's own grid screen arriving and leaving.
-	$effect(() => {
-		if (!dialog) return;
-		if (open && !dialog.open) {
-			dialog.showModal();
-			sound.play('open');
-		} else if (!open && dialog.open) dialog.close();
-	});
+	// Same contract as Dialog.svelte, via the shared `syncModal`. The open and
+	// close sounds are the game's own grid screen arriving and leaving.
+	$effect(() => syncModal(dialog, open));
 
 	function openEditor(key: CellKey) {
 		editNode = grid.view?.modules.get(key)?.node ?? null;

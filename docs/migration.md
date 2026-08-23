@@ -15,13 +15,13 @@ bun run extract "D:/some/other/Punk_Data"
 It runs, in order:
 
 1. `scripts/extract-all.py` — loads the whole `Punk_Data` folder into **one** UnityPy scan
-   (`scripts/punklib.py`) and runs all six extractors against it, regenerating every JSON in
+   (`scripts/punklib.py`) and runs every extractor against it, regenerating every JSON in
    `src/lib/game/`. The Unity version is **auto-detected from the game files**, so an engine bump
    needs no edit. `extract-ui-sounds.py` is the only one with an outside dependency (`ffmpeg`, for
    the MP3 encode); without it that one step is skipped and the rest of the run is unaffected.
 2. `scripts/extract-module-effects.ts` — decodes the Odin-serialized module effects dumped in
    step 1 (`scripts/module-effects-raw.json`, gitignored).
-3. `scripts/check-data.ts` — cross-checks the five generated JSONs against each other
+3. `scripts/check-data.ts` — cross-checks the generated JSONs against each other
    (also standalone: `bun run check:data`).
 
 Then: `git diff` the generated JSON to see what the update changed, run the editor against a

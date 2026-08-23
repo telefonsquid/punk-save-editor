@@ -144,12 +144,17 @@ is pure and synchronous — a full recompute per edit is a few thousand map
 operations and beats incremental bookkeeping.
 
 **Mutating the `Vector2Int` dictionaries.** New dict pairs are built by
-cloning the shape of an existing pair in the same dict (keys, `$type`s and the
-pairs array's `$types` metadata), with fresh `$id`s from `maxOdinId` where a
-node carries one — the same discipline `addModule` follows. Before the first
-mutation lands, dump a real pair (scratchpad script over `odin.ts`) and record
-the exact shape here. Moving a module between grid and vault moves the *same
-memento node* between containers, so its `$id` and any `$ref`s survive.
+cloning the shape of an existing pair in the same dict — `{$type: null, $k:
+Vector2Int node without $id, $v}`, verified against a real save and recorded
+in `save/grid.ts`, appendable without `$types` bookkeeping. Moving a module
+between grid and vault moves the *same memento node* between containers — but
+each crossing renumbers the subtree's `$id`s against the file it enters
+(`reidNode` in `save/tree.ts`): the two files are separate, densely numbered
+id spaces, so an id carried over verbatim would collide and silently repoint
+existing `$ref`s. `reidNode` remaps only `$ref`s *inside* the moved subtree;
+an outward `$ref` would re-resolve in the target file — unreachable today,
+because a `Module.Memento` is self-contained, but worth knowing before ever
+moving a node that isn't.
 
 **The overlay is a `<dialog>`.** `showModal()` puts it in the top layer, which
 escapes `.crt-screen`'s filter-made containing block — the same reason the

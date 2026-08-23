@@ -83,9 +83,11 @@ bun run check:data  # cross-check the generated JSONs without re-extracting
 - `src/lib/save/` — the save files: `platform.ts` (which runtime, and the folder plumbing all three
   share), `io.ts` (SaveDir), `lzf.ts` (codec), `odin.ts` (reader/writer),
   `slot.ts` (slot IO), `zip.ts` + `backup.ts` + `backup-folder.ts` (whole-folder zip backups and
-  restore), `tree.ts` (generic Odin accessors + `reidNode` for cross-file node moves), `vault.ts`
+  restore), `tree.ts` (generic Odin accessors + `reidNode` for cross-file node moves), `entities.ts`
+  (entity list + component-memento lookup in the `entities` file), `vault.ts`
   (vault views/mutations), `rundata.ts` (run views), `grid.ts` (the module grid in `entities`:
-  owners, snapshots, mutations), `ship.ts` (exact caps/regen via the grid simulation).
+  owners, snapshots, mutations, grid↔vault node moves), `ship.ts` (exact caps/regen via the grid
+  simulation).
 - `src/lib/game/` — static game knowledge: `data.ts` (assets, names, module info/effects, slot
   types), `grid-rules.ts` (the module-grid simulation ported from the game — docs/grid-editor.md),
   `module-stats.ts`, `rich-text.ts`, `pixel-icon.ts`, and the generated `*.json` (including

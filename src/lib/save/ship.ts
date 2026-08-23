@@ -11,20 +11,14 @@
 
 import { moduleEffectsEntry, moduleInfo, seriesAt } from '$lib/game/data';
 import { simulateGrid } from '$lib/game/grid-rules';
+import { componentMemento, entityNodes } from './entities';
 import { gridOwners, snapshotGrid } from './grid';
-import { isNode } from './odin';
 import type { OdinNode } from './odin';
 import { dictPairs, type ResourcePair } from './tree';
 
 function shipMemento(entities: OdinNode, type: string): OdinNode | null {
-	const ents = entities.$0;
-	if (!Array.isArray(ents)) return null;
-	const ship = ents.find((e) => isNode(e) && e.entityId === 'Ship');
-	if (!isNode(ship)) return null;
-	const mementos = (ship.componentMementos as OdinNode)?.$0;
-	if (!Array.isArray(mementos)) return null;
-	const m = mementos.find((c) => isNode(c) && (c.$type as string)?.startsWith(type));
-	return isNode(m) ? m : null;
+	const ship = entityNodes(entities).find((e) => e.entityId === 'Ship');
+	return ship ? componentMemento(ship, type) : null;
 }
 
 /** The ship's current resource values ({$k, $v} pairs, mutable in place). */

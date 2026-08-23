@@ -182,8 +182,13 @@ export function savedEffectField(value: OdinValue): EffectField | null {
 	};
 }
 
-export function getModules(vault: OdinNode): ModuleView[] {
-	return listItems(vault.modules as OdinValue) as unknown as ModuleView[];
+export function getModules(vault: OdinNode): (ModuleView & OdinNode)[] {
+	return listItems(vault.modules as OdinValue) as unknown as (ModuleView & OdinNode)[];
+}
+
+/** The same list as raw nodes — the view the grid editor's moves splice on. */
+export function getModuleNodes(vault: OdinNode): OdinNode[] {
+	return listItems(vault.modules as OdinValue) as OdinNode[];
 }
 
 /** The four grid edges a module can connect through, in the order the game's

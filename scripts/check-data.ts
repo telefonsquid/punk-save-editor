@@ -2,7 +2,7 @@
  * Cross-checks the generated game-data JSONs for consistency. Runs at the end
  * of `bun run extract`, and standalone as `bun run check:data`.
  *
- * The five files are extracted independently, so after a game update the real
+ * The files are extracted independently, so after a game update the real
  * risk is *drift between them*: a module that gained an effect but lost its
  * icon, a new resource referenced by an effect but missing from asset-names, a
  * renumbered enum leaking ordinals. Errors (exit 1) are relationships the app

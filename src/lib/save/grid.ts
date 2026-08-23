@@ -12,10 +12,11 @@
  * freely — the pairs array carries no `$types` metadata to maintain.
  */
 
-import { savedEffectField, type ModuleView } from './vault';
+import { getModuleNodes, savedEffectField, type ModuleView } from './vault';
+import { componentMemento, entityNodes } from './entities';
 import { EntryType, isNode } from './odin';
 import type { OdinNode, OdinValue } from './odin';
-import { dictPairs } from './tree';
+import { dictPairs, reidNode } from './tree';
 import {
 	cellKey,
 	parseCell,
@@ -33,17 +34,10 @@ export interface GridOwner {
 
 /** Every entity in the file that carries a module grid, in file order. */
 export function gridOwners(entities: OdinNode): GridOwner[] {
-	const ents = entities.$0;
-	if (!Array.isArray(ents)) return [];
 	const owners: GridOwner[] = [];
-	for (const e of ents) {
-		if (!isNode(e)) continue;
-		const mementos = (e.componentMementos as OdinNode)?.$0;
-		if (!Array.isArray(mementos)) continue;
-		const m = mementos.find(
-			(c) => isNode(c) && (c.$type as string)?.startsWith('ModuleGridOwner')
-		);
-		const grid = isNode(m) ? (m.gridMemento as OdinValue) : null;
+	for (const e of entityNodes(entities)) {
+		const m = componentMemento(e, 'ModuleGridOwner');
+		const grid = m ? (m.gridMemento as OdinValue) : null;
 		if (isNode(grid)) owners.push({ entityId: String(e.entityId ?? ''), grid });
 	}
 	return owners;
@@ -111,11 +105,16 @@ function vecNode(x: number, y: number): OdinNode {
 	};
 }
 
-function pairAt(dict: unknown, x: number, y: number): OdinNode | undefined {
-	return dictPairs(dict).find((pair) => {
+/** Index of a cell's pair in a Vector2Int-keyed dict, -1 when absent. */
+function pairIndexAt(dict: unknown, x: number, y: number): number {
+	return dictPairs(dict).findIndex((pair) => {
 		const k = vec(pair.$k as OdinValue);
 		return k.x === x && k.y === y;
 	});
+}
+
+function pairAt(dict: unknown, x: number, y: number): OdinNode | undefined {
+	return dictPairs(dict)[pairIndexAt(dict, x, y)];
 }
 
 /** The raw memento node installed at a cell, or null. */
@@ -135,13 +134,36 @@ export function insertModuleAt(grid: OdinNode, x: number, y: number, memento: Od
  * node keeps its `$id`, so it can move into the vault list or back unharmed. */
 export function removeModuleAt(grid: OdinNode, x: number, y: number): OdinNode | null {
 	const pairs = dictPairs(grid.modules);
-	const index = pairs.findIndex((pair) => {
-		const k = vec(pair.$k as OdinValue);
-		return k.x === x && k.y === y;
-	});
+	const index = pairIndexAt(grid.modules, x, y);
 	if (index < 0) return null;
 	const [pair] = pairs.splice(index, 1);
 	return isNode(pair.$v) ? pair.$v : null;
+}
+
+/**
+ * Files a module node into the vault list, renumbered for the vault's id space
+ * (`reidNode` — every file crossing renumbers, the two files are separate,
+ * densely used id spaces). Index -1 appends; an undo passes the index the node
+ * originally sat at.
+ */
+export function moduleToVault(vault: OdinNode, node: OdinNode, index = -1): void {
+	reidNode(node, vault);
+	const nodes = getModuleNodes(vault);
+	if (index < 0) nodes.push(node);
+	else nodes.splice(index, 0, node);
+}
+
+/**
+ * Takes a module node out of the vault list, renumbered for the `entities`
+ * tree it is headed into, and returns the index it held — what an undo needs
+ * to put it back in place.
+ */
+export function moduleFromVault(vault: OdinNode, node: OdinNode, entities: OdinNode): number {
+	const nodes = getModuleNodes(vault);
+	const index = nodes.indexOf(node);
+	nodes.splice(index, 1);
+	reidNode(node, entities);
+	return index;
 }
 
 /**
@@ -177,10 +199,7 @@ export function setSlotTypeAt(
 	typeId: string | null
 ): string | null {
 	const pairs = dictPairs(grid.slotTypes);
-	const index = pairs.findIndex((pair) => {
-		const k = vec(pair.$k as OdinValue);
-		return k.x === x && k.y === y;
-	});
+	const index = pairIndexAt(grid.slotTypes, x, y);
 	const previous = index >= 0 ? (pairs[index].$v as string) : null;
 	if (typeId && typeId !== 'Normal') {
 		if (index >= 0) pairs[index].$v = typeId;

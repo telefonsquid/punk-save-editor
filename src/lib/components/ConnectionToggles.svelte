@@ -53,7 +53,7 @@
 		width: calc(12 * var(--u));
 		height: calc(12 * var(--u));
 		font-family: var(--font-title);
-		font-size: 12px;
+		font-size: var(--text-hud-xs); /* the HUD face blurs off its 5px grid */
 		line-height: 1;
 		letter-spacing: normal;
 		/* 8-bit HUD hangs a full brick of empty space on each glyph's right (advance
