@@ -87,6 +87,13 @@
 				? ' Your unsaved changes go with it.'
 				: ''}
 		</p>
+		<!-- A restore that failed leaves this screen up, so the reason has to be on
+		     it. The page carries the same line, but a modal covers the page — put
+		     one under every screen that can be the last thing standing after a
+		     failure, or the answer is "nothing happened". -->
+		{#if backups.error}
+			<p class="mt-4 text-danger text-ui-xs">{backups.error}</p>
+		{/if}
 	{:else if doomed}
 		<!-- The same two lines the row showed, so the archive being named is
 		     visibly the one that was clicked. -->
@@ -100,6 +107,9 @@
 			The archive is deleted off the disk, not moved to the recycle bin.{#if openName}
 				Nothing in <strong class="text-ink">{openName}</strong> is touched.{/if}
 		</p>
+		{#if backups.error}
+			<p class="mt-4 text-danger text-ui-xs">{backups.error}</p>
+		{/if}
 	{:else}
 		<BackupFolderRow label="Backups in" onchange={backups.chooseFolder} />
 
