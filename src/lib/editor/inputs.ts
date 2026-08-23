@@ -9,7 +9,8 @@
  * delegation, so in-progress decimal typing isn't clobbered.
  */
 
-import type { ResourcePair } from '$lib/save/tree';
+import type { OdinNode } from '$lib/save/odin';
+import { installShipResource } from '$lib/save/ship';
 import { setConsumableAmount, setIngredientCount, type ConsumableView } from '$lib/save/vault';
 import type { EditorState } from './state.svelte';
 
@@ -84,14 +85,19 @@ export function consumableInput(editor: EditorState, node: ConsumableView, max?:
 }
 
 /** Sets a ship tank, clamped to [0, max] as the game does — a negative value
- * crashes the game on load, over-max gets clamped in play. Not an event
- * factory: the tank bars pass the clicked value as a number. */
+ * crashes the game on load, over-max gets clamped in play. The tank is created
+ * if the save has none, which is how a resource the grid has only just started
+ * granting gets its first value. Not an event factory: the tank bars pass the
+ * clicked value as a number. */
 export function setShipResource(
 	editor: EditorState,
-	pair: ResourcePair,
+	entities: OdinNode,
+	id: string,
 	max: number | undefined,
 	next: number
 ): void {
+	const pair = installShipResource(entities, id);
+	if (!pair) return;
 	let v = Math.max(0, next);
 	if (max !== undefined) v = Math.min(v, max);
 	pair.$v = v;

@@ -13,7 +13,7 @@ import { moduleEffectsEntry, moduleInfo, seriesAt } from '$lib/game/data';
 import { simulateGrid } from '$lib/game/grid-rules';
 import { componentMemento, entityNodes } from './entities';
 import { gridOwners, snapshotGrid } from './grid';
-import type { OdinNode } from './odin';
+import { EntryType, type OdinNode } from './odin';
 import { dictPairs, type ResourcePair } from './tree';
 
 function shipMemento(entities: OdinNode, type: string): OdinNode | null {
@@ -26,6 +26,26 @@ export function shipResources(entities: OdinNode): ResourcePair[] {
 	const unit = shipMemento(entities, 'Unit+Data+Memento');
 	if (!unit) return [];
 	return dictPairs(unit.resourceValues) as unknown as ResourcePair[];
+}
+
+/**
+ * The ship's tank for one resource, adding an empty one where the save has
+ * none. Only a tank's `Value` is ever stored, and `RestoreFromMemento` installs
+ * whatever it finds, so a capacity the grid grants with no value beside it is
+ * an ordinary state — a fresh GEL UP on the grid is exactly that. Giving the
+ * player somewhere to put a number is the same thing the game does on load.
+ */
+export function installShipResource(entities: OdinNode, id: string): ResourcePair | null {
+	const unit = shipMemento(entities, 'Unit+Data+Memento');
+	if (!unit) return null;
+	const pairs = dictPairs(unit.resourceValues);
+	const found = pairs.find((p) => p.$k === id);
+	if (found) return found as unknown as ResourcePair;
+	// Same shape the reader produces for the pairs already there — the key rides
+	// on the writer's default, the float carries its entry type.
+	const pair = { $type: null, $k: id, $v: 0, $types: { $v: { e: EntryType.UnnamedFloat } } };
+	pairs.push(pair as unknown as OdinNode);
+	return pair as unknown as ResourcePair;
 }
 
 /**

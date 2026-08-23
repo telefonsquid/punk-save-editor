@@ -286,6 +286,10 @@ node; the `state_referenced_locally` autofixer warning is intentionally silenced
   in place), `shipResourceCaps(entities)` (`Map<resourceId, max>`) and `shipResourceRegen(entities)`
   (`Map<resourceId, perSecond>`). The last two are one grid walk (`sumGridEffects`) over two
   different `FloatSeries` effects — see game-code.md.
+  **A save stores only the tanks the ship happens to hold**, so the panel lists the union of those
+  and every resource the grid grants a capacity to: install a GEL UP and Gel gets a row at zero,
+  which is what the game would show. Setting a value on such a row calls `installShipResource`,
+  adding the `{$k,$v}` pair the same way `RestoreFromMemento` installs the tank on load.
 - Resource display names: `resourceLabel(id)` / `displayName(id)` in `$lib/game/data.ts`. `Resource`
   assets carry no `displayName`, so three of them would read as a colour codename; `RESOURCE_LABELS`
   maps `Resource Money`/`White`/`Purple` to **Money / Stamina / Gel**. The **ids are save-file

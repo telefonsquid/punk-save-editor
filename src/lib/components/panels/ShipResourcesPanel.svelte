@@ -11,21 +11,31 @@
 
 	let { editor }: { editor: EditorState } = $props();
 
+	const entities = $derived(editor.slot?.files.entities ?? null);
+
 	// Ship resources live in the (lazily loaded) entities file. Both the maximum
 	// and the recharge rate are derived from the installed grid modules — the game
 	// never stores either — so they recompute on every edit.
 	const rows = $derived.by(() => {
-		if (editor.version < 0 || !editor.slot || !editor.loadedFiles.has('entities')) return null;
-		const entities = editor.slot.files.entities;
+		if (editor.version < 0 || !entities || !editor.loadedFiles.has('entities')) return null;
 		const caps = shipResourceCaps(entities);
 		const regen = shipResourceRegen(entities);
-		return shipResources(entities)
-			.map((pair) => ({
-				pair,
-				id: pair.$k,
-				value: pair.$v,
-				max: caps.get(pair.$k),
-				regen: regen.get(pair.$k) ?? 0
+		const stored = shipResources(entities).map((pair) => ({ id: pair.$k, value: pair.$v }));
+
+		// A tank the grid grants but the save holds no value for belongs here too,
+		// empty: only the value is ever stored, and the game installs the tank on
+		// load. Without it a module like GEL UP raises a capacity with no row to
+		// raise it on.
+		const granted = [...caps]
+			.filter(([id, cap]) => cap > 0 && !stored.some((s) => s.id === id))
+			.map(([id]) => ({ id, value: 0 }));
+
+		return [...stored, ...granted]
+			.map(({ id, value }) => ({
+				id,
+				value,
+				max: caps.get(id),
+				regen: regen.get(id) ?? 0
 			}))
 			// Stack them in the game's HUD order (Caps at the top, Health at the
 			// bottom) so the wall of bars matches the ship screen.
@@ -73,7 +83,7 @@
 							id={row.id}
 							value={row.value}
 							max={row.max}
-							onset={(n) => setShipResource(editor, row.pair, row.max, n)}
+							onset={(n) => entities && setShipResource(editor, entities, row.id, row.max, n)}
 						/>
 					</div>
 					<!-- Only the recharge rate rides along, always on, pinned to the far
