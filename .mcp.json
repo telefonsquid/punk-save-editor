@@ -10,6 +10,17 @@
 				"-y",
 				"@sveltejs/mcp"
 			]
+		},
+		"code-review-graph": {
+			"type": "stdio",
+			"command": "code-review-graph",
+			"args": [
+				"serve"
+			],
+			"env": {
+				"PYTHONUTF8": "1",
+				"PYTHONIOENCODING": "utf-8"
+			}
 		}
 	}
 }
