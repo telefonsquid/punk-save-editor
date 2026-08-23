@@ -305,7 +305,8 @@ after:
 - **The band is one gap wide**, and carries the page's save controls whenever
   the row is wide enough for them (below ~1500px they drop out). The overlay
   covers the page's own strip, so `SaveActions.svelte` is the one component both
-  rows render.
+  rows render. A rule marks where they end and the grid's own tools resume; it
+  belongs to the save group, so it leaves with them.
 - **Zoom holds the middle of the viewport.** The step used to rescale the pan
   against a hardcoded 28 rather than the cell's own 34 game pixels, which walked
   the board toward a corner over a few steps. Alongside it, **Center** puts the

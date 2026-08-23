@@ -146,7 +146,12 @@
 			<!-- The overlay covers the page's own save strip, so the same controls
 			     come along — nobody should have to leave the grid to save it. First
 			     thing dropped when the row runs out of room. -->
-			<span class="band-save"><SaveActions {editor} size="xs" /></span>
+			<span class="band-save">
+				<SaveActions {editor} size="xs" />
+				<!-- The rule that keeps the guests from reading as more grid tools.
+				     Part of the group, so it leaves when they do. -->
+				<span class="band-split" aria-hidden="true"></span>
+			</span>
 			<Button size="xs" variant="ghost" disabled={grid.undoDepth === 0} onclick={grid.undo}>
 				Undo
 			</Button>
@@ -193,9 +198,51 @@
 		   the browser's size cap. */
 		filter: url(#crt);
 	}
+	/* The `[open]` attribute carries the arrival as well as the layout, exactly as
+	   in Dialog: a modal has no fold to scroll across, so opening is its
+	   equivalent. Same two `--reveal-*` animations, so opacity and position keep
+	   their own eases. The whole screen moves rather than its contents — the band
+	   and the board are one surface arriving, not two. */
 	.grid-editor[open] {
 		display: flex;
 		flex-direction: column;
+		animation:
+			screen-fade var(--reveal-duration) var(--reveal-ease-fade),
+			screen-rise var(--reveal-duration) var(--reveal-ease);
+	}
+
+	@keyframes screen-fade {
+		from {
+			opacity: 0;
+		}
+	}
+
+	@keyframes screen-rise {
+		from {
+			transform: translateY(var(--reveal-rise));
+		}
+	}
+
+	/* The rise leaves the top of the viewport uncovered on the way in, so the
+	   backdrop behind it has to be the app's own black rather than the UA's grey
+	   wash, and has to dim over the same beat. Both carry fallbacks because older
+	   WebKitGTK does not inherit custom properties into `::backdrop` — see
+	   Dialog.svelte. */
+	.grid-editor::backdrop {
+		/* palette-ok: --color-backdrop's own value, repeated as the fallback above. */
+		background-color: var(--color-backdrop, rgb(0 0 0 / 0.8));
+	}
+	.grid-editor[open]::backdrop {
+		animation: screen-fade var(--reveal-duration, 360ms) var(--reveal-ease-fade, ease-out);
+	}
+
+	/* Nothing plays on exit, and anyone who asked the OS to keep still gets the
+	   screen simply present. */
+	@media (prefers-reduced-motion: reduce) {
+		.grid-editor[open],
+		.grid-editor[open]::backdrop {
+			animation: none;
+		}
 	}
 
 	/* One gap for the whole band — every control is a direct child, so no group
@@ -222,6 +269,15 @@
 		.band-save {
 			display: none;
 		}
+	}
+
+	/* The line between the two groups, the band's own border stood on its end. It
+	   stretches instead of taking a height, so it stays as tall as the row's
+	   tallest control whatever ends up in there. */
+	.band-split {
+		align-self: stretch;
+		width: 2px;
+		background-color: var(--color-edge-dim);
 	}
 
 	/* The brush buttons carry the marker sprites the canvas draws, at native size

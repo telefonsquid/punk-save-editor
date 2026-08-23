@@ -184,6 +184,10 @@ Two mechanisms play it, because the trigger differs:
 - **A CSS animation on `[open]`** for `Dialog`. A modal has no fold to cross, so
   opening is its equivalent of scrolling into view. Split into two animations so
   opacity and position keep their own eases, exactly as the action pairs them.
+  The grid editor's full-screen dialog carries its own copy, for the same reason
+  it carries its own CRT filter — it is a screen arriving, not a card. Its whole
+  shell moves, so the backdrop it uncovers on the way in has to be the app's own
+  black rather than the UA's.
 
 Nothing plays on exit, and `prefers-reduced-motion: reduce` skips the arrival
 entirely rather than shortening it — the element is simply there.
