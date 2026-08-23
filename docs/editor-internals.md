@@ -418,8 +418,9 @@ add tags:
 
 ## Modules in the UI
 
-Modules show in two deliberately different shapes: the vault tab draws each one as the game's own
-tooltip card (`panels/ModulesPanel.svelte`), the add-module modal (`ModulePicker.svelte`) lists rows
+Modules show in two deliberately different shapes: the grid editor's vault dock draws each one as a
+tile with the game's own tooltip card on hover (`components/grid/VaultDock.svelte` +
+`GridHoverCard.svelte`), the add-module modal (`ModulePicker.svelte`) lists rows
 via `components/ModuleList.svelte` with an `actions` snippet for its Add button. What the two share
 is not their *layout* but everything else — grouping, ordering and the effect-field kinds live once
 in `$lib/game/module-groups.ts` (with `moduleCard(id)` returning the info/colour/tier/stats both

@@ -1,6 +1,5 @@
 <script lang="ts">
-	import Button from './Button.svelte';
-	import InfoPop from './InfoPop.svelte';
+	import SaveActions from './SaveActions.svelte';
 	import type { EditorState } from '$lib/editor/state.svelte';
 
 	// The open save and the two controls that act on it, on a strip that pins
@@ -53,47 +52,13 @@
 	});
 </script>
 
-<!-- The "how downloading works" note folds behind the Download changes button,
-     only in the download-only browsers that need it. -->
-{#snippet downloadNote()}
-	This browser can't modify the savefiles directly. <strong class="text-amber"
-		>Download changes</strong
-	> gives you a zip of the files you edited — extract it into your save folder to apply it. Backup
-	hands you the whole folder the same way; putting one back has to be done by hand here. Don't modify
-	the save while it's open in the game.
-{/snippet}
-
 <div class="save-bar" class:is-stuck={stuck} bind:this={bar}>
 	<span class="bar-spring"></span>
 	<span class="text-muted text-ui-xs">{editor.slot?.dir.name}</span>
 	<span class="bar-spring is-middle"></span>
 
 	<div class="bar-actions">
-		<InfoPop note={editor.downloadMode ? downloadNote : undefined}>
-			<Button
-				variant="primary"
-				size="sm"
-				onclick={editor.save}
-				disabled={!editor.dirty || editor.busy}
-			>
-				{editor.downloadMode ? 'Download changes' : 'Save changes'}
-			</Button>
-		</InfoPop>
-		<!-- Backup and Restore are the pair the save folder itself is edited with,
-		     so they sit beside Save rather than behind a menu. Restore is hidden
-		     where it cannot work: a browser that can't write the folder can only
-		     hand the archive back as a download. -->
-		<Button variant="outline" size="sm" onclick={editor.backups.take} disabled={editor.busy}>
-			Backup
-		</Button>
-		{#if editor.backups.canRestore}
-			<Button variant="outline" size="sm" onclick={editor.backups.browse} disabled={editor.busy}>
-				Restore
-			</Button>
-		{/if}
-		<Button variant="primary" size="sm" onclick={editor.open} disabled={editor.busy}>
-			Load new save
-		</Button>
+		<SaveActions {editor} />
 	</div>
 
 	<span class="bar-spring"></span>

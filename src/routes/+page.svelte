@@ -6,7 +6,7 @@
 	import Tabs, { type Tab } from '$lib/components/Tabs.svelte';
 	import TitleScreen from '$lib/components/TitleScreen.svelte';
 	import ConsumablesPanel from '$lib/components/panels/ConsumablesPanel.svelte';
-	import ModulesPanel from '$lib/components/panels/ModulesPanel.svelte';
+	import GridEditor from '$lib/components/grid/GridEditor.svelte';
 	import RawFilesPanel from '$lib/components/panels/RawFilesPanel.svelte';
 	import ResourcesPanel from '$lib/components/panels/ResourcesPanel.svelte';
 	import RunStatsPanel from '$lib/components/panels/RunStatsPanel.svelte';
@@ -23,7 +23,13 @@
 		{ id: 'modules', label: 'Modules' },
 		{ id: 'data', label: 'Stats & Game Data' }
 	];
-	let tab = $state('resources');
+	// The Modules tab is a door, not a page: selecting it opens the grid
+	// editor's full-screen overlay over whatever panel was showing, and closing
+	// the overlay hands the strip back to that panel's tab. The function
+	// binding below routes the strip's writes — `panelTab` only ever holds a
+	// tab with content under it, so nothing changes behind the overlay.
+	let gridOpen = $state(false);
+	let panelTab = $state('resources');
 
 	// One switch for every transition on the page. Someone who asked the OS to
 	// reduce motion gets durations of zero, so the same code paints instantly for
@@ -57,7 +63,17 @@
 		<BackupPrompt {editor} />
 
 		<div class="mx-auto max-w-6xl">
-			<Tabs tabs={TABS} bind:current={tab} label="Editor sections" />
+			<Tabs
+				tabs={TABS}
+				bind:current={
+					() => (gridOpen ? 'modules' : panelTab),
+					(v) => {
+						if (v === 'modules') gridOpen = true;
+						else panelTab = v;
+					}
+				}
+				label="Editor sections"
+			/>
 
 			<div class="space-y-6 py-8">
 				<!-- Failures only. Nothing announces a success — the screen already
@@ -84,7 +100,7 @@
 				     transition here: one on top of the per-section lift would just stack
 				     two moves on the same content. -->
 				<div onchange={editor.refresh}>
-					{#if tab === 'resources'}
+					{#if panelTab === 'resources'}
 						<!-- Ship tanks, then the inventory strip, then the consumable wheel —
 						     stacked top to bottom to mirror the game's own resource screen.
 						     Wide gaps so each category reads as its own block, not a list. -->
@@ -93,8 +109,6 @@
 							<ResourcesPanel {editor} />
 							<ConsumablesPanel {editor} />
 						</div>
-					{:else if tab === 'modules'}
-						<ModulesPanel {editor} />
 					{:else}
 						<!-- Run stats are read-mostly trivia (kills, time, floor); they
 						     share the tab with the raw file trees rather than taking a
@@ -104,6 +118,11 @@
 							<RawFilesPanel {editor} />
 						</div>
 					{/if}
+
+					<!-- Inside the onchange delegate on purpose: the overlay's own
+					     dialogs commit number edits through the same change events as
+					     the panels. -->
+					<GridEditor {editor} bind:open={gridOpen} />
 				</div>
 			</div>
 		</div>
