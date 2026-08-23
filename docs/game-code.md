@@ -314,3 +314,39 @@ big sprites range from 15 px to 29 px square, which made one list read as severa
 The small ones are a uniform 17 px. Rendered by `components/ItemIcon.svelte` (pixelated); assets
 with no sprite assigned (a few
 modules, e.g. `Weapon_Fly`) are simply absent from the map. Regenerate on game update.
+
+### The module grid's own art
+
+The grid screen draws from two places at once, which is why one extractor covers both.
+
+**The cell markers are a shader.** `ModuleGridWidget.RefreshBackgroundTexture()` builds a runtime
+`Texture2D(100, 100)` LUT — one pixel per grid cell, black for a normal cell, red for
+`ModuleSlotType.Invalid`, green where `GetLevelDelta > 0` — and hands it to a single RawImage
+running `Unlit/GridBackground` over the whole board. The shader offsets into the 64×64
+`Sprites UI GridSlotTypes` sheet by `float2(lut.r, lut.g) * 0.5`, so each LUT colour selects one
+32×32 quadrant: empty ring (8×8, `#111111`), level-up ring (12×12, `#3a1a01`), blocked ✕ (10×10,
+`#3f0000`). The fourth quadrant is unused. This is also why `ModuleSlotType.gridVisualPrefab` is
+**null** for `Normal`, `Invalid` and `LevelUp` and non-null only for `Active`/`Weapon`/`Embedded`
+— and all three point at the *same* `SpecialSlotWidget` prefab, whose TMP child reads "WPN" and
+whose class never touches it. So the game labels a gadget slot "WPN" too.
+
+**Everything else is a plain sprite** on a prefab, all in `sharedassets0.assets`:
+
+| What | Where | Size |
+| --- | --- | --- |
+| module frame | `ModuleType.background`, one per shop category | 32×32 (rect) or 34×34 |
+| connection notch, idle | `ConnectionWidget`'s root Image, `HUD_ModuleIcons_0` | 11×11 (a 5×5 ring) |
+| connection notch, connected | its `ModuleConnection` child, `HUD_ModuleIcons_1` | 11×11, half a capsule |
+| connection notch, error | `MainMenu_placeholders_7` | 9×10 |
+| +1 chevron | `ModuleIconWidget.upgradesPrefab`, `HUD_ModuleIcons_15` | 9×8, `Image.color` → `#49c500` |
+| empty special slot | `SpecialSlotWidget`'s Background Image, `HUD_ModuleIcons_9` | 34×34 octagon, `Image.color` → `#3a3a3a`, white "WPN" over it |
+| cluster border | the `ClusterBorder` RuleTile's 15 `UI ClusterBorder_*` sprites | 32×32 |
+
+The widest frame is what makes **the grid cell 34 game pixels**; the 32-pixel rect frame centres in
+it and the leftover is the gap between neighbours. A merged seam capsule is two connected notches
+back to back, not an asset of its own.
+
+`scripts/extract-grid-icons.py` writes all of it to `src/lib/game/grid-icons.json` as SVG path data
+rather than PNGs — the editor recolours every sprite (the frame by the module's colour, the notches
+by one neutral), and a tinted bitmap would have to be filtered after scaling, which is the one thing
+the integer-scaling rule forbids. See docs/grid-editor.md for the shape of that file.

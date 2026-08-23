@@ -371,6 +371,11 @@ instead of being silently mis-filed.
   save never says — everything the grid simulation (`grid-rules.ts`) needs to judge a cell.
   Extracted from the `ModuleSlotType` assets by `extract-slot-types.py`; the feature's own doc is
   **grid-editor.md**.
+- `grid-icons.json` — `{ cell, sprites }`: the module grid's own pixel art as SVG path data at
+  native size, one path per distinct colour, plus the cell size in game pixels. Cut out of the
+  `GridSlotTypes` shader sheet and the grid prefabs by `extract-grid-icons.py`, drawn by
+  `PixelSprite.svelte`, and explained in **grid-editor.md**. Paths rather than bitmaps because the
+  editor recolours every one of them — a frame takes the module's colour, a notch the grid's grey.
 - `ui-sounds.json` — editor event → `{ sfx, volume, clips: [{ uri, weight }] }`, the game's own
   interface sounds as trimmed MP3 data URIs. Keyed by the game's sfx *name*, and the clip list keeps
   the game's weighted distribution so a future sound with variants needs no code change. See "The

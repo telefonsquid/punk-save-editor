@@ -11,6 +11,7 @@
 import type { AssetInfo, ModuleEffectsEntry, ModuleInfo, SlotTypeInfo } from '../src/lib/game/data';
 import { EFFECT_KIND_VALUES } from '../src/lib/game/effect-kinds';
 import assetNames from '../src/lib/game/asset-names.json';
+import gridIcons from '../src/lib/game/grid-icons.json';
 import itemIcons from '../src/lib/game/item-icons.json';
 import moduleEffects from '../src/lib/game/module-effects.json';
 import moduleInfo from '../src/lib/game/module-info.json';
@@ -133,6 +134,34 @@ for (const [id, slot] of Object.entries(slots)) {
 for (const [id, m] of Object.entries(infos)) {
 	for (const name of m.augments ?? []) {
 		if (!typeNames.has(name)) errors.push(`module ${id} augments unknown module type '${name}'`);
+	}
+}
+
+// --- grid-icons.json must cover everything the grid editor draws ---
+// The sprites are cut out of the game's own art, so a renamed sheet or a new
+// ModuleType shows up here as a missing key rather than as a blank canvas.
+const gridSprites = gridIcons.sprites as unknown as Record<string, { w: number; h: number; layers: unknown[] }>;
+for (const name of [
+	'slotEmpty',
+	'slotBoost',
+	'slotBlocked',
+	'slotSpecial',
+	'notch',
+	'notchLinked',
+	'boostPip'
+]) {
+	if (!gridSprites[name]) errors.push(`grid-icons.json has no '${name}' sprite`);
+}
+if (!gridIcons.cell) errors.push(`grid-icons.json has no cell size — no ModuleType carried a background`);
+for (const name of typeNames) {
+	if (!gridSprites[`frame:${name}`]) errors.push(`grid-icons.json has no frame for module type '${name}'`);
+}
+for (const [name, sprite] of Object.entries(gridSprites)) {
+	if (sprite.layers.length === 0) errors.push(`grid-icons.json sprite '${name}' is empty`);
+	// A frame centres in the cell, so the leftover has to split evenly — an odd
+	// remainder would put the whole grid half a game pixel off its own dots.
+	if (name.startsWith('frame:') && (gridIcons.cell - sprite.w) % 2 !== 0) {
+		errors.push(`grid-icons.json frame '${name}' is ${sprite.w}px in a ${gridIcons.cell}px cell — cannot centre`);
 	}
 }
 

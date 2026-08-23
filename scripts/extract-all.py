@@ -23,6 +23,7 @@ SCRIPTS = [
     "extract-item-icons",
     "extract-module-info",
     "extract-slot-types",
+    "extract-grid-icons",
     "extract-module-effects",
     "extract-ui-sounds",
 ]
