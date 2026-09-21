@@ -29,6 +29,7 @@
 - **Modifies Saves in Place*** – open your save folder, change what you want, hit save.
 - **Backup & Restore** – zip the whole save folder in one click, and put any archive back from a list of them.
 - **Edit Ingredients, Ship Resources & Consumables** – health, money, bombs, powerstars, it's all there.
+- **Visual Module Grid Editor** – place, move and power modules on the ship grid, with the game's own rules, sprites and sounds.
 - **Edit Modules** – add/remove vault modules, edit connections & max power cores.
 - **Edit Raw Game Data** – every value in every save file is reachable through the raw editor.
 - **Create Custom Modules** – create user-defined item grids up to a size of 9x9.
@@ -42,12 +43,16 @@
 
 | PUNK version | Status | Editor Version |
 | --- | --- | --- |
-| v0.12.10 | ✅ Supported | 1.0.0 - 1.1.0 |
-| v0.12.0 - v0.12.9 | ⚠️ Untested \| Might Work | 1.0.0 - 1.1.0 |
+| v0.12.10 | ✅ Supported | 1.0.0 - 1.2.0 |
+| v0.12.0 - v0.12.9 | ⚠️ Untested \| Might Work | 1.0.0 - 1.2.0 |
 | v0.6.0 - v0.11.0 | ❌ Untested \| Most Likely Broken | – |
 
 ## Screenshots
 
+<p align="center">
+  <img src="docs/assets/screenshot-title-screen.png" width="55.7%" alt="The title screen and the save folder picker" />
+  <img src="docs/assets/screenshot-modules-editor.png" width="42.3%" alt="The module grid editor with the vault dock" />
+</p>
 <p align="center">
   <img src="docs/assets/screenshot-ship-resources.png" width="49%" alt="Ship resources as the game's HUD tank bars" />
   <img src="docs/assets/screenshot-resources.png" width="49%" alt="Currencies and ingredients" />
@@ -59,7 +64,6 @@
 
 ## Roadmap
 
-- **Module grid editor** – place and move modules on the ship grid visually, exactly mirroring the game's ui.
 - **Map editor (maybe)** – edit the map, with the possibility of fully custom challenge maps.
 
 Ideas and bug reports are welcome in the [issues](https://github.com/telefonsquid/punk-save-editor/issues). I'm dedicated to support this project throughout the game's lifecycle.

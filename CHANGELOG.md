@@ -9,6 +9,33 @@ headings matters.
 - Optional `### Added` / `### Changed` / `### Fixed` groups under it.
 - Everything else is plain bullets or short paragraphs.
 
+## 1.2.0 — 2026-09-21
+
+### Added
+
+- Visual Module Grid Editor
+- Modules drawn with the game's own sprites
+- Pan & stepped Zoom
+- Vault Dock beside the Grid
+- Slot Brushes for Booster & Blocked Cells
+- Grid Reroll
+- Undo & Redo
+- Shift-Copy a Placement
+- Ignore Placement Rules Toggle
+- Ship Toggle for Co-op Saves
+- The game's own Grid Sounds
+
+### Changed
+
+- The Modules Tab now opens the Grid Editor
+- Save, Backup & Load share one Bar
+- Ship Tanks granted by the Grid always show up
+
+### Fixed
+
+- Restore & Delete failures show their reason
+- Long Backup Paths no longer overflow Dialogs
+
 ## 1.1.0 — 2026-07-29
 
 ### Added
