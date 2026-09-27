@@ -14,7 +14,58 @@ permissions:
   contents: write
 
 jobs:
+  # Parallel builds each open their own draft when none exists yet, so one job opens it first
+  release:
+    name: Create the draft release
+    runs-on: ubuntu-latest
+    outputs:
+      id: ${{ steps.draft.outputs.id }}
+
+    steps:
+      - uses: actions/checkout@v5
+      - uses: oven-sh/setup-bun@v2
+
+      # A tag that disagrees with the version in the app is worth failing on
+      # here rather than shipping installers that name the wrong release.
+      - name: Check the tag against the app version
+        run: |
+          version=$(bun -e 'console.log(require("./package.json").version)')
+          if [ "v$version" != "${{ github.ref_name }}" ]; then
+            echo "tag ${{ github.ref_name }} does not match package.json $version"
+            echo "run: bun run version:set $version"
+            exit 1
+          fi
+
+      # The notes come out of CHANGELOG.md, which is also what the app's
+      # /changelog page renders. Fails the build if the tag has no section.
+      - name: Read release notes from the changelog
+        run: |
+          bun run --silent release-notes "${{ github.ref_name }}" > notes.md
+          cat >> notes.md <<'EOF'
+
+          ---
+
+          <!-- downloads -->
+          <!-- /downloads -->
+
+          > **macOS** – Builds are unsigned: right-click the app and choose Open on first launch, or macOS refuses it outright.
+          EOF
+
+      # A rerun picks up the draft of the first run instead of opening another
+      - name: Create the draft
+        id: draft
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: ${{ github.ref_name }}
+        run: |
+          id=$(gh api "repos/$GITHUB_REPOSITORY/releases?per_page=100" --jq "map(select(.tag_name == \"$TAG\"))[0].id // empty")
+          if [ -z "$id" ]; then
+            id=$(gh api "repos/$GITHUB_REPOSITORY/releases" -f tag_name="$TAG" -f name="PUNK Save Editor $TAG" -F draft=true -F body=@notes.md --jq .id)
+          fi
+          echo "id=$id" >> "$GITHUB_OUTPUT"
+
   build:
+    needs: release
     strategy:
       fail-fast: false
       matrix:
@@ -83,46 +134,11 @@ jobs:
       - name: Install frontend dependencies
         run: bun install --frozen-lockfile
 
-      # A tag that disagrees with the version in the app is worth failing on
-      # here rather than shipping installers that name the wrong release.
-      - name: Check the tag against the app version
-        shell: bash
-        run: |
-          version=$(bun -e 'console.log(require("./package.json").version)')
-          if [ "v$version" != "${{ github.ref_name }}" ]; then
-            echo "tag ${{ github.ref_name }} does not match package.json $version"
-            echo "run: bun run version:set $version"
-            exit 1
-          fi
-
-      # The notes come out of CHANGELOG.md, which is also what the app's
-      # /changelog page renders. Fails the build if the tag has no section.
-      - name: Read release notes from the changelog
-        id: notes
-        shell: bash
-        run: |
-          {
-            echo 'body<<PUNK_EOF'
-            bun run --silent release-notes "${{ github.ref_name }}"
-            echo 'PUNK_EOF'
-          } >> "$GITHUB_OUTPUT"
-
       - uses: tauri-apps/tauri-action@v0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tagName: ${{ github.ref_name }}
-          releaseName: 'PUNK Save Editor v__VERSION__'
-          releaseBody: |
-            ${{ steps.notes.outputs.body }}
-
-            ---
-
-            >  **Windows** – Not sure what to pick? Expand the asset list below and download the file ending in `_windows_x64_portable.exe` — it runs without installing anything.
-
-            > **macOS** – Builds are unsigned: right-click the app and choose Open on first launch, or macOS refuses it outright.
-          releaseDraft: true
-          prerelease: false
+          releaseId: ${{ needs.release.outputs.id }}
           args: ${{ matrix.args }}
 
       # The NSIS/MSI bundles wrap this same exe. Tauri apps are self-contained,
@@ -146,7 +162,7 @@ jobs:
   # whole set can be made to match. Runs even when a build failed, so a partial
   # release is still consistent in what it did manage to upload.
   rename:
-    name: Normalise asset names
+    name: Normalise asset names and link downloads
     needs: build
     if: always()
     runs-on: ubuntu-latest
@@ -159,3 +175,11 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: bun run rename-release-assets "${{ github.ref_name }}"
+
+      # GitHub folds most assets away, badges in the notes keep every file in view.
+      # Runs after a failed rename too, files it could not name just get no badge.
+      - name: Link every download in the release notes
+        if: always()
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: bun run release-downloads "${{ github.ref_name }}"

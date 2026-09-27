@@ -28,21 +28,33 @@ To ship a version:
    `### Changed` / `### Fixed` groups under it are optional.
 2. `bun run version:set 1.1.0` — writes the version into `package.json`,
    `src-tauri/tauri.conf.json`, `src-tauri/Cargo.toml` and the `Cargo.lock`
-   entry, and refuses to run if the changelog has no section for it.
+   entry, moves the README download links to the new version, and refuses to
+   run if the changelog has no section for it.
 3. `bun run check && bun run lint`.
 4. Commit, then `git tag v1.1.0` and `git push origin master --tags`.
 5. The `Release` workflow builds Windows (x64 + ARM64, MSI/NSIS installers plus
    a bare portable `.exe`), macOS (Apple Silicon + Intel, dmg only) and Linux
    (x64 + ARM64, AppImage/deb/rpm) and attaches them all to a **draft** release.
-   It fails fast if the tag disagrees with `package.json`. Give it ~15 minutes —
-   the assets appear as each platform finishes, so a half-empty release page
-   part way through is the build still running, not a failure.
+   A first job opens the draft and every build uploads into it by id, because
+   parallel builds each open their own draft when none exists yet. That job
+   fails before any build starts if the tag disagrees with `package.json`.
+   Give it ~15 minutes — the assets appear as each platform finishes, so a
+   half-empty release page part way through is the build still running, not a
+   failure.
 6. A final `rename` job then gives every asset the same name
    (`punk-save-editor_<version>_<os>_<arch>[_<variant>].<ext>`), because each
    bundler otherwise names its own output — `amd64` on the deb, `x86_64` on the
    rpm, `aarch64` on the dmg, a locale on the msi. `scripts/rename-release-assets.ts`
    owns that mapping and is safe to re-run by hand:
-   `bun run rename-release-assets v1.1.0 [--dry-run]`.
+   `bun run rename-release-assets v1.1.0 [--dry-run]`. It then writes a table
+   of shields.io download badges between `<!-- downloads -->` and
+   `<!-- /downloads -->` in the notes (`scripts/release-downloads.ts`,
+   `bun run release-downloads v1.1.0 [--dry-run]`), because GitHub folds most
+   assets of a big release away. Only files the release really has get a
+   badge, and the links only work once the release is published. GitHub drops
+   a draft's tag on any edit that leaves `tag_name` out, so the script sends it
+   along. The README carries the same table (`--readme` rewrites it from a
+   release, only needed when the set of files changes).
 7. Review the draft on GitHub and publish it. Publishing is the only manual
    step; the notes are already filled in from the changelog.
 

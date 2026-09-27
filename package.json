@@ -18,6 +18,7 @@
 		"version:set": "bun scripts/set-version.ts",
 		"release-notes": "bun scripts/release-notes.ts",
 		"rename-release-assets": "bun scripts/rename-release-assets.ts",
+		"release-downloads": "bun scripts/release-downloads.ts",
 		"tauri": "tauri"
 	},
 	"devDependencies": {

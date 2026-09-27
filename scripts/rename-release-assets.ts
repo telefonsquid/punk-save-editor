@@ -16,6 +16,8 @@
  * as `<owner>/<repo>` — both of which the workflow already has.
  */
 
+import { api, findRelease, repoAccess } from './github';
+
 /**
  * Extensions longest-first: `.app.tar.gz` has to be tried before `.tar.gz` would
  * match it, and both before anything shorter.
@@ -70,34 +72,6 @@ export function targetName(name: string, version: string): string | null {
 	return parts.join('_') + extension;
 }
 
-interface Asset {
-	id: number;
-	name: string;
-}
-
-interface Release {
-	id: number;
-	tag_name: string;
-	draft: boolean;
-	assets: Asset[];
-}
-
-async function api(token: string, path: string, init?: RequestInit): Promise<unknown> {
-	const response = await fetch(`https://api.github.com${path}`, {
-		...init,
-		headers: {
-			Accept: 'application/vnd.github+json',
-			Authorization: `Bearer ${token}`,
-			'X-GitHub-Api-Version': '2022-11-28',
-			...init?.headers
-		}
-	});
-	if (!response.ok) {
-		throw new Error(`${init?.method ?? 'GET'} ${path} — ${response.status} ${await response.text()}`);
-	}
-	return response.json();
-}
-
 async function main(): Promise<number> {
 	const [, , tag = '', ...flags] = process.argv;
 	const dryRun = flags.includes('--dry-run');
@@ -107,20 +81,15 @@ async function main(): Promise<number> {
 		return 1;
 	}
 
-	const repo = process.env.GITHUB_REPOSITORY;
-	const token = process.env.GH_TOKEN || process.env.GITHUB_TOKEN;
-	if (!repo) {
-		console.error('GITHUB_REPOSITORY is not set');
+	const access = repoAccess();
+	if (!access) {
+		console.error('GITHUB_REPOSITORY and GH_TOKEN (or GITHUB_TOKEN) must be set');
 		return 1;
 	}
-	if (!token) {
-		console.error('GH_TOKEN / GITHUB_TOKEN is not set');
-		return 1;
-	}
+	const { repo, token } = access;
 
 	const version = tag.replace(/^v/, '');
-	const releases = (await api(token, `/repos/${repo}/releases?per_page=100`)) as Release[];
-	const release = releases.find((r) => r.tag_name === tag);
+	const release = await findRelease(token, repo, tag);
 
 	// A build that failed on every platform leaves nothing to rename. The red job
 	// is already the signal for that, so don't add a second failure saying so.
