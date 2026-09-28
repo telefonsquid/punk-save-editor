@@ -10,11 +10,10 @@
 	// Back and Forward, which a browser keeps in its own chrome and a webview has
 	// nowhere else to put.
 	//
-	// Two copies are drawn: the page's, above `.crt-screen`, and the grid editor's,
-	// inside its full-screen dialog. A modal makes everything outside it inert, so
-	// a screen that covers the page has to bring the bar along or the window could
-	// not be moved or closed while it is open. Both read one `windowChrome`, so the
-	// two can never disagree about the window's state.
+	// There is one, drawn by the layout above `.crt-screen`, and nothing covers
+	// it: a screen that fills the window (the grid editor) starts below it
+	// instead, so the window can be moved and closed whatever is open. A card
+	// `Dialog` is modal and dims it with the rest of the page, like a native one.
 	//
 	// `data-tauri-drag-region="deep"`: a press anywhere in the strip drags the
 	// window and a double-click maximizes it, except on the buttons, which Tauri's

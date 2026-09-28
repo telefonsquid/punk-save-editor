@@ -151,10 +151,11 @@ the CRT `filter` — **not** the window. Four traps that follow:
   (`LoadOverlay.svelte`), or live outside the wrapper like `ScrollBar`.
 - **The top layer escapes it.** A `<dialog>` renders outside the wrapper, so it
   gets no filter of its own — fine for a card floating over a filtered page,
-  wrong for one that covers the screen. The grid editor takes its own copy of
-  `filter: url(#crt)` for that reason; any other full-screen dialog owes the
-  same. Keep such a copy viewport-sized: a page-tall filter buffer runs past
-  the browser's size cap and comes back as a blur.
+  wrong for one that covers the screen. The grid editor, which lives outside the
+  wrapper too (lifted to `<body>`, see *Window chrome*), takes its own copy of
+  `filter: url(#crt)` for that reason; any other full-screen surface owes the
+  same. Keep such a copy window-sized: a page-tall filter buffer runs past the
+  browser's size cap and comes back as a blur.
 - **It does not start at the top of the window in the desktop app.** The
   window is undecorated and draws its own title bar above the screen (see
   *Window chrome* below), and `.crt-screen` starts `--titlebar-h` down. Anything
@@ -197,13 +198,17 @@ people reach for the shape their OS taught them:
   around the window), all eight on Linux, none on macOS.
 
 `$lib/window-chrome.svelte.ts` is the one place that knows which OS it is and
-whether the window is maximized, fullscreen or focused; every copy of the bar
-reads it. There are two copies: the page's, above `.crt-screen`, and the grid
-editor's, inside its dialog — a modal makes everything outside it inert, so a
-screen covering the window has to bring the bar along. Both sit under the CRT
-filter like everything else on screen. Fullscreen (F11) takes the bar away, as
-it would a native one. A card-sized `Dialog` does not carry a bar: like a
-native modal, it dims the window's chrome with the rest of the page.
+whether the window is maximized, fullscreen or focused. There is **one bar**,
+the layout's, above `.crt-screen` and under the CRT filter like everything else
+on screen, and nothing draws over it. Fullscreen (F11) takes it away, as it
+would a native one. A card-sized `Dialog` dims it with the rest of the page,
+like a native modal. A screen that covers the whole window — the grid editor —
+starts `--titlebar-h` down instead, so the window can be moved, resized and
+closed with it open and its arrival never touches the bar. That rules out a
+modal `<dialog>` for such a screen, since a modal makes the bar inert: the grid
+is a fixed layer lifted out to `<body>` that does by hand what `showModal()`
+would (inert page, focus in and back, Esc), and brings `WindowEdges` for the
+edges it covers.
 
 ## Rhythm
 
@@ -227,10 +232,10 @@ Two mechanisms play it, because the trigger differs:
 - **A CSS animation on `[open]`** for `Dialog`. A modal has no fold to cross, so
   opening is its equivalent of scrolling into view. Split into two animations so
   opacity and position keep their own eases, exactly as the action pairs them.
-  The grid editor's full-screen dialog carries its own copy, for the same reason
+  The grid editor's full-screen layer carries its own copy, for the same reason
   it carries its own CRT filter — it is a screen arriving, not a card. Its whole
-  shell moves, so the backdrop it uncovers on the way in has to be the app's own
-  black rather than the UA's.
+  screen moves, clipped at the title bar's edge, over a dimming of its own that
+  fades in on the same beat.
 
 Nothing plays on exit, and `prefers-reduced-motion: reduce` skips the arrival
 entirely rather than shortening it — the element is simply there.

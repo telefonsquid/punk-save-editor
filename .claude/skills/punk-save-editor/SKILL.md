@@ -114,7 +114,7 @@ bun run check:data  # cross-check the generated JSONs without re-extracting
   `CopyButton` (the save paths' copy glyph), and `WindowBar`/`WindowControls`/`WindowNav`/`WindowEdges` (the
   desktop app's own title bar, OS-styled buttons and resize edges — the window is undecorated; state
   in `$lib/window-chrome.svelte.ts`, rules in docs/design.md "Window chrome").
-  `grid/` is the **module-grid editor** overlay: `GridEditor` (full-viewport dialog), `GridCanvas`
+  `grid/` is the **module-grid editor** overlay: `GridEditor` (full-window layer under the title bar, not a modal — docs/grid-editor.md says why), `GridCanvas`
   (pan/zoom board), `GridModuleTile`, `GridHoverCard`, `VaultDock`, `ModuleEditDialog`,
   `PixelSprite` (the game's grid art) — the feature's own doc is **docs/grid-editor.md**.
 - `src/routes/+page.svelte` — composition, plus which screen shows: read off `page.state`, so Back

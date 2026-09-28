@@ -6,8 +6,7 @@
  * to drag the window by (`WindowBar`), the three buttons in the style of the OS
  * it is running on (`WindowControls`), and on the platforms whose borderless
  * windows need it, the edges to resize by (`WindowEdges`). This is the one
- * place that knows which OS that is and what state the window is in, so the
- * copies of the bar (the page's and the grid editor's) always agree.
+ * place that knows which OS that is and what state the window is in.
  *
  * In a browser none of it exists: `style` is null and every surface that asks
  * draws nothing, because the browser already has a frame of its own.

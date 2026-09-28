@@ -164,11 +164,18 @@ an outward `$ref` would re-resolve in the target file — unreachable today,
 because a `Module.Memento` is self-contained, but worth knowing before ever
 moving a node that isn't.
 
-**The overlay is a `<dialog>`.** `showModal()` puts it in the top layer, which
-escapes `.crt-screen`'s filter-made containing block — the same reason the
-existing dialogs work. `Dialog.svelte`'s title-band/scroll-body shape is wrong
-for a canvas, so `GridEditor.svelte` owns its own full-viewport `<dialog>`
-(reusing the slab tokens and the open/close sounds).
+**The overlay is a layer below the title bar, not a modal.** It was a
+`<dialog>` once, but a modal makes everything outside it inert — the desktop
+app's title bar too — so the grid had to draw a second bar of its own, and its
+arrival slid that copy over the real one. Now `GridEditor.svelte` is a fixed
+layer from `--titlebar-h` to the bottom of the window, moved to `<body>` on
+mount: inside `.crt-screen` the filter would pin `position: fixed` to the
+scrolling page, and making the page inert would take the grid with it. What
+`showModal()` gave is done by hand — `.crt-screen` is made inert while it is
+open, focus moves to the layer and back to where it came from, Esc closes it
+(after settling a carry or a brush; an Esc inside one of its own dialogs is
+that dialog's), and the open/close sounds play on the flag. The grid's own
+dialogs (the picker, the card editor) are still `Dialog` modals.
 
 **The canvas is DOM, not `<canvas>`.** Cells, tiles and markers are absolutely
 positioned elements inside one transformed plane (`translate` for pan, integer
@@ -316,13 +323,14 @@ after:
   error — keeps the page's own 3px and holds its size at every zoom. It used to
   sit on the viewport, and the buttons grew and shrank with the board. The two
   cursor ghosts hang outside the plane and take the game pixel as a prop.
-- **The grid screen paints its own CRT.** A `<dialog>` renders in the top
-  layer, which is outside `.crt-screen` and so outside its filter — the grid
-  was the one surface in the app with no aberration or bloom on it. The screen
-  carries `filter: url(#crt)` itself. It is viewport-sized like the wrapper is,
-  which is what keeps the filter buffer under the browser's size cap, and the
-  cursor ghosts still land on the pointer because the new containing block the
-  filter creates starts at (0, 0) and is the viewport.
+- **The grid screen paints its own CRT.** The layer is outside `.crt-screen`
+  and so outside its filter — the grid was the one surface in the app with no
+  aberration or bloom on it. The screen carries `filter: url(#crt)` itself. It
+  is window-sized like the wrapper is, which is what keeps the filter buffer
+  under the browser's size cap. The filter makes the screen the containing
+  block of the cursor ghosts, and in the desktop app it starts below the title
+  bar, so the pointer is tracked relative to the screen's box, not the
+  viewport.
 - **An armed slot brush rides the cursor**, exactly like a carried module: the
   marker it would leave follows the pointer and the hover ring says which cell
   gets it. Drawing the preview into the cell instead put the answer in two
