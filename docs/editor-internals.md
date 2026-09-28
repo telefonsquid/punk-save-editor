@@ -514,6 +514,39 @@ surfaces open with), the pieces that are identical wherever a module is drawn ar
   grid level. A stat line with a `resource` renders that resource's HUD icon in place of its name,
   which is what the game does too (the written name stays as `sr-only` text).
 
+## Back and Forward are history entries on one route
+
+The editor is a single SvelteKit route, so its screens never changed the URL and Back used to leave
+the site. Each move between screens is now a **shallow entry** (`pushState('', state)` from
+`$app/navigation`), and `+page.svelte` reads the screen back off `page.state` instead of holding it
+in local state: which save (`save`), which tab (`tab`), whether the grid overlay is up (`grid`). The
+shape is `App.PageState` in `src/app.d.ts`; the bookkeeping is `$lib/editor/history.svelte.ts`.
+
+- **What makes an entry:** a save arriving (opened, or restored into), a tab click, opening the grid.
+  Closing the grid (Exit or Esc) *is* Back, so Forward reopens it.
+- **Back never drops the save.** Stepping back to the title screen leaves the slot in memory, unsaved
+  edits included; Forward (or the title screen's *Return to …*) goes straight back in. Only the mark
+  (`appHistory.leave()`, which rewinds to the title entry the save was opened from) or opening another
+  folder lets it go — and the title screen says so when the parked save is dirty.
+- **Stale entries are stepped over.** An entry names the save it was made for (a per-slot id). Once
+  that save is gone, landing on one of its entries keeps going in the same direction.
+- **Every entry carries its own index `i`**, because WebKit has no `navigation.canGoBack` and the
+  desktop app's own Back/Forward buttons need to know whether they can move.
+
+Two traps, both found the hard way:
+
+- **Settle from an effect on `page.state`, not a `popstate` listener.** SvelteKit sets `page.state`
+  after the event has been through every listener (and its own listener is registered after the
+  layout's effects run), so a listener always sees the entry it is leaving.
+- **Restamp the first entry on `afterNavigate('enter')`.** The entry SvelteKit writes before its
+  router starts carries a different navigation index from every entry pushed after, so stepping back
+  onto it is a full navigation rather than a shallow one. `replaceState` there brings it into line.
+
+In the desktop app there is no browser chrome, so `appHistory.bind()` supplies the inputs a browser
+would: the mouse's side buttons (cancelled natively — WebView2 and wry's WebKitGTK shim both step
+history on their own — and stepped once here), Alt+Left/Right or Cmd+[ / Cmd+], and the keyboard's
+BrowserBack/BrowserForward keys. `WindowNav` puts the two buttons in the title bar.
+
 ## In-browser end-to-end testing
 
 `open()` honors a dev-only hook: when `import.meta.env.DEV` and `window.__punkTestDir` is set, it loads

@@ -5,6 +5,7 @@
 	import InfoPop from './InfoPop.svelte';
 	import PunkLogo from './PunkLogo.svelte';
 	import type { EditorState } from '$lib/editor/state.svelte';
+	import { appHistory } from '$lib/editor/history.svelte';
 	import { reveal } from '$lib/actions/reveal';
 	import { supportsInPlaceSave } from '$lib/save/platform';
 
@@ -81,7 +82,23 @@
 					Restore backup
 				</Button>
 			{/if}
+			<!-- Back from the editor lands here with the save still open behind it.
+			     Forward is the way back in, and so is this, for anyone who came here
+			     by Back and is not thinking in history. -->
+			{#if editor.slot && appHistory.canGoForward}
+				<Button size="sm" onclick={appHistory.forward} disabled={editor.busy}>
+					Return to {editor.slot.dir.name}
+				</Button>
+			{/if}
 		</div>
+
+		<!-- Opening another folder replaces the one still open, and its edits with
+		     it. Said here, before the click, because nothing asks after it. -->
+		{#if editor.slot && editor.dirty}
+			<p class="text-amber text-ui-xs">
+				{editor.slot.dir.name} has unsaved changes. Opening another folder discards them.
+			</p>
+		{/if}
 
 		{#if editor.error}
 			<p class="text-danger text-ui-xs">{editor.error}</p>

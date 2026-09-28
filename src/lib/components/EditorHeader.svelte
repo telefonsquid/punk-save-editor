@@ -2,6 +2,7 @@
 	import Button from './Button.svelte';
 	import PunkLogo from './PunkLogo.svelte';
 	import type { EditorState } from '$lib/editor/state.svelte';
+	import { appHistory } from '$lib/editor/history.svelte';
 
 	let { editor }: { editor: EditorState } = $props();
 
@@ -17,6 +18,9 @@
 			return;
 		}
 		leaving = false;
+		// Back to the title screen's own history entry, so Back from there goes
+		// where it went before this save was opened.
+		appHistory.leave();
 		editor.close();
 	}
 </script>

@@ -36,6 +36,8 @@
 	// actually holds focus, and a listener on the non-focusable strip would only
 	// ever fire by bubbling.
 	function onkeydown(e: KeyboardEvent) {
+		// Alt+arrow is Back/Forward, not a step along the strip.
+		if (e.altKey || e.ctrlKey || e.metaKey) return;
 		const delta = e.key === 'ArrowRight' ? 1 : e.key === 'ArrowLeft' ? -1 : 0;
 		if (!delta) return;
 		e.preventDefault();

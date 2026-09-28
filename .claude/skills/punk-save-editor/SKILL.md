@@ -111,12 +111,13 @@ bun run check:data  # cross-check the generated JSONs without re-extracting
   `CustomFieldDialog` (painting one — hand-painted fields must stay **square and odd**, see
   docs/game-code.md; the saved library lives in `$lib/editor/custom-fields.svelte.ts`) +
   `ConnectionToggles` (a module's N/E/S/W cells, shared by the vault cards and the grid editor),
-  `CopyButton` (the save paths' copy glyph), and `WindowBar`/`WindowControls`/`WindowEdges` (the
+  `CopyButton` (the save paths' copy glyph), and `WindowBar`/`WindowControls`/`WindowNav`/`WindowEdges` (the
   desktop app's own title bar, OS-styled buttons and resize edges — the window is undecorated; state
   in `$lib/window-chrome.svelte.ts`, rules in docs/design.md "Window chrome").
   `grid/` is the **module-grid editor** overlay: `GridEditor` (full-viewport dialog), `GridCanvas`
   (pan/zoom board), `GridModuleTile`, `GridHoverCard`, `VaultDock`, `ModuleEditDialog`,
   `PixelSprite` (the game's grid art) — the feature's own doc is **docs/grid-editor.md**.
-- `src/routes/+page.svelte` — composition only.
+- `src/routes/+page.svelte` — composition, plus which screen shows: read off `page.state`, so Back
+  and Forward replay it (`$lib/editor/history.svelte.ts`; docs/editor-internals.md).
 - `scripts/` — `punklib.py` (shared extraction lib) + extractors; **`bun run extract`** regenerates
   everything and validates (`scripts/check-data.ts`). See docs/migration.md.

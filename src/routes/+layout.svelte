@@ -9,6 +9,7 @@
 	import { loadFonts } from '$lib/editor/busy';
 	import { afterNavigate } from '$app/navigation';
 	import { windowChrome } from '$lib/window-chrome.svelte';
+	import { appHistory } from '$lib/editor/history.svelte';
 
 	let { children } = $props();
 
@@ -35,7 +36,15 @@
 	// SvelteKit resets window scroll on navigation, but the app scrolls inside
 	// .crt-screen — without this, /changelog opens wherever the editor was
 	// scrolled to, heading off-screen.
-	afterNavigate(() => screen?.scrollTo(0, 0));
+	afterNavigate(({ type }) => {
+		screen?.scrollTo(0, 0);
+		appHistory.arrived(type);
+	});
+
+	// Back and Forward between the editor's screens, and in the desktop app the
+	// mouse buttons and shortcuts a browser would give them.
+	$effect(appHistory.track);
+	$effect(appHistory.bind);
 </script>
 
 <!-- The desktop app's title bar, above the screen rather than in it: the page

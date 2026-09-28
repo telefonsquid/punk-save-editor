@@ -186,6 +186,12 @@ people reach for the shape their OS taught them:
   token, so they sit in the same warm greys as the panels; the colours that
   *are* the OS's (Windows' close red, the three lights) are the `--color-os-*`
   tokens. They are silent — the interface sounds belong to the game's controls.
+- **`WindowNav`** — Back and Forward, which a browser keeps in its own chrome
+  and a webview has nowhere else to put: after the lights on a Mac (toolbar
+  chevrons), in the opposite corner from the window buttons elsewhere (Windows'
+  flat caption arrows, GNOME's flat header-bar arrows). Dimmed, not hidden, when
+  there is nowhere to go. How the history itself works is in
+  [editor-internals.md](editor-internals.md#back-and-forward-are-history-entries-on-one-route).
 - **`WindowEdges`** — resize strips, only where the borderless window has lost
   its own: the top edge on Windows (its other three live in the invisible band
   around the window), all eight on Linux, none on macOS.
@@ -285,7 +291,7 @@ compose them and carry only layout.
 | `TextInput` / `Select` | the editor's own text and dropdown boxes |
 | `CloseBadge` | the cross that removes what it sits on (`bare` / `boxed`) |
 | `CopyButton` | a pixel glyph that copies a line of text; the one control that shows a success, since a copy leaves nothing else on screen |
-| `WindowBar` / `WindowControls` | the desktop app's title bar and OS-styled window buttons (see *Window chrome*) |
+| `WindowBar` / `WindowControls` / `WindowNav` | the desktop app's title bar, its OS-styled window buttons and its Back/Forward (see *Window chrome*) |
 | `ConnectionToggles` | a module's N/E/S/W connection cells (vault cards and the grid editor's dialog) |
 | `ModuleStatLine` / `ModuleGroupHeading` | the parts every module surface shares |
 

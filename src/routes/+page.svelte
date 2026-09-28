@@ -13,6 +13,9 @@
 	import SaveBar from '$lib/components/SaveBar.svelte';
 	import ShipResourcesPanel from '$lib/components/panels/ShipResourcesPanel.svelte';
 	import { EditorState } from '$lib/editor/state.svelte';
+	import { appHistory, saveId } from '$lib/editor/history.svelte';
+	import { page } from '$app/state';
+	import { untrack } from 'svelte';
 	import { prefersReducedMotion } from 'svelte/motion';
 	import { fade } from 'svelte/transition';
 
@@ -23,13 +26,59 @@
 		{ id: 'modules', label: 'Modules' },
 		{ id: 'data', label: 'Stats & Game Data' }
 	];
+	// Which screen is showing is read off the history entry, not held here, so
+	// Back and Forward replay it (see $lib/editor/history.svelte.ts). The editor
+	// shows only when the entry names the save that is actually open: stepping
+	// back to the title screen leaves the save in memory, and the entry pointing
+	// at it is how Forward finds it again.
+	const live = $derived(!!editor.slot && page.state.save === saveId(editor.slot));
+	const panelTab = $derived(live ? (page.state.tab ?? 'resources') : 'resources');
 	// The Modules tab is a door, not a page: selecting it opens the grid
-	// editor's full-screen overlay over whatever panel was showing, and closing
-	// the overlay hands the strip back to that panel's tab. The function
-	// binding below routes the strip's writes — `panelTab` only ever holds a
-	// tab with content under it, so nothing changes behind the overlay.
-	let gridOpen = $state(false);
-	let panelTab = $state('resources');
+	// editor's full-screen overlay over whatever panel was showing — an entry of
+	// its own, so Back closes it — and closing the overlay hands the strip back
+	// to that panel's tab.
+	const gridOpen = $derived(live && !!page.state.grid);
+
+	// A save that has just arrived — opened from the title screen, or restored
+	// into — gets an entry of its own, on the Resources tab. Keyed on the slot
+	// alone: stepping back to the title screen leaves the slot where it is and
+	// must not push anything.
+	$effect(() => {
+		const slot = editor.slot;
+		if (!slot) return;
+		untrack(() => {
+			const id = saveId(slot);
+			if (page.state.save === id) return;
+			// A restore over an open save keeps pointing at the title screen the
+			// first one came from, which is where the mark goes back to.
+			const from = page.state.save === undefined ? appHistory.index : page.state.from;
+			appHistory.push({ save: id, from, tab: 'resources' });
+		});
+	});
+
+	// An entry left behind by a save that is no longer open — closed from the
+	// mark, or replaced by a restore — is stepped over.
+	$effect(() => {
+		appHistory.stale = (state) =>
+			state.save !== undefined && (!editor.slot || state.save !== saveId(editor.slot));
+		return () => (appHistory.stale = () => false);
+	});
+
+	function showTab(id: string) {
+		if (id === 'modules') {
+			if (!gridOpen) appHistory.push({ ...page.state, grid: true });
+		} else if (id !== panelTab) {
+			appHistory.push({ ...page.state, tab: id as 'resources' | 'data', grid: false });
+		}
+	}
+
+	// The overlay closes itself on Esc and on its own Exit; either one is the
+	// same as Back, and Back is what makes it so. A close that Back itself caused
+	// finds the entry already moved on and does nothing.
+	function setGridOpen(open: boolean) {
+		if (open) showTab('modules');
+		else if (page.state.grid) appHistory.back();
+	}
 
 	// One switch for every transition on the page. Someone who asked the OS to
 	// reduce motion gets durations of zero, so the same code paints instantly for
@@ -49,7 +98,7 @@
      two is showing. -->
 <RestoreDialog {editor} />
 
-{#if !editor.slot}
+{#if !live}
 	<TitleScreen {editor} />
 {:else}
 	<div class="flex-1 px-6 py-8" in:fade={{ duration: 260 * motion }}>
@@ -65,13 +114,7 @@
 		<div class="mx-auto max-w-6xl">
 			<Tabs
 				tabs={TABS}
-				bind:current={
-					() => (gridOpen ? 'modules' : panelTab),
-					(v) => {
-						if (v === 'modules') gridOpen = true;
-						else panelTab = v;
-					}
-				}
+				bind:current={() => (gridOpen ? 'modules' : panelTab), showTab}
 				label="Editor sections"
 			/>
 
@@ -122,7 +165,7 @@
 					<!-- Inside the onchange delegate on purpose: the overlay's own
 					     dialogs commit number edits through the same change events as
 					     the panels. -->
-					<GridEditor {editor} bind:open={gridOpen} />
+					<GridEditor {editor} bind:open={() => gridOpen, setGridOpen} />
 				</div>
 			</div>
 		</div>
