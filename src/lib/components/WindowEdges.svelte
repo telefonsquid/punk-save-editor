@@ -18,7 +18,7 @@
 	//
 	// Fixed to the viewport, so whoever mounts this must not sit inside a filter
 	// or transform that would pin it to something smaller — the layout mounts it
-	// outside `.crt-screen`, the grid editor as a direct child of its dialog.
+	// outside `.crt-screen`, the grid editor as a direct child of its layer.
 
 	type Edge = { dir: ResizeDirection; place: string };
 

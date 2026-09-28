@@ -9,6 +9,21 @@ headings matters.
 - Optional `### Added` / `### Changed` / `### Fixed` groups under it.
 - Everything else is plain bullets or short paragraphs.
 
+## 1.2.1 — 2026-09-28
+
+### Added
+
+- Custom Window Frame on the Desktop App, with Window Buttons styled per OS
+- Draggable Title Bar on the Desktop App
+- Copy Buttons for Save Paths
+- Back & Forward between Screens
+- Back & Forward on the Desktop App: Title Bar Buttons, Mouse Side Buttons & Shortcuts
+
+### Changed
+
+- The Desktop App opens as a 1600×900 Window instead of Fullscreen
+- The Grid Editor opens below the Title Bar
+
 ## 1.2.0 — 2026-09-21
 
 ### Added
