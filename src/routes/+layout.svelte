@@ -3,9 +3,12 @@
 	import AppFooter from '$lib/components/AppFooter.svelte';
 	import CrtFilter from '$lib/components/CrtFilter.svelte';
 	import ScrollBar from '$lib/components/ScrollBar.svelte';
+	import WindowBar from '$lib/components/WindowBar.svelte';
+	import WindowEdges from '$lib/components/WindowEdges.svelte';
 	import { bindFullscreenKey } from '$lib/fullscreen';
 	import { loadFonts } from '$lib/editor/busy';
 	import { afterNavigate } from '$app/navigation';
+	import { windowChrome } from '$lib/window-chrome.svelte';
 
 	let { children } = $props();
 
@@ -13,6 +16,11 @@
 	let screen = $state<HTMLElement | null>(null);
 
 	$effect(bindFullscreenKey);
+
+	// The desktop app draws its own title bar (the window is undecorated): follow
+	// the window's maximized/fullscreen/focus state, and make room for the bar.
+	$effect(windowChrome.bind);
+	$effect(windowChrome.reflect);
 
 	// Pull the pixel faces the moment the app is up, not when something needs
 	// them. They are font-display: block, so text in a face still in flight is
@@ -30,6 +38,15 @@
 	afterNavigate(() => screen?.scrollTo(0, 0));
 </script>
 
+<!-- The desktop app's title bar, above the screen rather than in it: the page
+     scrolls under nothing, and `.crt-screen` simply starts below the bar. It
+     takes its own copy of the CRT filter, like the grid editor does, so the
+     strip is part of the same screen as the panels under it. Nothing renders
+     here in a browser. -->
+<div class="window-bar-screen">
+	<WindowBar />
+</div>
+
 <!-- The whole app renders inside this wrapper so the CRT filter falls on every
      page uniformly. The filter itself is defined once by CrtFilter below. -->
 <div class="crt-screen" bind:this={screen}>
@@ -42,9 +59,14 @@
 	</div>
 </div>
 <ScrollBar scroller={screen} />
+<WindowEdges />
 <CrtFilter />
 
 <style>
+	.window-bar-screen {
+		filter: url(#crt);
+	}
+
 	.app-shell {
 		display: flex;
 		flex-direction: column;

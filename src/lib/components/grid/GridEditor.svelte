@@ -6,6 +6,8 @@
 	import SaveActions from '../SaveActions.svelte';
 	import VaultDock from './VaultDock.svelte';
 	import PixelSprite from './PixelSprite.svelte';
+	import WindowBar from '../WindowBar.svelte';
+	import WindowEdges from '../WindowEdges.svelte';
 	import { SLOT_BLOCKED, SLOT_BOOST, SLOT_EMPTY } from '$lib/game/grid-icons';
 	import { syncModal } from '../modal';
 	import { GridEditorState } from '$lib/editor/grid.svelte';
@@ -92,6 +94,12 @@
 	}}
 >
 	{#if open}
+		<!-- A modal makes the page's own title bar inert, so a screen that covers
+		     the whole window brings the bar along: the window can still be moved,
+		     resized and closed with the grid open. Nothing here in a browser. -->
+		<WindowBar />
+		<WindowEdges />
+
 		<header class="grid-band">
 			<h2 class="punk-panel-title whitespace-nowrap text-accent">Module Grid</h2>
 			{#if grid.ships.length > 1}

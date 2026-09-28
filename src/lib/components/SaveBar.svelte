@@ -21,14 +21,17 @@
 	$effect(() => {
 		const node = bar;
 		if (!node) return;
+		const scroller = node.closest('.crt-screen');
 
 		let queued = false;
 		const check = () => {
 			queued = false;
-			// Sticky holds the strip at the scroller's top edge, and `.crt-screen`
-			// fills the viewport — so it is pinned exactly when its own top has
-			// stopped at zero. A hair of slack for fractional device pixels.
-			stuck = node.getBoundingClientRect().top <= 0.5;
+			// Sticky holds the strip at the scroller's top edge, so it is pinned
+			// exactly when its own top has stopped there. That edge is not the
+			// viewport's in the desktop app, whose title bar sits above
+			// `.crt-screen`. A hair of slack for fractional device pixels.
+			const edge = scroller?.getBoundingClientRect().top ?? 0;
+			stuck = node.getBoundingClientRect().top <= edge + 0.5;
 		};
 		// One read per frame at most: the check measures, and measuring on every
 		// scroll event forces a layout the browser had not asked for.

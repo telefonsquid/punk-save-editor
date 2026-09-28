@@ -155,12 +155,49 @@ the CRT `filter` — **not** the window. Four traps that follow:
   `filter: url(#crt)` for that reason; any other full-screen dialog owes the
   same. Keep such a copy viewport-sized: a page-tall filter buffer runs past
   the browser's size cap and comes back as a blur.
+- **It does not start at the top of the window in the desktop app.** The
+  window is undecorated and draws its own title bar above the screen (see
+  *Window chrome* below), and `.crt-screen` starts `--titlebar-h` down. Anything
+  measured against the viewport's top — the save strip's pinned check, the
+  app's scrollbar track, the load overlay's height — measures against the
+  screen's top instead. `--titlebar-h` is `0px` in a browser, so the same code
+  serves both.
 - The native scrollbar is hidden and `ScrollBar.svelte` draws an overlay one —
   WebView2/WebKitGTK would otherwise show a permanent grey gutter. Any *other*
   scroller in the app owes the same debt: a `Dialog` body hides its native bar
   and mounts the same component with `contained`, which draws the track over the
   scroller's own box instead of the viewport. A new scroller means a new
   `ScrollBar`, not a new scrollbar.
+
+## Window chrome
+
+The desktop app has no OS frame (`decorations: false` in tauri.conf.json). The
+app draws it instead, and it is the one surface that deliberately looks like
+the **OS** rather than the game — the corner of a window is muscle memory, and
+people reach for the shape their OS taught them:
+
+- **`WindowBar`** — a hairline strip (`--titlebar-h`: 32px, 28px on a Mac) in
+  `--color-card`, a shade above the void. The whole strip drags the window and a
+  double-click maximizes it (`data-tauri-drag-region="deep"`). It carries nothing
+  but the buttons; the mark under it already says what this is.
+- **`WindowControls`** — Windows 11's flat caption buttons on the right, macOS's
+  traffic lights on the left, GNOME's round buttons on the right (Linux means
+  GNOME, the desktop most distros ship). Every neutral in them is a palette
+  token, so they sit in the same warm greys as the panels; the colours that
+  *are* the OS's (Windows' close red, the three lights) are the `--color-os-*`
+  tokens. They are silent — the interface sounds belong to the game's controls.
+- **`WindowEdges`** — resize strips, only where the borderless window has lost
+  its own: the top edge on Windows (its other three live in the invisible band
+  around the window), all eight on Linux, none on macOS.
+
+`$lib/window-chrome.svelte.ts` is the one place that knows which OS it is and
+whether the window is maximized, fullscreen or focused; every copy of the bar
+reads it. There are two copies: the page's, above `.crt-screen`, and the grid
+editor's, inside its dialog — a modal makes everything outside it inert, so a
+screen covering the window has to bring the bar along. Both sit under the CRT
+filter like everything else on screen. Fullscreen (F11) takes the bar away, as
+it would a native one. A card-sized `Dialog` does not carry a bar: like a
+native modal, it dims the window's chrome with the rest of the page.
 
 ## Rhythm
 
@@ -247,6 +284,8 @@ compose them and carry only layout.
 | `CounterCell` | an inventory-strip entry: HUD number plus the item's own art |
 | `TextInput` / `Select` | the editor's own text and dropdown boxes |
 | `CloseBadge` | the cross that removes what it sits on (`bare` / `boxed`) |
+| `CopyButton` | a pixel glyph that copies a line of text; the one control that shows a success, since a copy leaves nothing else on screen |
+| `WindowBar` / `WindowControls` | the desktop app's title bar and OS-styled window buttons (see *Window chrome*) |
 | `ConnectionToggles` | a module's N/E/S/W connection cells (vault cards and the grid editor's dialog) |
 | `ModuleStatLine` / `ModuleGroupHeading` | the parts every module surface shares |
 

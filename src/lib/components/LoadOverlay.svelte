@@ -36,7 +36,8 @@
 		top: 0;
 		left: 0;
 		right: 0;
-		height: 100dvh;
+		/* The screen's height, which is the window's less the desktop title bar. */
+		height: calc(100dvh - var(--titlebar-h));
 		display: grid;
 		place-items: center;
 		background-color: var(--color-void);

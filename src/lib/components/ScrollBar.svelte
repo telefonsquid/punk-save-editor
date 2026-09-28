@@ -144,7 +144,8 @@
 <style>
 	.scroll-track {
 		position: fixed;
-		inset: 0 0 0 auto;
+		/* The screen starts under the desktop app's title bar, and so does its bar. */
+		inset: var(--titlebar-h) 0 0 auto;
 		width: 12px;
 		/* Chrome, not content: the strip must never swallow a click meant for the
 		   panel underneath, so only the thumb itself takes the pointer. */

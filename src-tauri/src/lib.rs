@@ -60,6 +60,40 @@ mod taskbar_icon {
     }
 }
 
+/// Opens the window at its configured 1600x900, centred — or maximized, on a
+/// screen with less room than that.
+///
+/// The window starts hidden (`visible: false` in tauri.conf.json) so that it
+/// never shows at a size it is about to leave: a laptop panel shorter than 900
+/// logical pixels would otherwise get a window hanging off its bottom edge for a
+/// frame before being maximized. Measured against the work area, so a taskbar
+/// or dock that eats the last few rows counts as not enough room.
+fn open_main_window(window: &tauri::WebviewWindow) {
+    const WIDTH: f64 = 1600.0;
+    const HEIGHT: f64 = 900.0;
+
+    // A hidden window may not be on any monitor yet (GTK only places it once it
+    // is shown), so fall back to the primary — which is where it will appear.
+    let monitor = window
+        .current_monitor()
+        .ok()
+        .flatten()
+        .or_else(|| window.primary_monitor().ok().flatten());
+    if let Some(monitor) = monitor {
+        let area = monitor
+            .work_area()
+            .size
+            .to_logical::<f64>(monitor.scale_factor());
+        if area.width < WIDTH || area.height < HEIGHT {
+            let _ = window.maximize();
+        }
+    }
+
+    // Whatever the measuring above managed, the window has to appear.
+    let _ = window.show();
+    let _ = window.set_focus();
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
@@ -73,13 +107,16 @@ pub fn run() {
         // next time the app starts. This writes the grants beside the app's
         // config and puts them back at launch.
         .plugin(tauri_plugin_persisted_scope::init())
-        .setup(|_app| {
+        .setup(|app| {
+            use tauri::Manager;
             #[cfg(windows)]
             {
-                use tauri::Manager;
-                for window in _app.webview_windows().values() {
+                for window in app.webview_windows().values() {
                     taskbar_icon::apply(window);
                 }
+            }
+            if let Some(window) = app.get_webview_window("main") {
+                open_main_window(&window);
             }
             Ok(())
         })

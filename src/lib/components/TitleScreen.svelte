@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import Button from './Button.svelte';
+	import CopyButton from './CopyButton.svelte';
 	import InfoPop from './InfoPop.svelte';
 	import PunkLogo from './PunkLogo.svelte';
 	import type { EditorState } from '$lib/editor/state.svelte';
@@ -8,6 +9,12 @@
 	import { supportsInPlaceSave } from '$lib/save/platform';
 
 	let { editor }: { editor: EditorState } = $props();
+
+	const SAVE_PATHS = [
+		{ os: 'Windows', path: '%USERPROFILE%\\AppData\\LocalLow\\DefaultCompany\\Punk\\saves' },
+		{ os: 'macOS', path: '~/Library/Application Support/DefaultCompany/Punk/saves' },
+		{ os: 'Linux', path: '~/.config/unity3d/DefaultCompany/Punk/saves' }
+	];
 
 	// Two questions about the disk, both asked once on the way in rather than
 	// derived, and neither awaited into the markup: the screen draws straight away
@@ -82,31 +89,30 @@
 
 		<!-- Where the game keeps its saves on each OS, so the folder picker above
 		     has somewhere to point. The company/product folder is the same
-		     everywhere; only the Unity data root per platform differs. -->
+		     everywhere; only the Unity data root per platform differs. Each path
+		     can be copied straight into the picker's address bar — they are too
+		     long to retype and easy to get one folder wrong. -->
 		<dl class="text-muted text-ui-xs punk-paths" use:reveal={{ delay: 240 }}>
-			<div>
-				<dt>Windows</dt>
-				<dd><code>%USERPROFILE%\AppData\LocalLow\DefaultCompany\Punk\saves</code></dd>
-			</div>
-			<div>
-				<dt>macOS</dt>
-				<dd><code>~/Library/Application Support/DefaultCompany/Punk/saves</code></dd>
-			</div>
-			<div>
-				<dt>Linux</dt>
-				<dd><code>~/.config/unity3d/DefaultCompany/Punk/saves</code></dd>
-			</div>
+			{#each SAVE_PATHS as { os, path } (os)}
+				<div>
+					<dt>{os}</dt>
+					<dd><code>{path}</code></dd>
+					<dd><CopyButton text={path} label="Copy the {os} save path" /></dd>
+				</div>
+			{/each}
 		</dl>
 	</div>
 </main>
 
 <style>
-	/* The three save paths: label left, path right, so they line up as a small
-	   reference table rather than a paragraph. It hugs its content and centres, so
-	   the widest path sets the width and every path stays on one line. */
+	/* The three save paths: label left, path in the middle, its copy glyph right,
+	   so they line up as a small reference table rather than a paragraph and the
+	   three glyphs stand in one column. It hugs its content and centres, so the
+	   widest path sets the width and every path stays on one line. */
 	.punk-paths {
 		display: grid;
-		grid-template-columns: auto auto;
+		grid-template-columns: auto auto auto;
+		align-items: center;
 		gap: 0.25rem 1rem;
 		width: max-content;
 		max-width: 100%;

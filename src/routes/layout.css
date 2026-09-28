@@ -87,6 +87,18 @@
 	--color-backdrop: rgb(0 0 0 / 0.8);
 	--color-grid-gap: rgb(0 0 0 / 0.6); /* the dark between effect-field cells. below cell-off, so an unlit cell still reads as a cell */
 
+	/* Not the palette: the OS's own colours, for the desktop app's window buttons
+	   (WindowControls.svelte), which are drawn the way the OS draws them so that
+	   the corner of the window is where people expect it. Everything neutral in
+	   those buttons is a palette token; only what IS the OS lives here. */
+	--color-os-close: #c42b1c; /* Windows 11's close button under the pointer */
+	--color-os-mac-close: #ff5f57; /* the three traffic lights, and the glyph each shows under the pointer */
+	--color-os-mac-close-ink: #4d0000;
+	--color-os-mac-min: #febc2e;
+	--color-os-mac-min-ink: #995700;
+	--color-os-mac-zoom: #28c840;
+	--color-os-mac-zoom-ink: #006500;
+
 	/* One game pixel. The game's cap-height-to-frame ratio is 5:1 and our
 	   capital is 15px, so one game pixel is 3 of ours. Everything sized against
 	   the game's own captures (frames, tabs, loading cells) counts in this unit;
@@ -184,6 +196,23 @@
 		background-color: var(--color-void);
 	}
 
+	/* The desktop app's own title bar (WindowBar.svelte). The window is
+	   undecorated, so the bar is drawn by the page and everything below it starts
+	   this far down. Zero in a browser, and in fullscreen, where no OS draws a
+	   title bar either: $lib/window-chrome.svelte.ts sets the attribute only while
+	   the bar is showing. Windows' caption buttons are 32px tall; a Mac title bar
+	   is 28. GNOME's would be taller, but its buttons sit in 32 and the bar is
+	   meant to be a hairline, not a header. */
+	:root {
+		--titlebar-h: 0px;
+	}
+	:root[data-window-chrome] {
+		--titlebar-h: 32px;
+	}
+	:root[data-window-chrome='mac'] {
+		--titlebar-h: 28px;
+	}
+
 	/* The whole app sits inside this wrapper so the CRT filter (see CrtFilter.svelte)
 	   lands on every page the same way. It reads the real rendered pixels, which is
 	   the only way the aberration and bloom can actually bend and light the content
@@ -196,6 +225,9 @@
 	.crt-screen {
 		position: fixed;
 		inset: 0;
+		/* Under the desktop app's title bar, which lives outside it — see
+		   --titlebar-h above. */
+		top: var(--titlebar-h);
 		overflow-x: hidden;
 		overflow-y: auto;
 		filter: url(#crt);
